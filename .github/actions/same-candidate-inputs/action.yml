@@ -1,0 +1,164 @@
+name: Admit this run exact candidate and product inputs
+description: Restore checked data before any current native product command
+inputs:
+  helper_revision:
+    required: true
+  candidate_revision:
+    required: true
+  artifact_spec:
+    required: true
+  runtime_manifest_sha256:
+    required: true
+  catalog_id:
+    required: true
+  require_runtime:
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - name: Select the pinned Python for native admission on product runners
+      if: inputs.require_runtime == 'true'
+      id: bootstrap_python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      with:
+        python-version: '3.12.11'
+        update-environment: false
+    - name: Make only the pinned python3 available to runner helpers
+      if: inputs.require_runtime == 'true'
+      shell: bash
+      env:
+        BOOTSTRAP_PYTHON: ${{ steps.bootstrap_python.outputs.python-path }}
+      run: |
+        case "$BOOTSTRAP_PYTHON" in /*) ;; *) exit 1 ;; esac
+        test -x "$BOOTSTRAP_PYTHON"
+        bootstrap_bin="$RUNNER_TEMP/som-bootstrap-python"
+        mkdir -m 700 -- "$bootstrap_bin"
+        ln -s -- "$BOOTSTRAP_PYTHON" "$bootstrap_bin/python3"
+        printf '%s\n' "$bootstrap_bin" >> "$GITHUB_PATH"
+    - name: Wait for the original exact live workflow binding
+      if: github.event_name != 'workflow_dispatch' || (github.job != 'products' && github.job != 'required-callbacks')
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        timeout --kill-after=5s 315s bash --noprofile --norc -euo pipefail <<'LIVE_RUN_BINDING'
+        for binding_probe_attempt in $(seq 1 30); do
+          if ! timeout 15s gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --jq '{id, head_sha, run_attempt, event, repository: .repository.full_name, repository_id: .repository.id, path, head_branch, status}' \
+            > "$RUNNER_TEMP/som-current-live-run.json" 2>/dev/null; then
+            echo '::error title=Live run binding::run-observation-unavailable'
+            exit 1
+          fi
+          binding_probe_result=0
+          python3 -I -S -B -c '
+        import json, os, sys
+        try:
+            record = json.load(sys.stdin)
+            expected = {
+                "id": int(os.environ["GITHUB_RUN_ID"]),
+                "head_sha": os.environ["GITHUB_SHA"],
+                "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+                "event": os.environ["GITHUB_EVENT_NAME"],
+                "repository": os.environ["GITHUB_REPOSITORY"],
+                "repository_id": int(os.environ["GITHUB_REPOSITORY_ID"]),
+                "path": ".github/workflows/rust-hosted-readiness.yml",
+                "head_branch": os.environ["GITHUB_REF"].split("/", 2)[2],
+            }
+        except (ValueError, IndexError, KeyError):
+            sys.exit(4)
+        if not isinstance(record, dict) or any(
+            type(record.get(key)) is not type(value) or record[key] != value
+            for key, value in expected.items()
+        ):
+            sys.exit(1)
+        status = record.get("status")
+        if status == "in_progress":
+            sys.exit(0)
+        sys.exit(2 if status == "queued" else 3)
+        ' < "$RUNNER_TEMP/som-current-live-run.json" || binding_probe_result=$?
+          case "$binding_probe_result" in
+            0) exit 0 ;;
+            2)
+              if [ "$binding_probe_attempt" -eq 1 ]; then
+                echo 'Exact workflow run is queued. Waiting for live status.'
+              fi
+              if [ "$binding_probe_attempt" -lt 30 ]; then
+                sleep 10
+              fi ;;
+            1) echo '::error title=Live run binding::run-identity-mismatch'; exit 1 ;;
+            3) echo '::error title=Live run binding::run-status-refused'; exit 1 ;;
+            *) echo '::error title=Live run binding::run-observation-invalid'; exit 1 ;;
+          esac
+        done
+        echo '::error title=Live run binding::run-visibility-timeout'
+        exit 1
+        LIVE_RUN_BINDING
+    - name: Admit exact native source before helper imports
+      shell: bash
+      env:
+        EXPECTED_HELPER: ${{ inputs.helper_revision }}
+        EXPECTED_CANDIDATE: ${{ inputs.candidate_revision }}
+      run: |
+        test "$HELPER_REVISION" = "$EXPECTED_HELPER"
+        test "$CANDIDATE_REVISION" = "$EXPECTED_CANDIDATE"
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.native-graph -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --out "$RUNNER_TEMP/native-source-authority.json"
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).public_inputs.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/public
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).assembly.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/assembly
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).carrier.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/carrier
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ inputs.catalog_id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/catalog
+    - name: Restore the current compiler and native bytes without executing them
+      shell: bash
+      run: |
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.native-graph -- restore-carrier --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --out "$RUNNER_TEMP/som-current-transport-carrier"
+        printf '%s\n' "SOM_RAW_TRANSPORT_NODE=$RUNNER_TEMP/som-current-transport-carrier/native/bin/node" >> "$GITHUB_ENV"
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).wheel.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/wheel
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).cargo.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/cargo
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).runtime.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/runtime
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).rust_tools.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/rust-source
+    - name: Restore exact qualified native runtime before selecting its Python
+      if: inputs.require_runtime == 'true'
+      shell: bash
+      run: |
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py -- restore --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --capsule-root "$RUNNER_TEMP/som-current-inputs/runtime" --out "$RUNNER_TEMP/som-product-runtime-qualification" --evidence-out "$RUNNER_TEMP/som-runtime-capsule-restore-evidence" --artifact-id "${{ fromJSON(inputs.artifact_spec).runtime.id }}" --artifact-digest "${{ fromJSON(inputs.artifact_spec).runtime.digest }}" --manifest-sha256 "${{ inputs.runtime_manifest_sha256 }}"
+        cat "$RUNNER_TEMP/som-product-runtime-qualification/github.env" >> "$GITHUB_ENV"
+    - name: Requalify all six native Rust tools for this consumer
+      if: inputs.require_runtime == 'true'
+      shell: bash
+      run: |
+        "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py -- --repo "$GITHUB_WORKSPACE" --source-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/som-rust-product-tools-qualification"

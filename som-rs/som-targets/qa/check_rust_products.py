@@ -127,11 +127,16 @@ def parity(path: pathlib.Path | None, rows: list[dict]) -> tuple[dict, list[str]
 
 
 BIN_DIR = pathlib.Path(TOOLCHAIN["rust"]["bin_dir"])
+if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+    import full_product_context as hosted_products
+    BIN_DIR = hosted_products.rust_bin()
 PINNED_BINARIES = ("rustc", "cargo", "rustfmt", "cargo-fmt", "cargo-clippy", "clippy-driver")
 
 
 def pinned_toolchain() -> dict[str, str]:
     """The environment that runs the pinned binaries. Each must match its toolchain.json sha256."""
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        return hosted_products.rust_environment()
     for name in PINNED_BINARIES:
         path = BIN_DIR / name
         if targets.sha(path.read_bytes()) != TOOLCHAIN["rust"][name]["sha256"]:
@@ -374,6 +379,8 @@ def phase2_refusals(qa: str, base: dict) -> list[dict]:
 
 def run(command: list[str], cwd: pathlib.Path, env: dict, timeout: int = 1800) -> tuple[int, str]:
     """The exit code and the whole output."""
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        return hosted_products.context().capture(command, cwd, env, timeout)
     done = subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True, timeout=timeout)
     return done.returncode, done.stdout + done.stderr
 
@@ -474,11 +481,14 @@ def schema(url: str, excluded: tuple[str, ...]) -> dict:
 
 def python_schema(qa: str, case: dict, pg: str, name: str) -> dict:
     """Apply the Python product's Alembic revision to a fresh database and read its schema."""
-    status, raw = targets.post(qa, targets.dump({"format": "som.prompt-json.v1", "prompt": case["prompt"]}))
-    files_status, files_raw = targets.post(qa, targets.dump({"bundle": json.loads(raw)["bundle"]}), "/v1/assemble")
-    if status != 200 or files_status != 200:
-        raise RuntimeError(f"Python compile {status}, assemble {files_status}")
-    files = json.loads(files_raw)["files"]
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT") and hosted_products.recorded_transport():
+        files = hosted_products.recorded_files(case["prompt"], "python")
+    else:
+        status, raw = targets.post(qa, targets.dump({"format": "som.prompt-json.v1", "prompt": case["prompt"]}))
+        files_status, files_raw = targets.post(qa, targets.dump({"bundle": json.loads(raw)["bundle"]}), "/v1/assemble")
+        if status != 200 or files_status != 200:
+            raise RuntimeError(f"Python compile {status}, assemble {files_status}")
+        files = json.loads(files_raw)["files"]
     revisions = [path for path in files if path.startswith("alembic/versions/")]
     if len(revisions) != 1:
         raise RuntimeError(f"{len(revisions)} Python revisions")
@@ -556,6 +566,22 @@ def check_case(qa: str, case: dict, work: pathlib.Path, pg: str, target_dir: str
     return row
 
 
+def input_source_key(path: pathlib.Path) -> str:
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        ctx = hosted_products.context()
+        if ctx.qa_mode == 'native-qa-v1' and 'typescript_regression_inputs' in ctx.data:
+            bindings = ctx.cache.get('typescript_replay_input_bindings', ctx.data['typescript_regression_inputs'])
+            inventory = pathlib.Path(bindings['roots']['legacy_run']) / 'inventory-003.json'
+            if path.absolute() == inventory.absolute():
+                profile = json.loads(ctx.sources.read('som-rs/scripts/hosted_readiness/inputs/typescript-regression-inputs-v1.json'))
+                raw = path.read_bytes(); info = path.stat()
+                expected = profile['roles']['legacy_run']['files']['inventory-003.json']
+                if {'sha256': targets.sha(raw), 'size': len(raw), 'mode': info.st_mode & 0o7777} != expected:
+                    raise ValueError('explicit legacy inventory differs from its current source profile')
+                return 'typescript_regression_inputs/legacy_run/inventory-003.json'
+    return path.relative_to(targets.REPO).as_posix()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--qa", required=True, help="QA compiler base URL")
@@ -601,7 +627,7 @@ def main() -> int:
         "issue": 49,
         "qa": args.qa,
         "refusal_plan": args.refusals,
-        "inputs": {p.relative_to(targets.REPO).as_posix(): targets.sha(p.read_bytes()) for p in
+        "inputs": {input_source_key(p): targets.sha(p.read_bytes()) for p in
                    [CONTRACT / "acceptance-plan.json", CONTRACT / "case-inventory.json",
                     CONTRACT / "bundle.schema.json", CONTRACT / "product-layout.json",
                     CONTRACT / "behavior-normalization.json", CONTRACT / "scope.json",

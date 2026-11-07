@@ -1,0 +1,28 @@
+{
+  "version": "som.product-runtime-source-authority-review.v1",
+  "review_kind": "independent controller source-only delta review after prior prototype source review",
+  "source_review_passed": true,
+  "actionable_findings": [],
+  "files": {
+    "product_runtime/qualify_runtime.py": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3",
+    "product_runtime/test_qualify_runtime.py": "0c485472105483e12fbf971b658659990f250b5b666ee97997f2cf9ed32f3362",
+    "product_runtime/source-pins.json": "a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2"
+  },
+  "prior_review": {
+    "patch_sha256": "3a98e3e7bf23bb3ee76fd85e26a6b7ec5ca5266cb6000da5f58bbc804ee0b5ea",
+    "scope": "independent child reviewed archive, extraction, process, first-build and license paths before the final source authority delta"
+  },
+  "current_patch_sha256": "26347362c1851cd92a3f5ec69126265557ab56ae3d42be2561ed5784cf194ee6",
+  "checked": [
+    "Fixed script and manifest repository paths reject aliases and copied inputs",
+    "Exact declared HEAD and repository root checks precede archive pin use and all downloaded member/build/version execution",
+    "Git replacement objects disabled; fixed regular blob entries, bounded complete blob bytes and Git object identity verified",
+    "Working file bytes must equal both committed blobs; manifest_data consumes bound blob bytes",
+    "Dirty manifest/script, copied paths, wrong HEAD/root, bad mode and corrupt blob synthetic fixtures reviewed",
+    "No new runtime binary hash is trusted by first-build receipt; all runtime/product acceptance flags remain false"
+  ],
+  "github_checks": "27 synthetic tests and first source build remain unrun",
+  "local_execution": "source read/hash and syntax inspection only; no imports, tests, builds, services, or downloaded executable runs",
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false
+}

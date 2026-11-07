@@ -1,0 +1,160 @@
+{
+  "version": "som.m12-supplement-integration-source-review.v1",
+  "verdict": "APPROVED",
+  "scope": "Independent source and recorded input metadata review only. No project imports, tests, builds, reconstruction or product execution ran locally.",
+  "reviewed_source_sha256": {
+    "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py": "7ad8856988b2abb1bb10125489873aba922abf1a13fa155b71afa73ea4e28b67",
+    "som-rs/scripts/hosted_readiness/test_reconstruct_public_inputs.py": "679ef2803607356f16744d396ec7234c3f079feecdb3921ad1fac61d4d77fb08"
+  },
+  "supplement_asset_sha256": "fe68f59c26554510c87b94eae81fec3da7202e22bb8a158606dc1b869f9af711",
+  "frozen_golden_export_sha256": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+  "reviewed_source_index_raw_sha256": "92750d95eed3c69c6d284a1f6efa6fcf63df896a02bbb623f032e06dcc382e09",
+  "reviewed_source_index_canonical_sha256": "7d6a7ee92f0f574d2df05d75a93ab2e6df79bb3bee23ceb513d6bb4c91adacd7",
+  "accepted_legacy_result_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56",
+  "independent_request_pin_table_sha256": "455dc1f054bca2d36c46e19193edb69d523373e089a99de861bc8c0374c8b040",
+  "ordered_typed_rows_verified": [
+    {
+      "id": "supplement-gcs-object-read",
+      "legacy_index": 532,
+      "prompt_sha256": "8afe599ebc4d7852577839a89245d097864bb6ed9a83599a2f9484f40510595a",
+      "cnl_sha256": "a986f7d4d927547f7173b15cbd8a2b37ce0daa67b58e2f541e1a306941b9a1c8",
+      "files_map_sha256": "d3b7dd8bc5ab3794bbde7481a82522c60dea01b8315c10a8ccb93199c3a9944d",
+      "typed_request_sha256": "2b82f18cf7e33c00509715a356657da2886f58f3c9e4c781b85416aeb972671c"
+    },
+    {
+      "id": "supplement-mongodb-batch",
+      "legacy_index": 533,
+      "prompt_sha256": "6f6c9ec123c8a5edc9c4c731e33fbfac5ee550a906dfc9b167418ee674fe2699",
+      "cnl_sha256": "ea351f98ad5df66aae1615523d9a52f0573d7d5a4454e2ba3ca23e7420d0380a",
+      "files_map_sha256": "cb3c13f48709b7da5747f2d5db052a968ee2a028088e816919f510e95ec8fc22",
+      "typed_request_sha256": "cb943db66597071af68414db281362f1393f91c2b557907761a599c73265fcac"
+    },
+    {
+      "id": "supplement-mongodb-child-patch-read",
+      "legacy_index": 534,
+      "prompt_sha256": "c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832",
+      "cnl_sha256": "7c6d3ba99c31ca9bd4221a0dfe47fd19d87df4a169c58d4edadc41458cacf26c",
+      "files_map_sha256": "e537e7a1973ff22933d541a5021fe6d3b7a49edecf3932512a7e79eab37245f7",
+      "typed_request_sha256": "a3e95ae2979144d6e2354ab70653d5364c04b3fa09bbf63a36cd642a4132d22e"
+    },
+    {
+      "id": "supplement-mongodb-child-patch-read-checked",
+      "legacy_index": 535,
+      "prompt_sha256": "c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832",
+      "cnl_sha256": "7c6d3ba99c31ca9bd4221a0dfe47fd19d87df4a169c58d4edadc41458cacf26c",
+      "files_map_sha256": "43bd5595515dff5a7fb783d1fd4f71d1c65ba42092b6c98987c391e9559c44c6",
+      "typed_request_sha256": "a3e95ae2979144d6e2354ab70653d5364c04b3fa09bbf63a36cd642a4132d22e"
+    },
+    {
+      "id": "supplement-mongodb-csv-import",
+      "legacy_index": 536,
+      "prompt_sha256": "bec47fd20ef6070ade85823387497b15a5c8503a5aa74eae491911de679baf86",
+      "cnl_sha256": "5d8e5fd851043c57db4f04d840824f1dbac61bb4d2542e046fc8fd65b0136f9f",
+      "files_map_sha256": "9f8715a92040d61fa0b99dd68c302ce92de4717a1cdd00baf6c85e1781e9bcd8",
+      "typed_request_sha256": "2c23dec95a85cb61cdb7619e827c3df152d33d0eb76c6123cfa98e9ba5a2df80"
+    },
+    {
+      "id": "supplement-mongodb-parent-list",
+      "legacy_index": 537,
+      "prompt_sha256": "5f2fd8759627e681868254d07856b4839a4a592cf57886674c039c267dfec751",
+      "cnl_sha256": "c3a48b38a76237a21cabe5641a86dca44835a38b67be5b56954d1ed9efd51105",
+      "files_map_sha256": "e20675225ba59d0e641592b6d03d96717b03998d9a93d3f2c985a30cda2ca63b",
+      "typed_request_sha256": "4f84b339600f0ce276288d610b45c1c69b3377564a6434db78b10e17e4f255f7"
+    },
+    {
+      "id": "supplement-mongodb-parent-patch",
+      "legacy_index": 538,
+      "prompt_sha256": "0c09c8713fc1143e323dba76a42e0d5d3fd60f24de7dc63929891c50c8943e7a",
+      "cnl_sha256": "78892f13e9e096556409077700d91c505975de3d9cbf6871e51d4dc57ed0c380",
+      "files_map_sha256": "d810eaf4294d1de829037b4c63d9a9fc32df922df37b534c6b330d1576bd9940",
+      "typed_request_sha256": "8623e5bf50a9f6e53a3d32ff92136e61869509037d2423ab24841a896945ceb6"
+    },
+    {
+      "id": "supplement-mongodb-query-boolean",
+      "legacy_index": 539,
+      "prompt_sha256": "38489b5b37c71e1d2825a4a3b2933c535b647c42451b403140b6dc348307c627",
+      "cnl_sha256": "6bfc4c50e997ea86c9caae041fa400f5c0690981181d95798ac739ce955dc3b5",
+      "files_map_sha256": "9221945b77bef91aa6a9ed5b69a95c7a7db44f5a6aaf2428e032d79de5ffb65f",
+      "typed_request_sha256": "6d31a8ceb4b21ac03b82d64ef55911279e8ead6567e140a4d933e11c1c0ca5e8"
+    },
+    {
+      "id": "supplement-mongodb-query-plain",
+      "legacy_index": 540,
+      "prompt_sha256": "6efca395e28bc09507c115014e02c6facc131d21642230edc27157d54cfdca00",
+      "cnl_sha256": "542293005d9d0d030861ae8c7e60e7dc38be8501034592c1cf234bfa8a161873",
+      "files_map_sha256": "a08e1de2198c333f7431949f0f5d4ca302ec2b383a1be762274b6c7a1a92a28d",
+      "typed_request_sha256": "44848af1fe17b8cb185096dabd1d8ee6672c1fac14ad049d90c3ffcc9440b7d8"
+    },
+    {
+      "id": "supplement-postgresql-query-boolean",
+      "legacy_index": 542,
+      "prompt_sha256": "17e5d85737069fc76b442f834be738d9146b9541e39170b1936d2efed2467b2a",
+      "cnl_sha256": "ed3991888022412a826b95db3255e7e9dac0e739f2011c4320b38e442e0e8eb3",
+      "files_map_sha256": "571fc7235ac18f974a46677c037a649387ba601db58235b1f357d4f1aefadac2",
+      "typed_request_sha256": "c01740222c3293bfa3ec6b044e8f4621cdbe0652f1b4125a6a3d681a72cc36eb"
+    },
+    {
+      "id": "supplement-postgresql-query-plain",
+      "legacy_index": 543,
+      "prompt_sha256": "ccfbfa63a152703d9e68778f987cfae718d63166d0bb5da7129bdeff587e4fd3",
+      "cnl_sha256": "f97fee8c37c70b1e8c6a63b39814843adc3b84b77eab9fd81be80b9a52cb7b82",
+      "files_map_sha256": "d6d42ff989e89f982719d37404e55207b94b3f1541ee0456e4b05a7d5625429d",
+      "typed_request_sha256": "3555d48c7a6053b26ee1f31cd725d4fde02bb77c2c2ce28720f2fe3e42dde9d4"
+    }
+  ],
+  "ordered_checked_dsl_rows_verified": [
+    {
+      "id": "supplement-mongodb-child-patch-read-checked",
+      "legacy_index": 535,
+      "prompt_sha256": "c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832",
+      "canonical_dsl_sha256": "25f43b7b38c70f8fcc778915c45a5b63268266274aad37f5d2bc296623c85843",
+      "accepted_variant_bundle_raw_sha256": "53f7884214447db2caf314ccfe0c758fca9ec92471a08ff7ea43f7f19c255ba5",
+      "accepted_variant_bundle_canonical_sha256": "966f6655182386319430ca56ed2f0b9b1cc6e39ca8104989eff0aea5a24bbf58",
+      "independent_original_dsl_raw_sha256": "e7b4e8007fd362aeff4bdc9ea818e4531c5e36277a96888831232125c437c244",
+      "original_independent_dsl_files_indexed": 0,
+      "original_raw_source_limit": "Only indexed originals were accessed. The accepted variant bundle supplies the verified DSL binding."
+    },
+    {
+      "id": "supplement-postgresql-child-read-checked",
+      "legacy_index": 541,
+      "prompt_sha256": "04918b752bce4fc41fd4fc58603fd0b689bf3de3e7800a895aae3ec7760e800c",
+      "canonical_dsl_sha256": "f2719da9e0ddff075850925d0ba0b9ec545261ecd3ba9476c1c2b1b6c4c7726c",
+      "accepted_variant_bundle_raw_sha256": "f2364d7ec020d10cf97a94ed04046730b0eba30917baccb566d2c9b39c6b5ac1",
+      "accepted_variant_bundle_canonical_sha256": "ec9a527f388ecb75486a81ed877a1e2ed3934e70a642780b26c328434e2bb6f0",
+      "independent_original_dsl_raw_sha256": "b531124f766fe74f273d10e3ed7c3c91ae7be99e6b6892abadd4bc834ffa4f15",
+      "original_independent_dsl_files_indexed": 0,
+      "original_raw_source_limit": "Only indexed originals were accessed. The accepted variant bundle supplies the verified DSL binding."
+    }
+  ],
+  "counts": {
+    "supplement_typed_rows": 11,
+    "supplement_distinct_prompts": 10,
+    "checked_dsl_rows": 2,
+    "existing_known_request_rows": 443,
+    "known_request_guard_total": 454
+  },
+  "preserved_definitions": [
+    "PinnedSourceModules",
+    "Sources",
+    "direct_prompt",
+    "load_goldens",
+    "main",
+    "ordered",
+    "public_case",
+    "request",
+    "runtime",
+    "save_inputs"
+  ],
+  "source_findings": [],
+  "source_protocol_after_success": {
+    "typed_input_set_ready": true,
+    "full_input_set_ready": false,
+    "product_acceptance_passed": false,
+    "checked_public_recipe_unrun": 1
+  },
+  "execution": {
+    "github_tests_and_reconstruction_for_new_sources": "unrun",
+    "full_product_acceptance": "unrun"
+  },
+  "authority": "This source review grants no publication, compatibility-policy, tracker-closeout or product acceptance authority."
+}

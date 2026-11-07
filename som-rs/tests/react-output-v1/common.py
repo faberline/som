@@ -26,10 +26,18 @@ sys.path.append(str(RUST_TOOLS))  # rust_profile, imported by the Rust builder
 import react_profile  # type: ignore[import-not-found]  # noqa: E402
 
 # The Rust builder shares its module name with build_negative_cases.py here, so load it by path.
-_spec = importlib.util.spec_from_file_location("rust_build_negative_cases", RUST_TOOLS / "build_negative_cases.py")
-assert _spec and _spec.loader
-rust_cases = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(rust_cases)
+if '__som_native_active_controls__' in globals():
+    from _som_native_active_controls_binding import controls as _native_controls
+    _native_controls.verify_installed()
+    if (_native_controls.role_sources.get('m6.api.host.rust-cases')
+            != 'som-rs/tests/rust-output-v1/build_negative_cases.py'):
+        raise ValueError('original Rust case source role required')
+    rust_cases = _native_controls.load_module('m6.api.host.rust-cases')
+else:
+    _spec = importlib.util.spec_from_file_location("rust_build_negative_cases", RUST_TOOLS / "build_negative_cases.py")
+    assert _spec and _spec.loader
+    rust_cases = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(rust_cases)
 
 react_profile.SCOPE = CONTRACT / "scope.json"
 

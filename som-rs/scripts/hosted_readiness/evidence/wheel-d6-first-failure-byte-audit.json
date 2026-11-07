@@ -1,0 +1,433 @@
+{
+  "actual_receipt_sha256": "aa354409a6597692fe3872075b12ee1643d85076ab628b3adcec7fcb458498f9",
+  "all45_RECORD_rows_verified_from_raw_wheel_bytes": true,
+  "candidate_revision": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "helper_revision": "d6cb045c215b72730a939dbbba2d59223832be43",
+  "original5_wheels": [
+    {
+      "RECORD_entries": [
+        {
+          "bytes": 6757,
+          "path": "pydantic_core-2.33.2.dist-info/METADATA",
+          "record_hash": "sha256=78lBoOZz4Kzfzz_yMI_qFHMFs2SE3VgnWpeGPtjycKs",
+          "record_size": "6757",
+          "sha256": "efc941a0e673e0acdfcf3ff2308fea147305b36484dd58275a97863ed8f270ab"
+        },
+        {
+          "bytes": 129,
+          "path": "pydantic_core-2.33.2.dist-info/WHEEL",
+          "record_hash": "sha256=S1kMhEh6EykiwczohhYmFNC42qiDle6DE4gvf4LHuck",
+          "record_size": "129",
+          "sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9"
+        },
+        {
+          "bytes": 1080,
+          "path": "pydantic_core-2.33.2.dist-info/licenses/LICENSE",
+          "record_hash": "sha256=Kv3TDVS01itvSIprzBVG6E7FBh8T9CCcA9ASNIeDeVo",
+          "record_size": "1080",
+          "sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a"
+        },
+        {
+          "bytes": 149655,
+          "path": "pydantic_core/core_schema.py",
+          "record_hash": "sha256=98qpsz-jklOqmsA9h-zWg4K4jNkkk6N_nDBLW3Cjp-w",
+          "record_size": "149655",
+          "sha256": "f7caa9b33fa39253aa9ac03d87ecd68382b88cd92493a37f9c304b5b70a3a7ec"
+        },
+        {
+          "bytes": 0,
+          "path": "pydantic_core/py.typed",
+          "record_hash": "sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+          "record_size": "0",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "bytes": 43359,
+          "path": "pydantic_core/_pydantic_core.pyi",
+          "record_hash": "sha256=xIR9CkJaClUD5HcHtGEPElBpWiD33PaxLKnss8rsuSM",
+          "record_size": "43359",
+          "sha256": "c4847d0a425a0a5503e47707b4610f1250695a20f7dcf6b12ca9ecb3caecb923"
+        },
+        {
+          "bytes": 4403,
+          "path": "pydantic_core/__init__.py",
+          "record_hash": "sha256=TzOWuJMgpXaZcPiS2Yjd8OUqjPbKOupdzXp3dZjWCGc",
+          "record_size": "4403",
+          "sha256": "4f3396b89320a5769970f892d988ddf0e52a8cf6ca3aea5dcd7a777598d60867"
+        },
+        {
+          "bytes": 4776920,
+          "path": "pydantic_core/_pydantic_core.cpython-312-x86_64-linux-gnu.so",
+          "record_hash": "sha256=JxGjRu_zhJCQmK5aHR24qPdB8jAMWcH8ZR85w3C40LQ",
+          "record_size": "4776920",
+          "sha256": "2711a346eff384909098ae5a1d1db8a8f741f2300c59c1fc651f39c370b8d0b4"
+        },
+        {
+          "bytes": 787,
+          "path": "pydantic_core-2.33.2.dist-info/RECORD",
+          "record_hash": "",
+          "record_size": "",
+          "sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e"
+        }
+      ],
+      "RECORD_sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e",
+      "WHEEL_sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9",
+      "closure_id": "07db74ca45049077efc56c4a87f91fed5f4491400acbb172424a9fff0594790d",
+      "expanded_tags": [
+        "cp312-cp312-manylinux2014_x86_64",
+        "cp312-cp312-manylinux_2_17_x86_64"
+      ],
+      "locked_entry_has_wheel_digest": true,
+      "outer_member": "som-python-wheel-qualification/closures/07db74ca45049077efc56c4a87f91fed5f4491400acbb172424a9fff0594790d/wheels/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "publisher_metadata_member": "som-python-wheel-qualification/closures/07db74ca45049077efc56c4a87f91fed5f4491400acbb172424a9fff0594790d/publisher-metadata/pydantic-core.json",
+      "publisher_metadata_sha256": "97a15e00a12e8e26740fc1ae744285a38134e51e7fd7ca1cfb520043998e776c",
+      "publisher_url": "https://files.pythonhosted.org/packages/f9/41/4b043778cf9c4285d59742281a769eac371b9e47e35f98ad321349cc5d61/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "raw_compressed_tag": "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64",
+      "target_lock_sha256": "6d9d48c9cf42096c24c9e64d6ca1fe0368b87379041cfb7b17bbc69e5510bc54",
+      "wheel_bytes": 2002028,
+      "wheel_sha256": "8f57a69461af2a5fa6e6bbd7a5f60d3b7e6cebb687f55106933188e79ad155c1"
+    },
+    {
+      "RECORD_entries": [
+        {
+          "bytes": 6757,
+          "path": "pydantic_core-2.33.2.dist-info/METADATA",
+          "record_hash": "sha256=78lBoOZz4Kzfzz_yMI_qFHMFs2SE3VgnWpeGPtjycKs",
+          "record_size": "6757",
+          "sha256": "efc941a0e673e0acdfcf3ff2308fea147305b36484dd58275a97863ed8f270ab"
+        },
+        {
+          "bytes": 129,
+          "path": "pydantic_core-2.33.2.dist-info/WHEEL",
+          "record_hash": "sha256=S1kMhEh6EykiwczohhYmFNC42qiDle6DE4gvf4LHuck",
+          "record_size": "129",
+          "sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9"
+        },
+        {
+          "bytes": 1080,
+          "path": "pydantic_core-2.33.2.dist-info/licenses/LICENSE",
+          "record_hash": "sha256=Kv3TDVS01itvSIprzBVG6E7FBh8T9CCcA9ASNIeDeVo",
+          "record_size": "1080",
+          "sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a"
+        },
+        {
+          "bytes": 149655,
+          "path": "pydantic_core/core_schema.py",
+          "record_hash": "sha256=98qpsz-jklOqmsA9h-zWg4K4jNkkk6N_nDBLW3Cjp-w",
+          "record_size": "149655",
+          "sha256": "f7caa9b33fa39253aa9ac03d87ecd68382b88cd92493a37f9c304b5b70a3a7ec"
+        },
+        {
+          "bytes": 0,
+          "path": "pydantic_core/py.typed",
+          "record_hash": "sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+          "record_size": "0",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "bytes": 43359,
+          "path": "pydantic_core/_pydantic_core.pyi",
+          "record_hash": "sha256=xIR9CkJaClUD5HcHtGEPElBpWiD33PaxLKnss8rsuSM",
+          "record_size": "43359",
+          "sha256": "c4847d0a425a0a5503e47707b4610f1250695a20f7dcf6b12ca9ecb3caecb923"
+        },
+        {
+          "bytes": 4403,
+          "path": "pydantic_core/__init__.py",
+          "record_hash": "sha256=TzOWuJMgpXaZcPiS2Yjd8OUqjPbKOupdzXp3dZjWCGc",
+          "record_size": "4403",
+          "sha256": "4f3396b89320a5769970f892d988ddf0e52a8cf6ca3aea5dcd7a777598d60867"
+        },
+        {
+          "bytes": 4776920,
+          "path": "pydantic_core/_pydantic_core.cpython-312-x86_64-linux-gnu.so",
+          "record_hash": "sha256=JxGjRu_zhJCQmK5aHR24qPdB8jAMWcH8ZR85w3C40LQ",
+          "record_size": "4776920",
+          "sha256": "2711a346eff384909098ae5a1d1db8a8f741f2300c59c1fc651f39c370b8d0b4"
+        },
+        {
+          "bytes": 787,
+          "path": "pydantic_core-2.33.2.dist-info/RECORD",
+          "record_hash": "",
+          "record_size": "",
+          "sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e"
+        }
+      ],
+      "RECORD_sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e",
+      "WHEEL_sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9",
+      "closure_id": "17af1a45c21452ce687568882a004c95e3be8e6f4c924b3bc7f1625139a25ca4",
+      "expanded_tags": [
+        "cp312-cp312-manylinux2014_x86_64",
+        "cp312-cp312-manylinux_2_17_x86_64"
+      ],
+      "locked_entry_has_wheel_digest": true,
+      "outer_member": "som-python-wheel-qualification/closures/17af1a45c21452ce687568882a004c95e3be8e6f4c924b3bc7f1625139a25ca4/wheels/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "publisher_metadata_member": "som-python-wheel-qualification/closures/17af1a45c21452ce687568882a004c95e3be8e6f4c924b3bc7f1625139a25ca4/publisher-metadata/pydantic-core.json",
+      "publisher_metadata_sha256": "97a15e00a12e8e26740fc1ae744285a38134e51e7fd7ca1cfb520043998e776c",
+      "publisher_url": "https://files.pythonhosted.org/packages/f9/41/4b043778cf9c4285d59742281a769eac371b9e47e35f98ad321349cc5d61/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "raw_compressed_tag": "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64",
+      "target_lock_sha256": "2e79883286e5e603d2904c2cdc40dd6b98518facf74ed02281a12a62c8d30d99",
+      "wheel_bytes": 2002028,
+      "wheel_sha256": "8f57a69461af2a5fa6e6bbd7a5f60d3b7e6cebb687f55106933188e79ad155c1"
+    },
+    {
+      "RECORD_entries": [
+        {
+          "bytes": 6757,
+          "path": "pydantic_core-2.33.2.dist-info/METADATA",
+          "record_hash": "sha256=78lBoOZz4Kzfzz_yMI_qFHMFs2SE3VgnWpeGPtjycKs",
+          "record_size": "6757",
+          "sha256": "efc941a0e673e0acdfcf3ff2308fea147305b36484dd58275a97863ed8f270ab"
+        },
+        {
+          "bytes": 129,
+          "path": "pydantic_core-2.33.2.dist-info/WHEEL",
+          "record_hash": "sha256=S1kMhEh6EykiwczohhYmFNC42qiDle6DE4gvf4LHuck",
+          "record_size": "129",
+          "sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9"
+        },
+        {
+          "bytes": 1080,
+          "path": "pydantic_core-2.33.2.dist-info/licenses/LICENSE",
+          "record_hash": "sha256=Kv3TDVS01itvSIprzBVG6E7FBh8T9CCcA9ASNIeDeVo",
+          "record_size": "1080",
+          "sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a"
+        },
+        {
+          "bytes": 149655,
+          "path": "pydantic_core/core_schema.py",
+          "record_hash": "sha256=98qpsz-jklOqmsA9h-zWg4K4jNkkk6N_nDBLW3Cjp-w",
+          "record_size": "149655",
+          "sha256": "f7caa9b33fa39253aa9ac03d87ecd68382b88cd92493a37f9c304b5b70a3a7ec"
+        },
+        {
+          "bytes": 0,
+          "path": "pydantic_core/py.typed",
+          "record_hash": "sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+          "record_size": "0",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "bytes": 43359,
+          "path": "pydantic_core/_pydantic_core.pyi",
+          "record_hash": "sha256=xIR9CkJaClUD5HcHtGEPElBpWiD33PaxLKnss8rsuSM",
+          "record_size": "43359",
+          "sha256": "c4847d0a425a0a5503e47707b4610f1250695a20f7dcf6b12ca9ecb3caecb923"
+        },
+        {
+          "bytes": 4403,
+          "path": "pydantic_core/__init__.py",
+          "record_hash": "sha256=TzOWuJMgpXaZcPiS2Yjd8OUqjPbKOupdzXp3dZjWCGc",
+          "record_size": "4403",
+          "sha256": "4f3396b89320a5769970f892d988ddf0e52a8cf6ca3aea5dcd7a777598d60867"
+        },
+        {
+          "bytes": 4776920,
+          "path": "pydantic_core/_pydantic_core.cpython-312-x86_64-linux-gnu.so",
+          "record_hash": "sha256=JxGjRu_zhJCQmK5aHR24qPdB8jAMWcH8ZR85w3C40LQ",
+          "record_size": "4776920",
+          "sha256": "2711a346eff384909098ae5a1d1db8a8f741f2300c59c1fc651f39c370b8d0b4"
+        },
+        {
+          "bytes": 787,
+          "path": "pydantic_core-2.33.2.dist-info/RECORD",
+          "record_hash": "",
+          "record_size": "",
+          "sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e"
+        }
+      ],
+      "RECORD_sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e",
+      "WHEEL_sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9",
+      "closure_id": "948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46",
+      "expanded_tags": [
+        "cp312-cp312-manylinux2014_x86_64",
+        "cp312-cp312-manylinux_2_17_x86_64"
+      ],
+      "locked_entry_has_wheel_digest": true,
+      "outer_member": "som-python-wheel-qualification/closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheels/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "publisher_metadata_member": "som-python-wheel-qualification/closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/publisher-metadata/pydantic-core.json",
+      "publisher_metadata_sha256": "97a15e00a12e8e26740fc1ae744285a38134e51e7fd7ca1cfb520043998e776c",
+      "publisher_url": "https://files.pythonhosted.org/packages/f9/41/4b043778cf9c4285d59742281a769eac371b9e47e35f98ad321349cc5d61/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "raw_compressed_tag": "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64",
+      "target_lock_sha256": "4141bac6d09d5de43fe53f071d9db38f28ffd76f2b599de71fe97658565da697",
+      "wheel_bytes": 2002028,
+      "wheel_sha256": "8f57a69461af2a5fa6e6bbd7a5f60d3b7e6cebb687f55106933188e79ad155c1"
+    },
+    {
+      "RECORD_entries": [
+        {
+          "bytes": 6757,
+          "path": "pydantic_core-2.33.2.dist-info/METADATA",
+          "record_hash": "sha256=78lBoOZz4Kzfzz_yMI_qFHMFs2SE3VgnWpeGPtjycKs",
+          "record_size": "6757",
+          "sha256": "efc941a0e673e0acdfcf3ff2308fea147305b36484dd58275a97863ed8f270ab"
+        },
+        {
+          "bytes": 129,
+          "path": "pydantic_core-2.33.2.dist-info/WHEEL",
+          "record_hash": "sha256=S1kMhEh6EykiwczohhYmFNC42qiDle6DE4gvf4LHuck",
+          "record_size": "129",
+          "sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9"
+        },
+        {
+          "bytes": 1080,
+          "path": "pydantic_core-2.33.2.dist-info/licenses/LICENSE",
+          "record_hash": "sha256=Kv3TDVS01itvSIprzBVG6E7FBh8T9CCcA9ASNIeDeVo",
+          "record_size": "1080",
+          "sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a"
+        },
+        {
+          "bytes": 149655,
+          "path": "pydantic_core/core_schema.py",
+          "record_hash": "sha256=98qpsz-jklOqmsA9h-zWg4K4jNkkk6N_nDBLW3Cjp-w",
+          "record_size": "149655",
+          "sha256": "f7caa9b33fa39253aa9ac03d87ecd68382b88cd92493a37f9c304b5b70a3a7ec"
+        },
+        {
+          "bytes": 0,
+          "path": "pydantic_core/py.typed",
+          "record_hash": "sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+          "record_size": "0",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "bytes": 43359,
+          "path": "pydantic_core/_pydantic_core.pyi",
+          "record_hash": "sha256=xIR9CkJaClUD5HcHtGEPElBpWiD33PaxLKnss8rsuSM",
+          "record_size": "43359",
+          "sha256": "c4847d0a425a0a5503e47707b4610f1250695a20f7dcf6b12ca9ecb3caecb923"
+        },
+        {
+          "bytes": 4403,
+          "path": "pydantic_core/__init__.py",
+          "record_hash": "sha256=TzOWuJMgpXaZcPiS2Yjd8OUqjPbKOupdzXp3dZjWCGc",
+          "record_size": "4403",
+          "sha256": "4f3396b89320a5769970f892d988ddf0e52a8cf6ca3aea5dcd7a777598d60867"
+        },
+        {
+          "bytes": 4776920,
+          "path": "pydantic_core/_pydantic_core.cpython-312-x86_64-linux-gnu.so",
+          "record_hash": "sha256=JxGjRu_zhJCQmK5aHR24qPdB8jAMWcH8ZR85w3C40LQ",
+          "record_size": "4776920",
+          "sha256": "2711a346eff384909098ae5a1d1db8a8f741f2300c59c1fc651f39c370b8d0b4"
+        },
+        {
+          "bytes": 787,
+          "path": "pydantic_core-2.33.2.dist-info/RECORD",
+          "record_hash": "",
+          "record_size": "",
+          "sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e"
+        }
+      ],
+      "RECORD_sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e",
+      "WHEEL_sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9",
+      "closure_id": "9d3b297871491add8a1a731490507240ac9615405e4467b0aefc1c5ddf3f6115",
+      "expanded_tags": [
+        "cp312-cp312-manylinux2014_x86_64",
+        "cp312-cp312-manylinux_2_17_x86_64"
+      ],
+      "locked_entry_has_wheel_digest": true,
+      "outer_member": "som-python-wheel-qualification/closures/9d3b297871491add8a1a731490507240ac9615405e4467b0aefc1c5ddf3f6115/wheels/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "publisher_metadata_member": "som-python-wheel-qualification/closures/9d3b297871491add8a1a731490507240ac9615405e4467b0aefc1c5ddf3f6115/publisher-metadata/pydantic-core.json",
+      "publisher_metadata_sha256": "97a15e00a12e8e26740fc1ae744285a38134e51e7fd7ca1cfb520043998e776c",
+      "publisher_url": "https://files.pythonhosted.org/packages/f9/41/4b043778cf9c4285d59742281a769eac371b9e47e35f98ad321349cc5d61/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "raw_compressed_tag": "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64",
+      "target_lock_sha256": "6d9d48c9cf42096c24c9e64d6ca1fe0368b87379041cfb7b17bbc69e5510bc54",
+      "wheel_bytes": 2002028,
+      "wheel_sha256": "8f57a69461af2a5fa6e6bbd7a5f60d3b7e6cebb687f55106933188e79ad155c1"
+    },
+    {
+      "RECORD_entries": [
+        {
+          "bytes": 6757,
+          "path": "pydantic_core-2.33.2.dist-info/METADATA",
+          "record_hash": "sha256=78lBoOZz4Kzfzz_yMI_qFHMFs2SE3VgnWpeGPtjycKs",
+          "record_size": "6757",
+          "sha256": "efc941a0e673e0acdfcf3ff2308fea147305b36484dd58275a97863ed8f270ab"
+        },
+        {
+          "bytes": 129,
+          "path": "pydantic_core-2.33.2.dist-info/WHEEL",
+          "record_hash": "sha256=S1kMhEh6EykiwczohhYmFNC42qiDle6DE4gvf4LHuck",
+          "record_size": "129",
+          "sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9"
+        },
+        {
+          "bytes": 1080,
+          "path": "pydantic_core-2.33.2.dist-info/licenses/LICENSE",
+          "record_hash": "sha256=Kv3TDVS01itvSIprzBVG6E7FBh8T9CCcA9ASNIeDeVo",
+          "record_size": "1080",
+          "sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a"
+        },
+        {
+          "bytes": 149655,
+          "path": "pydantic_core/core_schema.py",
+          "record_hash": "sha256=98qpsz-jklOqmsA9h-zWg4K4jNkkk6N_nDBLW3Cjp-w",
+          "record_size": "149655",
+          "sha256": "f7caa9b33fa39253aa9ac03d87ecd68382b88cd92493a37f9c304b5b70a3a7ec"
+        },
+        {
+          "bytes": 0,
+          "path": "pydantic_core/py.typed",
+          "record_hash": "sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+          "record_size": "0",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "bytes": 43359,
+          "path": "pydantic_core/_pydantic_core.pyi",
+          "record_hash": "sha256=xIR9CkJaClUD5HcHtGEPElBpWiD33PaxLKnss8rsuSM",
+          "record_size": "43359",
+          "sha256": "c4847d0a425a0a5503e47707b4610f1250695a20f7dcf6b12ca9ecb3caecb923"
+        },
+        {
+          "bytes": 4403,
+          "path": "pydantic_core/__init__.py",
+          "record_hash": "sha256=TzOWuJMgpXaZcPiS2Yjd8OUqjPbKOupdzXp3dZjWCGc",
+          "record_size": "4403",
+          "sha256": "4f3396b89320a5769970f892d988ddf0e52a8cf6ca3aea5dcd7a777598d60867"
+        },
+        {
+          "bytes": 4776920,
+          "path": "pydantic_core/_pydantic_core.cpython-312-x86_64-linux-gnu.so",
+          "record_hash": "sha256=JxGjRu_zhJCQmK5aHR24qPdB8jAMWcH8ZR85w3C40LQ",
+          "record_size": "4776920",
+          "sha256": "2711a346eff384909098ae5a1d1db8a8f741f2300c59c1fc651f39c370b8d0b4"
+        },
+        {
+          "bytes": 787,
+          "path": "pydantic_core-2.33.2.dist-info/RECORD",
+          "record_hash": "",
+          "record_size": "",
+          "sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e"
+        }
+      ],
+      "RECORD_sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e",
+      "WHEEL_sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9",
+      "closure_id": "a29ba46381223ea3ea70d6b93778cbc072dfcdff4ca391475bcfa494c4d2ab5d",
+      "expanded_tags": [
+        "cp312-cp312-manylinux2014_x86_64",
+        "cp312-cp312-manylinux_2_17_x86_64"
+      ],
+      "locked_entry_has_wheel_digest": true,
+      "outer_member": "som-python-wheel-qualification/closures/a29ba46381223ea3ea70d6b93778cbc072dfcdff4ca391475bcfa494c4d2ab5d/wheels/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "publisher_metadata_member": "som-python-wheel-qualification/closures/a29ba46381223ea3ea70d6b93778cbc072dfcdff4ca391475bcfa494c4d2ab5d/publisher-metadata/pydantic-core.json",
+      "publisher_metadata_sha256": "97a15e00a12e8e26740fc1ae744285a38134e51e7fd7ca1cfb520043998e776c",
+      "publisher_url": "https://files.pythonhosted.org/packages/f9/41/4b043778cf9c4285d59742281a769eac371b9e47e35f98ad321349cc5d61/pydantic_core-2.33.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "raw_compressed_tag": "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64",
+      "target_lock_sha256": "f2bc6b9f596a0ac3c5a74c7a0dad459ccf8c2a6515d035ee7c29275f66381d86",
+      "wheel_bytes": 2002028,
+      "wheel_sha256": "8f57a69461af2a5fa6e6bbd7a5f60d3b7e6cebb687f55106933188e79ad155c1"
+    }
+  ],
+  "product_acceptance_passed": false,
+  "project_helper_wheel_or_test_execution": false,
+  "verdict": "PASSED_BOUNDED_ACTUAL_DATA_AUDIT",
+  "version": "som.m12.wheel-tag-firstfailure-independent-raw-data-audit.v1",
+  "wheel_qualification_complete": false,
+  "whole_zip": {
+    "bytes": 230525569,
+    "path": "/private/tmp/som-m12-wheel-d6-connector.zip",
+    "sha256": "81c968eb5d853c1c21873cb173ce2998c2be5da076e40c1b2c26527e96a71ccf"
+  }
+}

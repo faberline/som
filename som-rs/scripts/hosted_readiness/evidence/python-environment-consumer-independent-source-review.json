@@ -1,0 +1,76 @@
+{
+  "version": "som.m12-python-environment-consumer-independent-source-review.v1",
+  "reviewer": "independent compile_driver_review agent; not the original author or fix author",
+  "candidate_base_head": "3fee9c204315518b3ea0ee4582351d5f5cca80dc",
+  "scope": "Source-only review of the bounded Python environment input consumer, fixed source plan and synthetic test definitions. No dependency resolution or product acceptance.",
+  "source_review_passed": true,
+  "actionable_findings_remaining": [],
+  "reviewed_patch_sha256": "908d55913c656960553111ee0fd0a0bbade98a25d975e31947e173100eaa6bca",
+  "superseded_initial_patch_sha256": "ac5cbded4f1dde2ca9ecb804b5d9d38c03f76123cb04917f7d158fb402d25c41",
+  "files": {
+    "som-rs/scripts/hosted_readiness/product_python/qualify_python.py": "52a03e1a264b244d41f1ec294f9f34796f2c954ad3c2d5e6d76bcdcfc6739dc8",
+    "som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py": "e80e0d568b0039582a883ba47a29ef39a52cd1ec6835d47de2be5c624ca0abaa",
+    "som-rs/scripts/hosted_readiness/product_python/environment-plan.json": "f8a70d462306d105b192d38dfc36ea945f5e13d8fe12980d146a283584c088f6",
+    "som-rs/scripts/hosted_readiness/product_python/README.md": "e52b05f67840bcf9cbe73589c146c2c1eb980981d80517815d223bd7dafc0f30"
+  },
+  "source_only_job_fragment_sha256": "834d38b839418a860a4f207d0d283650d6c543be9b8d69804aaa8d9fe7794b0d",
+  "checked": [
+    "The fixed helper and plan paths bind to regular Git blobs at the declared HEAD. The helper disables replacement objects, verifies the repository root, compares complete working/blob bytes and checks blob identity. Reads are bounded and reject symlinks.",
+    "The source plan preserves eight actual template environments,17 direct runtime spellings and8 development spellings. Requirements retain their extras, source order, exact constraints and runtime/development groups. Build backends, uv resolution overrides and model packages are refused.",
+    "Observer requests2.34.2 and product requests2.32.5 remain separate. Moto5.2.3 belongs to the observer route. Per-product cache, venv and wheel locations stay separate; no global union or constraint rewrite is created.",
+    "The source-bound quality checker declares Ruff0.16.6,mypy2.3.1,pylint4.0.9,isort9.0.2. Quality products must already declare all exact tool pins in their own development group. The emitted route uses that product's Python environment and the unchanged checker source.",
+    "A complete consumer input must name the same candidate and the exact golden and TS065 receipts. Every public127 and legacy544 product appears in frozen order and both none/python compile variants are read.",
+    "Every variant observation binds its Python target, source, cohort, frozen ID/index, compile variant, checked/default mode and observation index. Canonical physical observation directories and assemble request/reply names are required. Named or physical proof reuse is refused.",
+    "Actual reply bytes must match the independently committed frozen raw product reply hash. Strict response parsing must produce the exact saved complete file map. Rehashing mutable manifest copies cannot replace this authority.",
+    "Every actual product file is reread against its size/hash, complete accepted per-file path/content hash set and full frozen map. Extra files, symlinks and nonregular nodes are refused.",
+    "Exact pyproject bytes are preserved for products that have them. Older products without pyproject.toml retain their observer runtime route and get no fake project file.",
+    "Output must be fresh under RUNNER_TEMP and outside both the source and complete assembly input trees. This check runs before output creation.",
+    "The helper emits environment inputs only. It runs no resolver, package, generated product, compiler or service. Closure, offline provision, license qualification, runtime readiness and product acceptance remain explicitly unready or unrun.",
+    "All24 synthetic test definitions were read, including the7 new refusal cases for rehashed raw replies, response/file-map association, relabelled observations, physical proof mismatch, checked-mode mismatch, nonregular nodes and output overlap."
+  ],
+  "independent_existing_source_data_analysis": {
+    "kind": "Standard-library reads, hashes and TOML/JSON metadata parsing only. No proposed helper or project module imported.",
+    "source_pin_files_compared": 10,
+    "source_pin_disagreements": 0,
+    "template_environments": 8,
+    "direct_runtime_spellings": 17,
+    "direct_development_spellings": 8,
+    "quality_template_environments": 4,
+    "quality_checker_pin_table_matches": true,
+    "observer_requests": "2.34.2",
+    "product_requests": "2.32.5"
+  },
+  "resolved_findings": [
+    "Initial code trusted two mutable copies of exchange hashes. The fix requires the fixed frozen raw reply hash and parses its exact complete product map.",
+    "Initial code did not bind observation identity/mode or the physical observation directory. The fix associates both compile variants with their exact named and physical proof.",
+    "Initial output validation allowed a new output directory inside the assembly artifact. The fix rejects this before creating output.",
+    "Initial product enumeration ignored extra nonregular nodes. The fix rejects them."
+  ],
+  "static_checks": {
+    "AST_syntax": "passed; syntax parsing only",
+    "git_apply_check": "passed; read-only",
+    "synthetic_test_definitions": 24,
+    "test_execution": "unrun"
+  },
+  "integration_guidance": [
+    "Use GitHub Linux x86_64 with Python3.11 or later for this metadata consumer; Ubuntu24.04 supplies the required tomllib bootstrap API.",
+    "The supplied standalone job fragment emits only a source plan and missing-input report because it omits --assembly. It cannot establish the actual product environment input set.",
+    "To consume real products, wait for the complete assembly experiment on the same tested SHA, pass --assembly as the artifact root containing assembly/manifest.json, and use a separate fresh output directory.",
+    "Preserve the complete emitted receipt and environment input tree. Resolve, download, license-audit and install each environment's complete wheel closure later on GitHub. A consumer or resolver success cannot count as product acceptance."
+  ],
+  "local_execution": {
+    "source_metadata_hash_AST_and_read_only_patch_checks": true,
+    "proposed_helper_imports_or_runs": false,
+    "project_imports": false,
+    "tests": false,
+    "resolvers_or_downloaded_native_tools": false,
+    "builds": false,
+    "services_or_products": false
+  },
+  "hosted_consumer_execution": "unrun",
+  "environment_input_set_execution_proof": "unrun",
+  "closure_qualification_complete": false,
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false,
+  "next_step": "Root may commit the exact reviewed fixed patch and run its24 tests plus the bounded consumer on GitHub. Independently audit its actual output. Full per-environment resolution, wheel/license closure, offline provisioning and unchanged product/behavior gates remain required."
+}

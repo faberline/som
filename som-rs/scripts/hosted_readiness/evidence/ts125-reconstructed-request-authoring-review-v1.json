@@ -1,0 +1,234 @@
+{
+  "accepted_header_authority": {
+    "chain": "public release -> accepted summary/header -> before/after tool maps",
+    "maps": [
+      "/before/tools/files",
+      "/tools_before/files",
+      "/after/tools/files",
+      "/tools_after/files",
+      "/tools/files"
+    ],
+    "raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+    "tool_revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4",
+    "verification": "all six exact historical source blobs match every map; no source blob is imported or executed"
+  },
+  "artifact": {
+    "bytes": 863714,
+    "path": "som-rs/scripts/hosted_readiness/inputs/ts125-source-reconstructed-before-requests-v1.json",
+    "raw_sha256": "fe0408c4449a019d8c81efe72f8930db117f4a027896609924d28ad87b4642e9"
+  },
+  "calibration": {
+    "direct_compile_calibrations": "all_matched",
+    "direct_compile_request_hashes": 140,
+    "separate_canary_assemble_calibrations": [
+      {
+        "authority": "separate_accepted_raw_canary_request; not a bundle-run capture",
+        "case_id": "example-v1",
+        "reconstructed_request_sha256": "08407636cdf822ac59e57689eed4220a4761ddf243efabbd043463fc8b8db9e1",
+        "result": "matched",
+        "separate_recorded_canary_request_sha256": "08407636cdf822ac59e57689eed4220a4761ddf243efabbd043463fc8b8db9e1"
+      },
+      {
+        "authority": "separate_accepted_raw_canary_request; not a bundle-run capture",
+        "case_id": "example-v5",
+        "reconstructed_request_sha256": "833047334683950712218843c3716971e1c73e4b1208e5b7163bc6982574c556",
+        "result": "matched",
+        "separate_recorded_canary_request_sha256": "833047334683950712218843c3716971e1c73e4b1208e5b7163bc6982574c556"
+      }
+    ]
+  },
+  "classification": "public_hash_only_metadata",
+  "counts": {
+    "assemble_reconstructed": 125,
+    "canary_assemble_calibrations": 2,
+    "compile_forms": 246,
+    "compile_reconstructed": 146,
+    "compile_unrun": 100,
+    "direct_compile_calibrations": 140,
+    "named_cases": 125
+  },
+  "current_product_acceptance": "unrun",
+  "data_review": {
+    "contents": "public IDs, tracked relative source paths, source/recipe/input digest bindings, exact method/endpoint/format/status metadata, reconstructed body digests and byte counts, explicit unrun/null gaps",
+    "local_absolute_paths": 0,
+    "prompt_CNL_or_product_bodies": 0,
+    "raw_HTTP_bodies": 0
+  },
+  "gaps": {
+    "legacy_cnl_requests": 100,
+    "missing_authority": "the accepted source-text digest does not fix the top-level member order of the old loaded compile-cnl.request.json object",
+    "no_fallback": "no inferred sorted order, invented request encoding, current CNL serializer, compiler parse, or current-candidate backfill",
+    "reconstructed_request_sha256": null,
+    "source_text": "all100 source.cnl byte hashes match accepted legacy result records",
+    "state": "unrun_unbound_loaded_request_member_order"
+  },
+  "immutable_previous_artifacts": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/inputs/ts125-baseline-hashes-v1.json",
+      "raw_sha256": "7009c29b93714dc1a827236b4ebeb255efc99c91c61460bc7a5ded49c902c868",
+      "state": "unchanged"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json",
+      "raw_sha256": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+      "state": "unchanged"
+    }
+  ],
+  "input_closure": {
+    "four_version_positive_fixtures": "canonical prompt and exact CNL text digests bound by frozen inventory; JSON member order closes through direct complete request-hash calibration",
+    "frozen_inventory_and_target_examples": "raw digests bound by accepted candidate source.json",
+    "legacy_result_authority": "accepted python-baseline/report.json /legacy_result_sha256 and /inputs/legacy_result_sha256",
+    "legacy_result_raw_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56",
+    "legacy_typed_request_order": "all100 complete reconstructed TS body digests match directly recorded old TS request hashes",
+    "public_example_prompt_and_CNL": "exact file digests bound by frozen inventory",
+    "raw_compile_response_closure": "all files are inside accepted bundles/responses receipt tree; each selected form also matches immutable7009 raw response digest; all bundle canonical hashes recompute",
+    "six_coverage_cases": "index raw digest bound by accepted header; prompt-file and CNL-file bytes match frozen inventory digests"
+  },
+  "next_step": "independent source/data review; then run the16 synthetic fixtures on GitHub. Keep the100 legacy CNL request-order gap open unless an independently accepted input-file/order authority closes it.",
+  "policy_state": "unsealed",
+  "product_acceptance_passed": false,
+  "recorded_vs_reconstructed": {
+    "assembly_recorded_fields": "all125 stay null; two separate canary raw request hashes calibrate encoding only",
+    "new_hash_authority": "reconstructed_not_recorded",
+    "not_proven": "these271 hashes are not new HTTP request captures, new candidate results, product acceptance, or a compatibility-policy seal",
+    "recorded_fields": "copied unchanged, including null fields"
+  },
+  "source": {
+    "before_writer_execution": "unrun",
+    "build_server_native_binary_execution": "unrun",
+    "compiler_or_CNL_parser_execution": "unrun",
+    "helper_sha256": "2a44d7171562d25b18f81d4015ea0b1aef72d68ef10aa00ee412ae65a75deaa0",
+    "local_execution": "stdlib metadata authoring and fixed Git source-blob reads only",
+    "project_module_imports": "unrun",
+    "synthetic_test_count": 16,
+    "synthetic_test_sha256": "9f4423d80b0fb4a14c2383f52e93b1e4c25924d976408843d625cfedcffbf9ce",
+    "tests": "unrun; GitHub only"
+  },
+  "source_interpretation": [
+    {
+      "owner": "check_bundles.collect_in_scope_cases / compact_json / common.rust_cases.compact",
+      "recipe": "compact_header_format_prompt_target",
+      "rule": "preserve prompt object member order; header order format,prompt,target; UTF-8 ensure_ascii=False, compact separators"
+    },
+    {
+      "owner": "same accepted writer chain",
+      "recipe": "compact_header_format_source_target",
+      "rule": "use exact frozen CNL text; header order format,source,target; no CNL parsing or reserialization"
+    },
+    {
+      "owner": "check_bundles.collect_in_scope_cases name_cases",
+      "recipe": "exact_frozen_name_request_body",
+      "rule": "use the complete body string from accepted source-manifest-bound target-examples.json; verify the independent frozen body digest"
+    },
+    {
+      "owner": "check_bundles._check_bundle_case derive_json_from_cnl_bundle",
+      "recipe": "compact_json_from_accepted_cnl_compile_bundle_prompt",
+      "rule": "six name JSON companions read prompt object and member order from the complete accepted old CNL compile raw response; use the fixed compact envelope"
+    },
+    {
+      "owner": "check_python_baseline._load_request_file / check_bundles.collect_legacy_in_scope_cases",
+      "recipe": "legacy_append_target_to_loaded_typed_request_preserve_member_order",
+      "rule": "read the original typed request object; validate accepted canonical prompt identity; append target and compact; every complete result must match its independently recorded TS request digest"
+    },
+    {
+      "owner": "check_bundles._check_bundle_case / canonical_json",
+      "recipe": "canonical_sorted_recursive_bundle_envelope",
+      "rule": "read exact accepted old raw compile response bundle; verify raw response digest and canonical prompt/DSL/payload hashes; serialize {bundle:bundle} with recursive sorted keys, ensure_ascii=False, compact separators"
+    }
+  ],
+  "version": "som.ts125-source-reconstructed-before-requests-authoring-review.v1",
+  "writer_drift": {
+    "compact_dependency_before_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+    "compact_dependency_public_ed56_sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7",
+    "product_checker_before_sha256": "945b09924b8c0b0a8f8c539b2a297353918d308063575f27ccbaeab42bb1b121",
+    "product_checker_current_sha256": "fb52e35d465779a31affad4078e9209050f55ade3803e6931881bc523e2271d1",
+    "product_checker_usage": "neither checker executes; product-checker semantics are outside this request recipe proof",
+    "selection": "exact accepted-header tool-revision Git blob, not current dependency"
+  },
+  "writer_source_bindings": [
+    {
+      "execution": "not_executed",
+      "header_pointers": [
+        "/before/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_bundles.py",
+        "/tools_before/files/som-rs~1scripts~1typescript_output_acceptance~1check_bundles.py",
+        "/after/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_bundles.py",
+        "/tools_after/files/som-rs~1scripts~1typescript_output_acceptance~1check_bundles.py",
+        "/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_bundles.py"
+      ],
+      "header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+      "path": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+      "raw_sha256": "8a00d50826f3e0cc74ada9c9ab5d0e93e3bdd591e1f35629e660b613bf619a44",
+      "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+    },
+    {
+      "execution": "not_executed",
+      "header_pointers": [
+        "/before/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_target.py",
+        "/tools_before/files/som-rs~1scripts~1typescript_output_acceptance~1check_target.py",
+        "/after/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_target.py",
+        "/tools_after/files/som-rs~1scripts~1typescript_output_acceptance~1check_target.py",
+        "/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_target.py"
+      ],
+      "header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+      "path": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+      "raw_sha256": "d58aceb3139f714f8659fc7a13de1a4c06b170a23b5ec6aeabb197e9ff666203",
+      "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+    },
+    {
+      "execution": "not_executed",
+      "header_pointers": [
+        "/before/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_python_baseline.py",
+        "/tools_before/files/som-rs~1scripts~1typescript_output_acceptance~1check_python_baseline.py",
+        "/after/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_python_baseline.py",
+        "/tools_after/files/som-rs~1scripts~1typescript_output_acceptance~1check_python_baseline.py",
+        "/tools/files/som-rs~1scripts~1typescript_output_acceptance~1check_python_baseline.py"
+      ],
+      "header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+      "path": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py",
+      "raw_sha256": "ebe4fbe58d54ac6e89ea48f11a6a2b622ed450589864e289327ecb6fd8f51180",
+      "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+    },
+    {
+      "execution": "not_executed",
+      "header_pointers": [
+        "/before/tools/files/som-rs~1scripts~1typescript_output_acceptance~1run_acceptance.py",
+        "/tools_before/files/som-rs~1scripts~1typescript_output_acceptance~1run_acceptance.py",
+        "/after/tools/files/som-rs~1scripts~1typescript_output_acceptance~1run_acceptance.py",
+        "/tools_after/files/som-rs~1scripts~1typescript_output_acceptance~1run_acceptance.py",
+        "/tools/files/som-rs~1scripts~1typescript_output_acceptance~1run_acceptance.py"
+      ],
+      "header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+      "path": "som-rs/scripts/typescript_output_acceptance/run_acceptance.py",
+      "raw_sha256": "54ee04d9c0e514f1dd3d2df384818aa594a4aadb21616996ba64554dca1f4119",
+      "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+    },
+    {
+      "execution": "not_executed",
+      "header_pointers": [
+        "/before/tools/files/som-rs~1tests~1typescript-output-v1~1common.py",
+        "/tools_before/files/som-rs~1tests~1typescript-output-v1~1common.py",
+        "/after/tools/files/som-rs~1tests~1typescript-output-v1~1common.py",
+        "/tools_after/files/som-rs~1tests~1typescript-output-v1~1common.py",
+        "/tools/files/som-rs~1tests~1typescript-output-v1~1common.py"
+      ],
+      "header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+      "path": "som-rs/tests/typescript-output-v1/common.py",
+      "raw_sha256": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+      "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+    },
+    {
+      "execution": "not_executed",
+      "header_pointers": [
+        "/before/tools/files/som-rs~1tests~1rust-output-v1~1build_negative_cases.py",
+        "/tools_before/files/som-rs~1tests~1rust-output-v1~1build_negative_cases.py",
+        "/after/tools/files/som-rs~1tests~1rust-output-v1~1build_negative_cases.py",
+        "/tools_after/files/som-rs~1tests~1rust-output-v1~1build_negative_cases.py",
+        "/tools/files/som-rs~1tests~1rust-output-v1~1build_negative_cases.py"
+      ],
+      "header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+      "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+      "raw_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+      "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+    }
+  ]
+}

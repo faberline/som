@@ -1,0 +1,42 @@
+{
+  "version": "som.public-reconstruction-source-review.v1",
+  "verdict": "APPROVED",
+  "scope": "Independent source and workflow review only. No executed fixture, reconstruction, policy or product acceptance is granted.",
+  "reviewed_source_files": {
+    "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py": "04aeb8746ef3e5c5107a0d9f6a73a426ea3c84dc6ea171c1f359e0f94d6c672b",
+    "som-rs/scripts/hosted_readiness/test_reconstruct_public_inputs.py": "14985503b2c90e3850a80e1e35a055a039a5e9bf8dcd732be57e0631c9fd0a89",
+    ".github/workflows/rust-hosted-readiness.yml": "d154c408b3eb3d711a5501be880e62b862a3d6ea3c84b371513f0cfd0b2b8b04",
+    "som-rs/scripts/hosted_readiness/raw_digest_compat.py": "a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896",
+    "som-rs/scripts/hosted_readiness/test_raw_digest_compat.py": "99d425e7a7392534ee8635bdad2ed33c5ae60afbff4aa799761b47b3a09e8d37"
+  },
+  "reviewed_golden_export_sha256": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+  "reviewers": [
+    {
+      "reviewer": "reconstruction_source_review",
+      "scope": "Input reconstruction, source loader, fixtures and partial-scope workflow",
+      "finding_resolved": "Normal imports could execute unchecked bytecode or extension shadows. The new loader compiles the exact hash-checked source bytes and refuses unbound project modules before execution."
+    },
+    {
+      "reviewer": "rust_readiness_audit",
+      "scope": "Generic raw JSON digest-span helper and malformed-input fixtures",
+      "limits": "Caller retains pin/path authority, HTTP status checks and canonical payload validation."
+    }
+  ],
+  "preserved_scope": {
+    "public_rows": 127,
+    "legacy_named_rows": 544,
+    "legacy_direct_public_rows": 443,
+    "legacy_generated_rows_to_prove_on_github": 90,
+    "legacy_blocked_rows": 11,
+    "legacy_distinct_prompts": 540,
+    "checked_dsl_blocked": 2,
+    "checked_dsl_public_recipe_unrun": 1
+  },
+  "execution": {
+    "local_tests_builds_products_services": "not_run",
+    "github_fixture_tests": "unrun for these source snapshots",
+    "github_reconstruction": "unrun for these source snapshots",
+    "compatibility_policy": "not selected or approved by the generic helper",
+    "full_product_acceptance": "unrun"
+  }
+}

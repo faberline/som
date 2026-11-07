@@ -18,6 +18,20 @@ fn failed(detail: impl Into<String>) -> SomError {
     SomError::new("OUTPUT_QUALITY_FAILED", detail)
 }
 
+// A native header alone never admits a tool: its digest and exact version are also checked.
+fn native_formatter(bytes: &[u8]) -> bool {
+    if cfg!(all(target_os = "linux", target_arch = "x86_64", target_env = "gnu")) {
+        bytes.get(..7) == Some(&[0x7f, b'E', b'L', b'F', 2, 1, 1])
+            && (bytes.get(16..18) == Some(&[2, 0]) || bytes.get(16..18) == Some(&[3, 0]))
+            && bytes.get(18..20) == Some(&[62, 0])
+    } else if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+        bytes.get(..4) == Some(&[0xcf, 0xfa, 0xed, 0xfe])
+            && bytes.get(4..8) == Some(&[0x0c, 0, 0, 1])
+    } else {
+        false
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct AssetIdentity {
     #[cfg(unix)]
@@ -52,13 +66,19 @@ impl AssetIdentity {
         }
     }
     fn at(path: &Path) -> Result<Self, SomError> {
-        Ok(Self::from_metadata(
-            &std::fs::metadata(path).map_err(|e| failed(e.to_string()))?,
-        ))
+        let meta = std::fs::symlink_metadata(path).map_err(|e| failed(e.to_string()))?;
+        if !meta.is_file() {
+            return Err(failed("quality assets must be regular files, not symlinks"));
+        }
+        Ok(Self::from_metadata(&meta))
     }
 }
 
 fn read_asset(path: &Path) -> Result<(Vec<u8>, AssetIdentity), SomError> {
+    let entry = std::fs::symlink_metadata(path).map_err(|e| failed(e.to_string()))?;
+    if !entry.is_file() {
+        return Err(failed("quality assets must be regular files, not symlinks"));
+    }
     let mut file = std::fs::File::open(path).map_err(|e| failed(e.to_string()))?;
     let identity =
         AssetIdentity::from_metadata(&file.metadata().map_err(|e| failed(e.to_string()))?);
@@ -121,7 +141,7 @@ impl Quality {
         if config["id"] != VERSION
             || config["formatter_version"] != FORMATTER_VERSION
             || profile_bytes != PROFILE_TEXT.as_bytes()
-            || binary_bytes.get(..4) != Some(&[0xcf, 0xfa, 0xed, 0xfe])
+            || !native_formatter(&binary_bytes)
         {
             return Err(failed("quality profile or native formatter does not match"));
         }
@@ -395,9 +415,60 @@ pub fn assemble_imports(source: &str) -> String {
 mod tests {
     use super::*;
 
+    fn asset_dir() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("compiler-assets/current")
+    }
+
     fn profile() -> Quality {
-        let model = Path::new(env!("CARGO_MANIFEST_DIR")).join("models/composed-quality-candidate");
-        Quality::load(&model).unwrap().unwrap()
+        let manifest = crate::compiler::asset_manifest();
+        let expected = manifest["files"]["ruff"].as_str().expect("trusted Ruff digest");
+        Quality::load_pinned(&asset_dir(), expected)
+            .expect("load generated compiler assets")
+            .expect("generated quality profile")
+    }
+
+    #[test]
+    fn an_unapproved_formatter_digest_is_rejected() {
+        let error = Quality::load_pinned(&asset_dir(), &"0".repeat(64))
+            .err()
+            .expect("an unapproved digest must refuse the generated tool");
+        assert_eq!(error.code, "OUTPUT_QUALITY_FAILED");
+        assert_eq!(error.detail, "quality asset digest does not match");
+    }
+
+    #[test]
+    fn asset_reads_and_live_identity_checks_refuse_symlinks() {
+        let dir = std::env::temp_dir().join(format!("som-quality-link-{}", std::process::id()));
+        std::fs::create_dir(&dir).unwrap();
+        let file = dir.join("asset");
+        std::fs::write(&file, b"asset bytes").unwrap();
+        let link = dir.join("link");
+        std::os::unix::fs::symlink(&file, &link).unwrap();
+        let read_refused = read_asset(&link).is_err();
+        let identity_refused = AssetIdentity::at(&link).is_err();
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert!(read_refused && identity_refused);
+    }
+
+    #[test]
+    fn scripts_foreign_architectures_and_truncated_headers_are_not_native() {
+        let mut foreign_elf = [0_u8; 64];
+        foreign_elf[..7].copy_from_slice(b"\x7fELF\x02\x01\x01");
+        foreign_elf[16] = 3;
+        foreign_elf[18..20].copy_from_slice(&183_u16.to_le_bytes());
+        let mut foreign_macho = [0_u8; 32];
+        foreign_macho[..4].copy_from_slice(&[0xcf, 0xfa, 0xed, 0xfe]);
+        foreign_macho[4..8].copy_from_slice(&0x0100_0007_u32.to_le_bytes());
+        for bytes in [
+            &b""[..],
+            &b"\x7fELF"[..],
+            &b"\xcf\xfa\xed\xfe"[..],
+            &b"#!/bin/sh\nexit 0\n"[..],
+            &foreign_elf[..],
+            &foreign_macho[..],
+        ] {
+            assert!(!native_formatter(bytes));
+        }
     }
 
     #[test]

@@ -1,0 +1,41 @@
+{
+  "version": "som.m12-saved-native-compile-independent-byte-audit.v1",
+  "run_url": "https://github.com/faberline/som/actions/runs/40740849594",
+  "tested_sha": "bf3a04a0eee05d633b9b68ffe4e7e2885583dcd5",
+  "artifact_id": 12838948495,
+  "artifact_github_digest": "a97b177febdf2b989a1fb6ac522675387318ba6cd4dcf8e6fb9bea60e497463c",
+  "passed": true,
+  "scope": "independent controller stdlib read/hash audit, no proposed checker/project imports or runtime execution",
+  "rows": 2041,
+  "python_rows": 1342,
+  "rust_rows": 699,
+  "status_counts": {
+    "python:200": 1342,
+    "rust:200": 697,
+    "rust:400": 2
+  },
+  "all_request_raw_hashes_checked": true,
+  "all_response_raw_hashes_checked": true,
+  "all_success_current_and_reconstructed_before_payload_hashes_checked": true,
+  "all_frozen_before_raw_response_hashes_recomputed": true,
+  "per_success_exact_digest_leaf_counts": {
+    "2": 220,
+    "3": 1122,
+    "4": 697
+  },
+  "source_pins_checked": 146,
+  "source_pin_authority": "prior independently reviewed full source factory vectors and sealed Rust007/TypeScript003 maps; exact current source bytes rechecked",
+  "raw_manifest_sha256": "1f149e83872792d9e024ed2cb4881fedae350b9445df27d1dc17273c165b7393",
+  "owned_loopback_checks": 2041,
+  "cleanup_verified": true,
+  "identity_stability_verified": true,
+  "policy_state": "unsealed",
+  "product_acceptance_passed": false,
+  "remaining": [
+    "all assembly/product file maps",
+    "all CNL semantics and native refusals",
+    "offline products and behavior",
+    "complete TypeScript before baseline",
+    "numbered native metadata policy and full independent acceptance"
+  ]
+}

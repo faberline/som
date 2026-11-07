@@ -1,0 +1,211 @@
+{
+  "all_archive_and_installed_bytes_verified": true,
+  "archive_members_independently_hashed": 215,
+  "artifact_id": 12871577292,
+  "artifact_root": "/private/tmp/som-m12-rust6-d6/som-rust-product-tools-qualification",
+  "audited_at_utc": "2026-10-29T03:55:49.026517+00:00",
+  "candidate_helper_revision": "d6cb045c215b72730a939dbbba2d59223832be43",
+  "components": {
+    "cargo": {
+      "install_manifest_raw_sha256": "5b2160ec3635b8c8f3129f12cbeee078d55d882f9362313e56e9fd484febe8ba",
+      "install_members": 44,
+      "licenses": 6,
+      "publisher_manifest_version": "0.97.2 (356927216 2026-06-26)",
+      "publisher_target_host": "x86_64-unknown-linux-gnu",
+      "publisher_url": "https://static.rust-lang.org/dist/2026-06-30/cargo-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "tar_directories": 12,
+      "tar_regular_files": 56,
+      "whole_archive": {
+        "bytes": 11155376,
+        "mode": 420,
+        "sha256": "ecc53a3c49fab5ab8c9301b3bbc8fb1dff9be6c65287add3f57a0fe8fddfea9e"
+      },
+      "whole_member_names_types_sizes_modes_hashes_match": true
+    },
+    "clippy-preview": {
+      "install_manifest_raw_sha256": "266e3ebcb2cfa74930e774ac54d80e089f3d1ac299b085c7800114fc653502b9",
+      "install_members": 5,
+      "licenses": 4,
+      "publisher_manifest_version": "0.1.96",
+      "publisher_target_host": "x86_64-unknown-linux-gnu",
+      "publisher_url": "https://static.rust-lang.org/dist/2026-06-30/clippy-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "tar_directories": 6,
+      "tar_regular_files": 16,
+      "whole_archive": {
+        "bytes": 4803616,
+        "mode": 420,
+        "sha256": "385644867534c30c490f4507d61485a799f81dfaec7e2a91290a41bf43d8286a"
+      },
+      "whole_member_names_types_sizes_modes_hashes_match": true
+    },
+    "rust-std": {
+      "install_manifest_raw_sha256": "2342318dd282660b593cb604a1bdf34a1354ab41c8de5fa59c36dc0b5e4b9358",
+      "install_members": 62,
+      "licenses": 3,
+      "publisher_manifest_version": "1.96.1 (31fca3adb 2026-06-26)",
+      "publisher_target_host": "x86_64-unknown-linux-gnu",
+      "publisher_url": "https://static.rust-lang.org/dist/2026-06-30/rust-std-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "tar_directories": 7,
+      "tar_regular_files": 74,
+      "whole_archive": {
+        "bytes": 29751260,
+        "mode": 420,
+        "sha256": "1bf4fde5048cca33e6ea00c7471281ed96d792f6923141e3db45072743a1afae"
+      },
+      "whole_member_names_types_sizes_modes_hashes_match": true
+    },
+    "rustc": {
+      "install_manifest_raw_sha256": "529097e3b06dcc42fd2d47a3c96fc30c83598b0e1e35039a20d9c7920b245e01",
+      "install_members": 41,
+      "licenses": 5,
+      "publisher_manifest_version": "1.96.1 (31fca3adb 2026-06-26)",
+      "publisher_target_host": "x86_64-unknown-linux-gnu",
+      "publisher_url": "https://static.rust-lang.org/dist/2026-06-30/rustc-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "tar_directories": 17,
+      "tar_regular_files": 53,
+      "whole_archive": {
+        "bytes": 80218896,
+        "mode": 420,
+        "sha256": "3545a0efad2355ecb0a3b9ac02efee96e27f1f9d24b7ce2fc3f279b2efb0d923"
+      },
+      "whole_member_names_types_sizes_modes_hashes_match": true
+    },
+    "rustfmt-preview": {
+      "install_manifest_raw_sha256": "f131ba42a6667b5237b9fdca791e2da1fecd7b5cabf522b50efe5113aaaa60d7",
+      "install_members": 5,
+      "licenses": 4,
+      "publisher_manifest_version": "1.9.0",
+      "publisher_target_host": "x86_64-unknown-linux-gnu",
+      "publisher_url": "https://static.rust-lang.org/dist/2026-06-30/rustfmt-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "tar_directories": 6,
+      "tar_regular_files": 16,
+      "whole_archive": {
+        "bytes": 2167316,
+        "mode": 420,
+        "sha256": "dcee5627f709f387cdca416a1d2ae9e6c2581cd117cdb4fd097c56c196384662"
+      },
+      "whole_member_names_types_sizes_modes_hashes_match": true
+    }
+  },
+  "downloaded_installed_modes_match_profile": true,
+  "executables": {
+    "cargo": {
+      "bytes": 42878680,
+      "mode": 493,
+      "native_executed_locally": false,
+      "path": "bin/cargo",
+      "profile_version_prefix": "cargo 1.96.1 (356927216 2026-06-26)",
+      "publisher_archive_member": "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/bin/cargo",
+      "sha256": "a73b2c25573d251489101c0d8f19ad3702eb9761166de5ed8437b472b6c038ce"
+    },
+    "cargo-clippy": {
+      "bytes": 1267936,
+      "mode": 493,
+      "native_executed_locally": false,
+      "path": "bin/cargo-clippy",
+      "profile_version_prefix": "clippy 0.1.96",
+      "publisher_archive_member": "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/cargo-clippy",
+      "sha256": "092d67d9ea1895087ddea03d224959b28f7bead2247ab3f8e84380c2adf73c5f"
+    },
+    "cargo-fmt": {
+      "bytes": 3716160,
+      "mode": 493,
+      "native_executed_locally": false,
+      "path": "bin/cargo-fmt",
+      "profile_version_prefix": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)",
+      "publisher_archive_member": "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/cargo-fmt",
+      "sha256": "3779babd13af2735b535ed598203a1a40bd4f85b65526b3da3b031bd79b71e07"
+    },
+    "clippy-driver": {
+      "bytes": 20959320,
+      "mode": 493,
+      "native_executed_locally": false,
+      "path": "bin/clippy-driver",
+      "profile_version_prefix": "clippy 0.1.96",
+      "publisher_archive_member": "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/clippy-driver",
+      "sha256": "4b6976de2e62e12adaa5e6ef190b1d3f3fbf062e0f8ea5f4014fca45fb918a66"
+    },
+    "rustc": {
+      "bytes": 646024,
+      "mode": 493,
+      "native_executed_locally": false,
+      "path": "bin/rustc",
+      "profile_version_prefix": "rustc 1.96.1 (31fca3adb 2026-06-26)",
+      "publisher_archive_member": "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rustc",
+      "sha256": "4a84e05991ad6f2a84c1361c29b52b38c390365bd1fc269b1936c88d482a8928"
+    },
+    "rustfmt": {
+      "bytes": 5287872,
+      "mode": 493,
+      "native_executed_locally": false,
+      "path": "bin/rustfmt",
+      "profile_version_prefix": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)",
+      "publisher_archive_member": "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/rustfmt",
+      "sha256": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d"
+    }
+  },
+  "installed": {
+    "all_bytes_and_sha256_match": true,
+    "directories": 22,
+    "downloaded_mode_mismatches": [],
+    "exact_file_and_directory_universe": true,
+    "files": 157,
+    "inventory_canonical_sha256": "71dac8700c78862edaf5c16026bdb9432eda8f7bf603c1df3d22f0ec014113d2"
+  },
+  "local_native_or_project_execution": false,
+  "preserved_scopes": {
+    "downloads": {
+      "all_bytes_and_sha256_match": true,
+      "directories": 0,
+      "downloaded_mode_mismatches": [],
+      "exact_file_and_directory_universe": true,
+      "files": 5,
+      "inventory_canonical_sha256": "41f97292ad923b25750c3f8e1ec9758f9e1f8ee455334f8ee1905819c6508183"
+    },
+    "licenses": {
+      "all_bytes_and_sha256_match": true,
+      "directories": 26,
+      "downloaded_mode_mismatches": [],
+      "exact_file_and_directory_universe": true,
+      "files": 22,
+      "inventory_canonical_sha256": "03907408cdd003f859b121513c1ac44773875ec0e6cdd83dca6c0ad9417cdab2"
+    },
+    "publisher-metadata": {
+      "all_bytes_and_sha256_match": true,
+      "directories": 0,
+      "downloaded_mode_mismatches": [],
+      "exact_file_and_directory_universe": true,
+      "files": 2,
+      "inventory_canonical_sha256": "d764378a8ed9750e82ba97eaa155d2c239b87c6b1ffafd7d89d5f95b2f3a3f70"
+    },
+    "publisher-records": {
+      "all_bytes_and_sha256_match": true,
+      "directories": 15,
+      "downloaded_mode_mismatches": [],
+      "exact_file_and_directory_universe": true,
+      "files": 58,
+      "inventory_canonical_sha256": "5565e49841713e3badabb9064e1c60e1efc2ca6cb618c2f6ef69132da1cd6aa5"
+    }
+  },
+  "product_acceptance_passed": false,
+  "profile_path": "som-rs/contracts/native-tools-v1/product-rust-tools-v1.json",
+  "profile_sha256": "f18ee32b1efe1452b119ee2184f52514f3e661208817d65307ccd71851bbc13a",
+  "project_helper_imports": false,
+  "publisher_manifest": {
+    "checksum_matches_raw_manifest": true,
+    "checksum_sha256": "221e9f5b196762dc5e34b757a19f614a829b094185f3a7762836eb5d88c3c515",
+    "date": "2026-06-30",
+    "manifest_version": "2",
+    "rust_version": "1.96.1 (31fca3adb 2026-06-26)",
+    "sha256": "87eb76c53073e72b766083bed5530820694253b832a762d8385bda5759f03975"
+  },
+  "run_id": 40813734189,
+  "runtime_execution_acceptance": "not assessed; parent audits GH commands and logs",
+  "saved_installed_inventory": {
+    "exact_primary_profile_derived_inventory": true,
+    "sha256": "1cc8177cbf8bcad4c9bdbfb10b587282385f982aac53544910195e6702fb7fc4"
+  },
+  "trust_boundary": "Expected values derive from fixed Git profile. Whole publisher archives, every tar regular member and actual installed/preserved files are read only as raw data. No qualifier function is imported or invoked.",
+  "verdict": "ALL_RAW_DATA_AND_MODES_MATCH",
+  "version": "som.rust6-independent-archive-and-install-data-audit.v1"
+}

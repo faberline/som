@@ -1,0 +1,276 @@
+{
+  "version": "som.m12-cargo-d6-independent-actual-artifact-data-audit.v1",
+  "audit_scope": "Actual saved ZIP, crate/tar/JSON/source bytes and original GitHub logs only; standalone stdlib. No project import or native execution.",
+  "audit_passed": true,
+  "registry_data_audit_passed": true,
+  "github": {
+    "artifact": {
+      "id": 12871483569,
+      "name": "product-cargo-closure-candidate",
+      "size_in_bytes": 309585103,
+      "url": "https://api.github.com/repos/faberline/som/actions/artifacts/12871483569",
+      "archive_download_url": "https://api.github.com/repos/faberline/som/actions/artifacts/12871483569/zip",
+      "expired": false,
+      "created_at": "2026-10-29T03:50:08Z",
+      "expires_at": "2026-11-28T03:49:42Z",
+      "updated_at": "2026-10-29T03:50:08Z",
+      "digest": "sha256:92e2c49c991109475899a6395f051c9e170e331be0761b8c80f1cb282e03acd4",
+      "workflow_run": {
+        "id": 40813734189,
+        "repository_id": 1390374878,
+        "head_repository_id": 1390374878,
+        "head_branch": "codex/issue-141-hosted-readiness",
+        "head_sha": "d6cb045c215b72730a939dbbba2d59223832be43"
+      }
+    },
+    "job": {
+      "id": 123250352441,
+      "name": "Dependency helper iteration with recorded compiler identity / Complete Rust registry closure (product gates unrun)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40813734189,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Fetch the exact recorded candidate source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Create an owned run and check synthetic integrity fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Download this run's compile and assembly evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Bind the original candidate and every reviewed artifact file",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Check the required real product consumer route",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Install exact Rust tools inside the owned run",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Make and verify all 352 registry packages",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Preserve registry closure candidate and failure evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        }
+      ]
+    }
+  },
+  "artifact_zip_sha256": "92e2c49c991109475899a6395f051c9e170e331be0761b8c80f1cb282e03acd4",
+  "artifact_zip_bytes": 309585103,
+  "outer_file_count": 32798,
+  "outer_expanded_bytes": 876418152,
+  "tested_candidate": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "helper_revision": "d6cb045c215b72730a939dbbba2d59223832be43",
+  "receipt_sha256": "863664d1677b7cf73882a1fd6e5817460ffd8d48711d7f1832c9927b5efdb72f",
+  "candidate_tar_sha256": "03d1b4da47fc203b6a8179d663c580ffaeceef9c12b818b3a717437e23460c11",
+  "registry_union": 352,
+  "lock_counts": {
+    "phase1": 203,
+    "phase2": 334
+  },
+  "published_files_rehashed": 15229,
+  "vendor_source_files_rehashed": 15089,
+  "cargo_checksum_files_rehashed": 352,
+  "license_copies_rehashed": 647,
+  "publisher_metadata_omissions": 140,
+  "packages_with_metadata_omissions": 128,
+  "publisher_source_byte_changes": 0,
+  "unknown_vendor_files": 0,
+  "retained_orig_files": 352,
+  "retained_rej_files": 0,
+  "permission_change_package_count": 1,
+  "publisher_raw_tar_mode_profile": {
+    "0o644": 15127,
+    "0o755": 39,
+    "0o100644": 54,
+    "0o100664": 9
+  },
+  "commands": {
+    "count": 43,
+    "recorded_exit_zero_count": 43,
+    "raw_stdout_and_stderr_hashes_recomputed": 86,
+    "parent_wait_confirmed_in_exact_bound_source": true,
+    "explicit_per_command_wait_receipts": false,
+    "normal_exit_process_group_cleanup": "unknown; no cleanup entry in any of 43 command receipts"
+  },
+  "offline_metadata": [
+    {
+      "phase": "phase1",
+      "registry_packages": 203,
+      "local_packages": 1,
+      "raw_log_sha256": "862e4b7df51526dad8bf3f7e947895d4e3b2607977f0ed98d99cdc5185c1f657",
+      "exit_code": 0,
+      "command_index": 41
+    },
+    {
+      "phase": "phase2",
+      "registry_packages": 334,
+      "local_packages": 1,
+      "raw_log_sha256": "684a2821c0f86c231ebc55ae02b240a05956ce0fb25fe6911b202ac2c5964f9f",
+      "exit_code": 0,
+      "command_index": 42
+    }
+  ],
+  "reference_consumers": [
+    {
+      "phase": "phase1",
+      "id": "example-v1",
+      "files": 11,
+      "files_map_sha256": "802bddd6fa22805cb50fd4210edf0a67dac16de6bc4d465454e163e890ebdac6",
+      "compile_row_index": 1342,
+      "assembly_observation": 1342,
+      "compile_response_sha256": "9685985ff1fd2e9dd0f3c7ec85c5f603d43ef2de5e2e72300f25094d9b6a31ac",
+      "compile_checker_sha256": "a89ad86b847b968287a4e22fe2b350266541c7fbafb09a3133e93a9c58d4f92d",
+      "assemble_request_sha256": "d5206c0c32a7001f1f2ec8964033e7692bda64e159591ad02e3e43489e4ba042",
+      "assemble_response_sha256": "c403d6e8feaad42a079507debf3a8a8b6288c2d32d0d996a7e36bf225bee8346",
+      "helper_checker_source_pins": 142,
+      "admitted_helper_source_deltas": [
+        "som-rs/scripts/hosted_readiness/experimental_native_compile.py"
+      ],
+      "byte_association_checked": true,
+      "product_gates": "unrun"
+    },
+    {
+      "phase": "phase2",
+      "id": "services14-0000",
+      "files": 12,
+      "files_map_sha256": "758d6a9f7aedeb40d39551e5897c748f39081fd20372e7004ce9ee27e3405777",
+      "compile_row_index": 1457,
+      "assembly_observation": 1457,
+      "compile_response_sha256": "0795a28c1e564ac2f515548a169cb68b8c6e431df2b9a84d59d84edd1dfdcbc0",
+      "compile_checker_sha256": "3515e105e8f925c004188515a52fc0e1dd65bcb7ffd8b01f1851ca2822e74a1e",
+      "assemble_request_sha256": "902b32365a4656a76423f30f6e56a56a1e49524aa2c842d33d8c51b14f62203d",
+      "assemble_response_sha256": "c65dee54627e4a405df01ecbd34a28e7fa795f3a4cf04580fff4b102fef4504e",
+      "helper_checker_source_pins": 142,
+      "admitted_helper_source_deltas": [
+        "som-rs/scripts/hosted_readiness/experimental_native_compile.py"
+      ],
+      "byte_association_checked": true,
+      "product_gates": "unrun"
+    }
+  ],
+  "source_blob_count": 12,
+  "cargo_toolchain": {
+    "cargo": {
+      "path": "/home/runner/work/_temp/som-cargo-closure-run/rustup/toolchains/1.96.1-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "a73b2c25573d251489101c0d8f19ad3702eb9761166de5ed8437b472b6c038ce",
+      "version_stdout": "cargo 1.96.1 (356927216 2026-06-26)\nrelease: 1.96.1\ncommit-hash: 356927216a2d746168cf76e5e88cc3f4b58e029d\ncommit-date: 2026-06-26\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.19.0-DEV (sys:0.4.87+curl-8.19.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n"
+    },
+    "rustc": {
+      "path": "/home/runner/work/_temp/som-cargo-closure-run/rustup/toolchains/1.96.1-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "4a84e05991ad6f2a84c1361c29b52b38c390365bd1fc269b1936c88d482a8928",
+      "version_stdout": "rustc 1.96.1 (31fca3adb 2026-06-26)\nbinary: rustc\ncommit-hash: 31fca3adb283cc9dfd56b49cdee9a96eb9c96ffd\ncommit-date: 2026-06-26\nhost: x86_64-unknown-linux-gnu\nrelease: 1.96.1\nLLVM version: 22.1.2\n"
+    }
+  },
+  "toolchain_binary_authority": "observed_hashes_not_independently_admitted",
+  "qualified_cargo_and_rustc_tool_binary_files_present_in_artifact": false,
+  "saved_job_decoded_log": {
+    "sha256": "73a79d6f0bf3a133e589dfbd0be4aed748dc97fa2fa4646fe6d7aa49c7a875b4",
+    "bytes": 30328
+  },
+  "live_job_decoded_log": {
+    "sha256": "73a79d6f0bf3a133e589dfbd0be4aed748dc97fa2fa4646fe6d7aa49c7a875b4",
+    "bytes": 30328,
+    "exact_bytes_match_prior_saved_log": true,
+    "note": "Connector decoded text, not a raw transport digest."
+  },
+  "evidence": {
+    "outer_files": {
+      "path": "/private/tmp/som-m12-cargo-d6-recovery-audit/final/outer-file-audit.json",
+      "sha256": "8184aa5064f4b87cf796bae7f91f87ebb168d2e189c130d7dffeb5d4a34bc77d",
+      "bytes": 7429479
+    },
+    "commands": {
+      "path": "/private/tmp/som-m12-cargo-d6-recovery-audit/final/command-log-audit.json",
+      "sha256": "7d6fcd7b32e31e5fcad62fbfd10987ac69f7beb19002aeab4de00917b2b93c4e",
+      "bytes": 67400
+    },
+    "sources": {
+      "path": "/private/tmp/som-m12-cargo-d6-recovery-audit/final/bound-source-audit.json",
+      "sha256": "08314fbe2653e88320fecd272fbf9455de5cfd51fc1ec19d2d4bb0167cfbce24",
+      "bytes": 5365
+    },
+    "packages": {
+      "path": "/private/tmp/som-m12-cargo-d6-recovery-audit/final/registry-package-audit.json",
+      "sha256": "3f45b99a51dcb2a006a756b41e9785495b5d2a8ad0fe41c20b5dea43827cc361",
+      "bytes": 355445
+    },
+    "candidate_tar": {
+      "path": "/private/tmp/som-m12-cargo-d6-recovery-audit/final/candidate-tar-audit.json",
+      "sha256": "35197436f197ccdccf0c74012ebf4129a7457b089ed55d12a46a66dec8bb6c00",
+      "bytes": 3092650
+    },
+    "consumers": {
+      "path": "/private/tmp/som-m12-cargo-d6-recovery-audit/final/consumer-association-audit.json",
+      "sha256": "9a31ef7edc35b518094da9c8fa51ae3b554633c809a2f62d0b6f2aec3f0b050d",
+      "bytes": 2797
+    }
+  },
+  "preserved_status": {
+    "product_acceptance_passed": false,
+    "product_builds": "unrun",
+    "services": "not_started",
+    "product_runtime_ready": false,
+    "full_input_set_ready": false,
+    "same_candidate_all_product_gates_passed": false
+  },
+  "limits": [
+    "The 43 command exit codes are recorded parent-wait-derived exits. The receipts have no explicit wait event or normal-exit group-gone proof.",
+    "The native tool hashes and versions are observations. This audit does not admit the Rust tool binaries independently.",
+    "The candidate tar config uses the original absolute runner vendor path. A different root needs a reviewed relocation.",
+    "The original f59 ZIP transport binding comes from the separately hashed coordinator report. This audit rehashes its complete saved 37535-file data inventory.",
+    "The full GitHub run has other failed and skipped jobs. This successful registry closure does not establish product or release acceptance."
+  ],
+  "completed_at": "2026-10-29T04:43:44.940553+00:00"
+}

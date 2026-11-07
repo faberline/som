@@ -1,0 +1,165 @@
+{
+  "version": "som.m12-checked-reference-source-review.v1",
+  "verdict": "APPROVED",
+  "reviewed_source_sha256": {
+    "som-rs/scripts/hosted_readiness/prove_checked_reference.py": "7507dd9c5ac3d0e90f12be2506c283fa4760fdf61f38e6c9d372975b6bdd63b8",
+    "som-rs/scripts/hosted_readiness/test_prove_checked_reference.py": "7acaa3bafd78f3bac4aa8ac1fb1ca094c30feb7b087506c9d7dbf6b79bd27d09",
+    ".github/workflows/rust-hosted-readiness.yml": "50f1ce53d811f169f8d5ecf3cab8b416d5cafd1ed35be6be45277cffe1945f26",
+    "som-rs/scripts/hosted_readiness/inputs/quality-checked-recipe-v1.json": "64429c01d823eafdad4439b75a45664316539ff57b25d3cbbf2bba8c475d2f2a"
+  },
+  "scope": "Independent source and accepted-record data inspection only. No project imports, tests, DSL generation, builds or product programs ran locally.",
+  "cohort": {
+    "name": "python_legacy",
+    "id": "m2-alternative-checked",
+    "index": 531,
+    "family": "quality218",
+    "group": "m2-quality218",
+    "partition": "alternative-plans",
+    "assembly_variant": "checked",
+    "behavior_expected": false,
+    "preserve_named_row": true
+  },
+  "module_pins_verified": [
+    {
+      "path": "som-core/src/som_core/__init__.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "654787391f426548a06af79d6ae1d2eb7e989a2f5c81cfecb8498d0d2a335042",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/flow.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "92a7228ed3c96965c8326e70fa9edfec90fe0150e56cbeae7131de1f11f057fe",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/composed.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "a65fd965d1e56b050d900961768176835aba97d994d1793a27f6a66a3e05a58b",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/related.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "3b19fbbfb7026b1e287622c6bf04def69e7080025c2f12c48ce2c1abf6e47dd7",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/v1.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "fc82db5016eb1befc4b076e1f611f99f25e89c71a9f6e10cddedae29693d32ce",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/business.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "c07af14470c165fb5496d019179ee5c1951a3d2ddfef98354a267062e4747e97",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/flow_compact.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "6e57b94b5fa5665b819a0e66f25af98e073712736b8c06d229b8b7ccfcd101c1",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/flow_codec.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "4f85a70fe04ad1fb35bf9846088f599fca4052aff554295222e5d2b9cff632d2",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/quality.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "04fcfaf21b564f613c0d3395796bb28ae93601c5d2be1dde988c6f243aa483c4",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/compact_names.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "5131a4d92b95f78e9a89c00d0508b7189be11b02c4e9afbb46ed888a2a601928",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    }
+  ],
+  "data_pins_verified": [
+    {
+      "path": "som-core/data/flow-v7-r10/dev.jsonl",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "935bf5f5c66a2f4a43633d34e6743743bef25830bd9774e180090076dea614f5",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-code-python/data/blocks/flow-v7-compact/blocks.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-code-python/data/block-contracts/flow-v7.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "d0ffbe92abbf8666e5e562022617e6eb81f4ef1c9fcc73b92fca8c718bba3f47",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-code-python/data/block-contracts/flow-v7-compact.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-rs/contracts/related-flow.v1.md",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-rs/contracts/related-business.v1.md",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380",
+      "role": "reference-only file read; verify raw bytes before and after"
+    }
+  ],
+  "public_anchor_pins_verified": [
+    {
+      "path": "som-rs/evidence/rust-compiler-acceptance-2026-10-14.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "286a9a989d47e6a68a88b7a74fe62695b120e6f6eccd43bef233528163dfeab6",
+      "accepted_result_pointer": "/gate_receipts/legacy544/sha256",
+      "accepted_result_raw_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56"
+    },
+    {
+      "path": "som-rs/evidence/rust-output-acceptance-2026-10-16.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "6aedd83e3fc902e4e7cab33c9e951ea9692d8a9f70e751de5e84896dbfba25d1",
+      "accepted_result_pointer": "/results/python_replay/inputs/legacy_result_sha256",
+      "accepted_result_raw_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56"
+    }
+  ],
+  "accepted_chain_verified": {
+    "legacy_result_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56",
+    "inventory_raw_sha256": "c1d4e9bc5bbbee7ad5f5cb238bcf194e258da252bba1f7877169783e6cf46d96",
+    "inventory_canonical_sha256": "c55b41a25194572921607bab26040e80a7abb4bd6be278a400c3ec8b77e0a324",
+    "variant_bundle_raw_sha256": "ebcc3399bfb2fb025d23f574a3b1a0076c2acf5f100c8c8de0697248b6f52f68",
+    "variant_bundle_canonical_sha256": "f481a93be36e8988747b02e2da8c1c84d8ec0d6c3f4b725d7fe833dff80a0d55",
+    "canonical_prompt_sha256": "964c0f77e772a69ce62a9b6d823b4f42e3da5d5d3ae8d14ebbdc4dd846b0b030",
+    "canonical_dsl_sha256": "a8c192e00af95355ab9cdc8dafd444f386caf6116a1c298a44326fa242b7e34a",
+    "files_map_sha256": "d22e4e27353b40887b64a47a3bc7d07cd73269dcebab01ca4c85d4f9900eabe3"
+  },
+  "recursive_blocks_json_members": [
+    "blocks.json"
+  ],
+  "findings": [],
+  "source_checks": [
+    "The pinned source loader executes checked bytes directly and rejects unbound core module names before execution. The proof filters the loader to exactly ten core modules.",
+    "The six data files close the selected reference and semantic-validation read path. No compiler, formatter, service, training entry point or product assembler is called.",
+    "The complete generated DSL hash must equal the accepted DSL hash both before and after semantic validation. Source, data and recursive block membership checks run before and after.",
+    "The standalone proof preserves the original named golden row and history. It keeps full input readiness and product acceptance false. The existing v2 reconstruction manifest is not rewritten.",
+    "The GitHub step records its tested commit and saves only the bounded DSL proof and logs. The frozen prerequisite failure remains separate and blocking."
+  ],
+  "limits": {
+    "new_github_fixtures": "unrun",
+    "actual_checked_reference_generation": "unrun",
+    "full_product_acceptance": "unrun",
+    "publication_or_policy_authority": "not granted"
+  }
+}

@@ -1,0 +1,1243 @@
+name: Rust hosted readiness
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/rust-hosted-readiness.yml
+      - .github/workflows/rust-dependency-preparation.yml
+      - som-rs/scripts/hosted_readiness/**
+      - '!som-rs/scripts/hosted_readiness/evidence/**'
+      - som-rs/Cargo.toml
+      - som-rs/Cargo.lock
+      - som-rs/src/**
+      - som-rs/som-targets/Cargo.toml
+      - som-rs/som-targets/Cargo.lock
+      - som-rs/som-targets/src/**
+      - som-code-python/data/blocks/**
+      - som-code-python/data/block-contracts/**
+      - som-core/data/**
+      - som-core/block_templates/**
+      - som-rs/examples/**
+      - som-rs/scripts/rust_output_acceptance/**
+      - som-rs/scripts/compiler_acceptance/**
+      - som-rs/contracts/**
+      - som-rs/tests/**
+      - som-rs/behavior/**
+      - som-rs/som-targets/qa/**
+      - som-rs/evidence/rust-output-contract-*.json
+      - som-rs/evidence/typescript-output-contract-*.json
+      - som-core/scripts/**
+      - LICENSE
+  workflow_dispatch:
+    inputs:
+      dependency_preparation_only:
+        description: Reuse the reviewed candidate for dependency helper iteration only
+        type: boolean
+        default: false
+      rebuild_product_runtime:
+        description: Rebuild the pinned native product runtime
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: rust-hosted-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  HELPER_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  candidate-source-guard:
+    name: Select a full candidate or pinned dependency iteration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      run_full_candidate: ${{ steps.select.outputs.run_full_candidate }}
+      candidate_revision: ${{ steps.select.outputs.candidate_revision }}
+      helper_revision: ${{ steps.select.outputs.helper_revision }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch the exact recorded source as Git metadata only
+        run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+      - name: Classify complete candidate inputs without building
+        id: select
+        env:
+          HELPER_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT: ${{ github.event_name }}
+          DEPENDENCY_ONLY: ${{ inputs.dependency_preparation_only || false }}
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          mode=""
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            if [ "$DEPENDENCY_ONLY" = "true" ]; then
+              mode="--dependency-only"
+            else
+              mode="--force-full"
+            fi
+          fi
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/dependency_candidate.py -- classify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_SHA" $mode
+
+  dependency-preparation:
+    name: Dependency helper iteration with recorded compiler identity
+    needs: [candidate-source-guard, fixture-tests]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'false'
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/rust-dependency-preparation.yml
+    with:
+      helper_revision: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+
+  cargo-tests:
+    needs: candidate-source-guard
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    name: Cargo tests (${{ matrix.package }}, Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: compiler
+            manifest: som-rs/Cargo.toml
+          - package: targets
+            manifest: som-rs/som-targets/Cargo.toml
+    env:
+      RUSTUP_TOOLCHAIN: 1.96.1
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: 2
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+          printf 'CARGO_TARGET_DIR=%s/som-cargo-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Install native Rust tools
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt --component clippy 2>&1 | tee tool-install.log
+          rustc -vV | tee tool-identity.log
+          cargo -vV | tee -a tool-identity.log
+          rustfmt --version | tee -a tool-identity.log
+          sha256sum "$(rustup which rustc)" "$(rustup which cargo)" "$(rustup which rustfmt)" | tee -a tool-identity.log
+      - name: Fetch locked public crates
+        env:
+          MANIFEST: ${{ matrix.manifest }}
+        run: |
+          cargo fetch --locked --manifest-path som-rs/Cargo.toml 2>&1 | tee cargo-fetch.log
+          if [ "$MANIFEST" != som-rs/Cargo.toml ]; then
+            cargo fetch --locked --manifest-path "$MANIFEST" 2>&1 | tee -a cargo-fetch.log
+          fi
+      - name: Provision verified native tools
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/provision_native.py -- \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)" 2>&1 | tee native-provision.log
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Package compiler assets from tracked source
+        run: |
+          cargo run --locked --offline --manifest-path som-rs/Cargo.toml \
+            --bin som-compiler-assets -- \
+            --destination som-rs/compiler-assets/current \
+            --formatter "$SOM_RUFF" 2>&1 | tee compiler-assets.log
+      - name: Run the complete default-feature Cargo suite
+        env:
+          MANIFEST: ${{ matrix.manifest }}
+        run: |
+          cargo test --locked --offline --no-fail-fast --manifest-path "$MANIFEST" -- --test-threads=1 2>&1 | tee cargo-tests.log
+      - name: Check tracked dependency locks
+        if: always()
+        run: git diff --exit-code -- som-rs/Cargo.lock som-rs/som-targets/Cargo.lock
+      - name: Keep Cargo test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cargo-${{ matrix.package }}-linux
+          path: |
+            tested-sha.txt
+            tool-install.log
+            tool-identity.log
+            cargo-fetch.log
+            cargo-tests.log
+            native-provision.log
+            compiler-assets.log
+            ${{ runner.temp }}/som-native-tools/receipt.json
+          if-no-files-found: error
+          retention-days: 30
+
+  fixture-tests:
+    name: Readiness fixture tests
+    env:
+      HELPER_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Run every source fixture file in a fresh checked Python process
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_source_fixtures.py -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/som-main-source-fixtures" 2>&1 | tee unit-tests.log
+      - name: Run all 8 existing React native source controls
+        if: always()
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/tests/react-output-v1/test_native_api_host_controls.py" -v 2>&1 | tee react-native-source-fixtures.log
+      - name: Keep all 34 current input source fixtures required
+        if: always()
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/test_current_input_context.py -- -v 2>&1 | tee current-context-fixtures.log
+      - name: Save fixture test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: readiness-fixture-tests
+          path: |
+            tested-sha.txt
+            unit-tests.log
+            current-context-fixtures.log
+            react-native-source-fixtures.log
+            ${{ runner.temp }}/som-main-source-fixtures
+          if-no-files-found: error
+          retention-days: 14
+
+  public-input-reconstruction:
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    name: Public input reconstruction (partial scope)
+    needs: [fixture-tests, candidate-source-guard]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      artifact_id: ${{ steps.publish-public.outputs.artifact-id }}
+      artifact_digest: ${{ steps.publish-public.outputs.artifact-digest }}
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version 2>&1 | tee input-runner.log
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Prove public input reconstruction without running products
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py -- \
+            --repo . \
+            --goldens som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json \
+            --out "$RUNNER_TEMP/som-public-inputs" 2>&1 | tee -a input-runner.log
+      - name: Prove the remaining public checked DSL without running products
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/prove_checked_reference.py -- \
+            --repo . \
+            --tested-sha "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-quality-checked-proof" 2>&1 | tee -a input-runner.log
+      - name: Map all frozen Rust requests without running the compiler
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/map_rust_inputs.py -- \
+            --repo . \
+            --inputs "$RUNNER_TEMP/som-public-inputs" \
+            --goldens som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json \
+            --tested-sha "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-rust-inputs" 2>&1 | tee -a input-runner.log
+      - name: Complete paired Rust inputs and prove all accepted baseline request hashes
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/complete_rust_inputs.py -- \
+            --repo . \
+            --inputs "$RUNNER_TEMP/som-public-inputs" \
+            --goldens som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json \
+            --tested-sha "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-rust-complete-inputs" 2>&1 | tee -a input-runner.log
+      - name: Keep public input proof and remaining blockers
+        id: publish-public
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: public-input-reconstruction
+          path: |
+            tested-sha.txt
+            input-runner.log
+            ${{ runner.temp }}/som-public-inputs
+            ${{ runner.temp }}/som-quality-checked-proof
+            ${{ runner.temp }}/som-rust-inputs
+            ${{ runner.temp }}/som-rust-complete-inputs
+          if-no-files-found: error
+          retention-days: 14
+
+  experimental-native-compile:
+    name: Full Python and Rust compile and assembly (unsealed experiment)
+    outputs:
+      assembly_id: ${{ steps.publish-assembly.outputs.artifact-id }}
+      assembly_digest: ${{ steps.publish-assembly.outputs.artifact-digest }}
+      carrier_id: ${{ steps.publish-carrier.outputs.artifact-id }}
+      carrier_digest: ${{ steps.publish-carrier.outputs.artifact-digest }}
+    needs: [cargo-tests, public-input-reconstruction, candidate-source-guard]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      RUSTUP_TOOLCHAIN: 1.96.1
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: 2
+      RUST_BACKTRACE: 1
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+          printf 'CARGO_TARGET_DIR=%s/som-experimental-cargo-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Bind the actual formal workflow source before native QA helpers
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --entry-role entry.native-graph -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/formal-build-source-admission.json"
+      - name: Download this run's complete input proof
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: public-input-reconstruction
+          path: ${{ runner.temp }}/som-input-artifact
+      - name: Check the input artifact revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(cat "$RUNNER_TEMP/som-input-artifact/som/som/tested-sha.txt")" = "$TESTED_SHA"
+          test -f "$RUNNER_TEMP/som-input-artifact/_temp/som-public-inputs/manifest.json"
+          test -f "$RUNNER_TEMP/som-input-artifact/_temp/som-rust-complete-inputs/manifest.json"
+      - name: Install the native Rust toolchain
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt 2>&1 | tee experimental-tools.log
+          rustc -vV | tee -a experimental-tools.log
+          cargo -vV | tee -a experimental-tools.log
+          rustfmt --version | tee -a experimental-tools.log
+          sha256sum "$(rustup which rustc)" "$(rustup which cargo)" "$(rustup which rustfmt)" | tee -a experimental-tools.log
+      - name: Fetch the unchanged compiler and target locks
+        run: |
+          cargo fetch --locked --manifest-path som-rs/Cargo.toml 2>&1 | tee experimental-fetch.log
+          cargo fetch --locked --manifest-path som-rs/som-targets/Cargo.toml 2>&1 | tee -a experimental-fetch.log
+      - name: Provision verified native tools
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/provision_native.py -- \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)" 2>&1 | tee experimental-native-provision.log
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Bind exact source and native tool roles before the one actual candidate build
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/current_candidate_layout.py -- begin --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --cargo "$(rustup which cargo)" --rustc "$(rustup which rustc)" --ruff "$SOM_RUFF" --rustfmt "$SOM_RUSTFMT" --node "$SOM_TS_NODE" --prettier "$SOM_TS_PRETTIER" --target-dir "$CARGO_TARGET_DIR" --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current"
+      - name: Package compiler assets from the tested source
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/current_candidate_layout.py -- command --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --stage assets -- "$(rustup which cargo)" run --locked --offline --manifest-path som-rs/Cargo.toml --bin som-compiler-assets -- --destination som-rs/compiler-assets/current --formatter "$SOM_RUFF" 2>&1 | tee experimental-assets.log
+      - name: Build the target-aware candidate
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/current_candidate_layout.py -- command --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --stage candidate -- "$(rustup which cargo)" build --locked --offline --manifest-path som-rs/som-targets/Cargo.toml --bin som 2>&1 | tee experimental-build.log
+          sha256sum "$CARGO_TARGET_DIR/debug/som" | tee -a experimental-build.log
+      - name: Compare all compile replies and complete product files with the unsealed checker
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py -- \
+            --repo . \
+            --python-inputs "$RUNNER_TEMP/som-input-artifact/_temp/som-public-inputs" \
+            --rust-inputs "$RUNNER_TEMP/som-input-artifact/_temp/som-rust-complete-inputs" \
+            --checked-proof "$RUNNER_TEMP/som-input-artifact/_temp/som-quality-checked-proof" \
+            --binary "$CARGO_TARGET_DIR/debug/som" \
+            --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current" \
+            --ruff "$SOM_RUFF" --rustfmt "$SOM_RUSTFMT" \
+            --node "$SOM_TS_NODE" --prettier "$SOM_TS_PRETTIER" \
+            --tested-sha "$TESTED_SHA" --port 18976 \
+            --out "$RUNNER_TEMP/som-unsealed-native-compile" 2>&1 | tee experimental-driver.log
+      - name: Finish the original build provenance against the actual2041 and2045 proof
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/current_candidate_layout.py -- finish --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --assembly-root "$RUNNER_TEMP/som-unsealed-native-compile"
+      - name: Stage the exact current same-job tested binary and Rustfmt
+        env:
+          HELPER_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/stage_candidate_carrier.py -- --binary "$CARGO_TARGET_DIR/debug/som" --rustfmt "$SOM_RUSTFMT" --compile-manifest "$RUNNER_TEMP/som-unsealed-native-compile/manifest.json" --candidate-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/som-current-carrier-inputs"
+      - name: Pack the current tested bytes without a rebuild role
+        env:
+          HELPER_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py -- --candidate-revision "$HELPER_REVISION" --compile-manifest "$RUNNER_TEMP/som-unsealed-native-compile/manifest.json" --binary "$RUNNER_TEMP/som-current-carrier-inputs/binary" --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current" --native "$RUNNER_TEMP/som-native-tools" --rustfmt "$RUNNER_TEMP/som-current-carrier-inputs/rustfmt" --out "$RUNNER_TEMP/som-current-carrier"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish-carrier
+        if: always()
+        with:
+          name: same-job-current-candidate-carrier
+          path: ${{ runner.temp }}/som-current-carrier
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Verify unchanged dependency locks
+        if: always()
+        run: git diff --exit-code -- som-rs/Cargo.lock som-rs/som-targets/Cargo.lock
+      - name: Keep every exchange and the owned cleanup receipt
+        id: publish-assembly
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: experimental-unsealed-native-compile
+          include-hidden-files: true
+          path: |
+            tested-sha.txt
+            experimental-tools.log
+            experimental-fetch.log
+            experimental-native-provision.log
+            experimental-assets.log
+            experimental-build.log
+            experimental-driver.log
+            ${{ runner.temp }}/som-native-tools/receipt.json
+            ${{ runner.temp }}/som-unsealed-native-compile
+            ${{ runner.temp }}/som-current-build-provenance
+          if-no-files-found: error
+          retention-days: 14
+
+  frozen-readiness:
+    name: Frozen product prerequisites (blocked until provisioned)
+    needs: fixture-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Inspect frozen inputs without running products
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/preflight.py -- \
+            --repo . \
+            --manifest som-rs/scripts/hosted_readiness/readiness.json \
+            --out .local/hosted-readiness/report.json
+      - name: Save readiness report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: frozen-product-readiness
+          path: |
+            .local/hosted-readiness/report.json
+            tested-sha.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  product-runtime-source-qualification:
+    name: Product runtime first-build qualification (not acceptance)
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.rebuild_product_runtime }}
+    needs: fixture-tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check synthetic integrity and path fixtures on GitHub
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          test_run="$RUNNER_TEMP/som-product-runtime-tests"
+          mkdir -m 700 "$test_run"
+          cd "$test_run"
+          TMPDIR="$test_run" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_qualify_runtime.py"
+      - name: Build and inspect the pinned native runtime
+        working-directory: ${{ runner.temp }}
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py -- \
+            --repo "$GITHUB_WORKSPACE" \
+            --manifest som-rs/scripts/hosted_readiness/product_runtime/source-pins.json \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --source-revision "$TESTED_SHA"
+      - name: Preserve qualification candidate and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-runtime-first-build-qualification
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-product-runtime-qualification/source-pins.json
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+            ${{ runner.temp }}/som-product-runtime-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/licenses
+            ${{ runner.temp }}/som-product-runtime-qualification/install
+            ${{ runner.temp }}/som-product-runtime-qualification/installed-files.json
+            ${{ runner.temp }}/som-product-runtime-qualification/build-intermediates.json
+
+  product-python-environment-plan:
+    name: Python environment inputs (not wheel or product acceptance)
+    needs: [fixture-tests, experimental-native-compile]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check synthetic environment inputs on GitHub
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py --
+      - name: Download this run's complete assembly evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: experimental-unsealed-native-compile
+          path: ${{ runner.temp }}/som-python-input-artifact
+      - name: Bind every product environment to frozen assembled bytes
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_python/qualify_python.py -- \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-product-python-environment-plan" \
+            --assembly "$RUNNER_TEMP/som-python-input-artifact/_temp/som-unsealed-native-compile"
+      - name: Preserve source plan and explicit remaining gates
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-python-environment-inputs
+          path: ${{ runner.temp }}/som-product-python-environment-plan
+          if-no-files-found: error
+          retention-days: 30
+
+  product-cargo-closure:
+    outputs:
+      artifact_id: ${{ steps.publish-cargo.outputs.artifact-id }}
+      artifact_digest: ${{ steps.publish-cargo.outputs.artifact-digest }}
+    name: Complete Rust registry closure (product gates unrun)
+    needs: experimental-native-compile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Create an owned run and check synthetic integrity fixtures
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          closure_run="$RUNNER_TEMP/som-cargo-closure-run"
+          mkdir -m 700 "$closure_run"
+          printf 'created\n' > "$closure_run/stage.txt"
+          mkdir -m 700 "$closure_run/tests"
+          cd "$closure_run/tests"
+          TMPDIR="$closure_run/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py"
+      - name: Download this run's compile and assembly evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: experimental-unsealed-native-compile
+          path: ${{ runner.temp }}/som-cargo-closure-run/input
+      - name: Check the required real product consumer route
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -B - "$PWD" "$TESTED_SHA" <<'PY'
+          import json, pathlib, sys
+          run = pathlib.Path(sys.argv[1])
+          root = run / "input/_temp/som-unsealed-native-compile"
+          manifest = json.loads((root / "assembly/manifest.json").read_text())
+          if manifest["tested_sha"] != sys.argv[2]:
+              raise SystemExit("assembly artifact is not this candidate")
+          products = manifest["products"]["rust"]
+          references = {}
+          for phase, identity in (("phase1", "example-v1"), ("phase2", "services14-0000")):
+              rows = [row for row in products if (row["phase"], row["id"]) == (phase, identity)]
+              if len(rows) != 1:
+                  raise SystemExit("named real Cargo reference is missing")
+              path = root / rows[0]["product_dir"]
+              if not all((path / leaf).is_file() for leaf in ("src/main.rs", "Cargo.toml", "Cargo.lock")):
+                  raise SystemExit("real generated Cargo reference target is missing")
+              references[phase] = str(path)
+          (run / "consumer-roots.json").write_text(json.dumps({"assembly_root": str(root), **references}))
+          PY
+      - name: Install exact Rust tools inside the owned run
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        run: |
+          RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" \
+            rustup toolchain install 1.96.1 --profile minimal > rustup-install.log 2>&1
+      - name: Wait for the original exact live workflow binding
+        id: live-run-binding
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          timeout --kill-after=5s 315s bash --noprofile --norc -euo pipefail <<'LIVE_RUN_BINDING'
+          for binding_probe_attempt in $(seq 1 60); do
+            timeout 15s gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"               --jq '{id, head_sha, run_attempt, event, repository: .repository.full_name, repository_id: .repository.id, path, head_branch, status}'               > "$RUNNER_TEMP/source-admission-live-run.json"
+            binding_probe_result=0
+            python3 -I -S -B -c '
+          import json, os, pathlib, sys
+          record = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "source-admission-live-run.json").read_bytes())
+          expected = {"id": int(os.environ["GITHUB_RUN_ID"]), "head_sha": os.environ["GITHUB_SHA"],
+                      "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]), "event": os.environ["GITHUB_EVENT_NAME"],
+                      "repository": os.environ["GITHUB_REPOSITORY"], "repository_id": int(os.environ["GITHUB_REPOSITORY_ID"]),
+                      "path": ".github/workflows/rust-hosted-readiness.yml", "head_branch": os.environ["GITHUB_REF"].split("/", 2)[2]}
+          exact = all(record.get(key) == value and type(record.get(key)) is type(value) for key, value in expected.items())
+          sys.exit(0 if exact and record.get("status") == "in_progress" else 2 if exact and record.get("status") == "queued" else 1)
+          ' || binding_probe_result=$?
+            case "$binding_probe_result" in
+              0) exit 0 ;;
+              2) sleep 5 ;;
+              *) echo 'The current workflow binding differs' >&2; exit 1 ;;
+            esac
+          done
+          echo 'The original exact live workflow binding did not become visible' >&2
+          exit 1
+          LIVE_RUN_BINDING
+      - name: Make and verify all 352 registry packages
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          cargo_tool="$(RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" rustup which --toolchain 1.96.1 cargo)"
+          rustc_tool="$(RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" rustup which --toolchain 1.96.1 rustc)"
+          python3 -B - "$GITHUB_WORKSPACE" "$PWD" "$TESTED_SHA" "$cargo_tool" "$rustc_tool" <<'PY'
+          import json, pathlib, subprocess, sys
+          repo, run = map(pathlib.Path, sys.argv[1:3])
+          refs = json.loads((run / "consumer-roots.json").read_text())
+          subprocess.run([sys.executable, "-I", "-S", "-B", str(repo / "som-rs/scripts/hosted_readiness/native_source_bootstrap.py"),
+                          "--repo", str(repo), "--helper-revision", sys.argv[3], "--candidate-revision", sys.argv[3],
+                          "--entry-role", "entry.cargo-provision", "--",
+                          "--repo", str(repo), "--source-revision", sys.argv[3], "--out", str(run / "closure"),
+                          "--cargo", sys.argv[4], "--rustc", sys.argv[5], "--assembly-root", refs["assembly_root"],
+                          "--phase1-product-root", refs["phase1"], "--phase2-product-root", refs["phase2"]],
+                         cwd=run, check=True)
+          PY
+      - name: Preserve registry closure candidate and failure evidence
+        id: publish-cargo
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-cargo-closure-candidate
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/som-cargo-closure-run/stage.txt
+            ${{ runner.temp }}/som-cargo-closure-run/consumer-roots.json
+            ${{ runner.temp }}/som-cargo-closure-run/rustup-install.log
+            ${{ runner.temp }}/som-cargo-closure-run/closure
+      - name: Preserve the public source-admission run observation
+        if: always() && steps.live-run-binding.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-admission-run-binding-${{ github.job }}
+          path: ${{ runner.temp }}/source-admission-live-run.json
+          if-no-files-found: error
+          retention-days: 14
+
+  product-runtime-reuse:
+    outputs:
+      wheel_id: ${{ steps.publish-wheel.outputs.artifact-id }}
+      wheel_digest: ${{ steps.publish-wheel.outputs.artifact-digest }}
+      runtime_id: ${{ steps.publish-runtime.outputs.artifact-id }}
+      runtime_digest: ${{ steps.publish-runtime.outputs.artifact-digest }}
+      runtime_manifest_sha256: ${{ steps.export-runtime.outputs.runtime_capsule_manifest_sha256 }}
+    name: Audited runtime bytes for later GitHub tests (not product readiness)
+    needs: [fixture-tests, experimental-native-compile]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      actions: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Create the transport control directory and check synthetic fixtures
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          control="$RUNNER_TEMP/som-runtime-reuse-control"
+          mkdir -m 700 "$control"
+          mkdir -m 700 "$control/tests"
+          printf 'created\n' > "$control/stage.txt"
+          cd "$control/tests"
+          TMPDIR="$control/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_reuse_runtime.py"
+          TMPDIR="$control/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_qualify_runtime.py"
+      - name: Download the exact controller-audited artifact from its original run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40740849594"
+          artifact-ids: "12840425819"
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/som-runtime-reuse-control/transport
+      - name: Restore and recheck all qualified runtime bytes
+        working-directory: ${{ runner.temp }}/som-runtime-reuse-control
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py -- \
+            --repo "$GITHUB_WORKSPACE" \
+            --source-revision "$TESTED_SHA" \
+            --artifact-root "$RUNNER_TEMP/som-runtime-reuse-control/transport" \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification"
+          cat "$RUNNER_TEMP/som-product-runtime-qualification/github.env" >> "$GITHUB_ENV"
+      - name: Export this candidate fresh qualified runtime capsule
+        id: export-runtime
+        env:
+          HELPER_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py -- export --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --out "$RUNNER_TEMP/som-runtime-capsule"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish-runtime
+        if: always()
+        with:
+          name: same-run-qualified-runtime-capsule
+          path: ${{ runner.temp }}/som-runtime-capsule
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve reuse receipts and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-runtime-reuse-evidence
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-runtime-reuse-control/stage.txt
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+            ${{ runner.temp }}/som-product-runtime-qualification/artifact-origin.json
+            ${{ runner.temp }}/som-product-runtime-qualification/qualification-evidence
+            ${{ runner.temp }}/som-product-runtime-qualification/licenses
+            ${{ runner.temp }}/som-product-runtime-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/github.env
+      - name: Download this run's complete owned assembly proof
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: experimental-unsealed-native-compile
+          path: ${{ runner.temp }}/som-wheel-assembly-artifact
+      - name: Bind the assembly artifact to this candidate
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(cat "$RUNNER_TEMP/som-wheel-assembly-artifact/som/som/tested-sha.txt")" = "$TESTED_SHA"
+          test -f "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile/assembly/manifest.json"
+      - name: Run synthetic wheel and process integrity fixtures on GitHub
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-wheel-producer-tests"
+          TMPDIR="$RUNNER_TEMP/som-wheel-producer-tests" \
+            "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py --
+      - name: Read every frozen product environment input
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_python/qualify_python.py -- \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --assembly "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile" \
+            --out "$RUNNER_TEMP/som-wheel-environment-inputs"
+      - name: Resolve and stream all named offline environment checks
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_python/produce_wheels.py -- \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --environments "$RUNNER_TEMP/som-wheel-environment-inputs" \
+            --assembly "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile" \
+            --runtime "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --out "$RUNNER_TEMP/som-python-wheel-qualification"
+      - name: Preserve wheel closure, failed environments and all receipts
+        id: publish-wheel
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-wheel-closure-qualification
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-wheel-environment-inputs
+            ${{ runner.temp }}/som-python-wheel-qualification/receipt.json
+            ${{ runner.temp }}/som-python-wheel-qualification/probe-installed-metadata.py
+            ${{ runner.temp }}/som-python-wheel-qualification/logs
+            ${{ runner.temp }}/som-python-wheel-qualification/environments
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/receipt.json
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/project
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/requirements.*
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/publisher-metadata
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheels
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheel-audits
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/cache-preparation
+      - name: Preserve the small wheel failure and completion report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-wheel-qualification-summary
+          if-no-files-found: warn
+          retention-days: 30
+          path: ${{ runner.temp }}/som-python-wheel-qualification/receipt.json
+
+  current-product-rust-tools:
+    needs: [fixture-tests, experimental-native-compile, candidate-source-guard]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-22.04
+    outputs:
+      artifact_id: ${{ steps.publish.outputs.artifact-id }}
+      artifact_digest: ${{ steps.publish.outputs.artifact-digest }}
+    env:
+      HELPER_REVISION: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+          persist-credentials: false
+      - name: Install the explicit Python for source admission
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12.11'
+          architecture: x64
+          check-latest: false
+      - name: Record the actual source admission Python
+        run: |
+          python3 -I -S -B - <<'PYTHON_IDENTITY'
+          import hashlib, json, sys
+          from pathlib import Path
+          if sys.version_info[:3] != (3, 12, 11):
+              raise SystemExit('the selected source admission Python must be 3.12.11')
+          executable = Path(sys.executable).resolve(strict=True)
+          print(json.dumps({'scope': 'source admission only; not product runtime qualification',
+                            'version': sys.version, 'executable': str(executable),
+                            'executable_sha256': hashlib.sha256(executable.read_bytes()).hexdigest()}, sort_keys=True))
+          PYTHON_IDENTITY
+      - name: Recheck the existing fresh-self admission regression
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py -- SourceStrategyParentTests.test_fresh_actual_self_entry_is_registered_before_first_admission_call -v
+      - name: Wait for the original exact live workflow binding
+        id: live-run-binding
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          timeout --kill-after=5s 315s bash --noprofile --norc -euo pipefail <<'LIVE_RUN_BINDING'
+          for binding_probe_attempt in $(seq 1 60); do
+            timeout 15s gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"               --jq '{id, head_sha, run_attempt, event, repository: .repository.full_name, repository_id: .repository.id, path, head_branch, status}'               > "$RUNNER_TEMP/source-admission-live-run.json"
+            binding_probe_result=0
+            python3 -I -S -B -c '
+          import json, os, pathlib, sys
+          record = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "source-admission-live-run.json").read_bytes())
+          expected = {"id": int(os.environ["GITHUB_RUN_ID"]), "head_sha": os.environ["GITHUB_SHA"],
+                      "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]), "event": os.environ["GITHUB_EVENT_NAME"],
+                      "repository": os.environ["GITHUB_REPOSITORY"], "repository_id": int(os.environ["GITHUB_REPOSITORY_ID"]),
+                      "path": ".github/workflows/rust-hosted-readiness.yml", "head_branch": os.environ["GITHUB_REF"].split("/", 2)[2]}
+          exact = all(record.get(key) == value and type(record.get(key)) is type(value) for key, value in expected.items())
+          sys.exit(0 if exact and record.get("status") == "in_progress" else 2 if exact and record.get("status") == "queued" else 1)
+          ' || binding_probe_result=$?
+            case "$binding_probe_result" in
+              0) exit 0 ;;
+              2) sleep 5 ;;
+              *) echo 'The current workflow binding differs' >&2; exit 1 ;;
+            esac
+          done
+          echo 'The original exact live workflow binding did not become visible' >&2
+          exit 1
+          LIVE_RUN_BINDING
+      - name: Verify sealed native authority before product native tool qualification
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --entry-role entry.native-graph -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/rust-native-authority.json"
+      - name: Qualify all six current product Rust tools
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py -- --repo "$GITHUB_WORKSPACE" --source-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/som-rust-product-tools-qualification"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish
+        if: always()
+        with:
+          name: same-candidate-six-rust-tools
+          path: ${{ runner.temp }}/som-rust-product-tools-qualification
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve the public source-admission run observation
+        if: always() && steps.live-run-binding.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-admission-run-binding-${{ github.job }}
+          path: ${{ runner.temp }}/source-admission-live-run.json
+          if-no-files-found: error
+          retention-days: 14
+
+  typescript-regression-inputs:
+    name: typescript-regression-inputs
+    needs: [candidate-source-guard, fixture-tests]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      producer_catalog: ${{ steps.origin.outputs.producer_catalog }}
+    env:
+      HELPER_REVISION: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+      CANDIDATE_REVISION: ${{ needs.candidate-source-guard.outputs.candidate_revision }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.11'
+      - name: Record only the public run fields used by source binding
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/ts-public-run-binding"
+          printf '%s\n' "$HELPER_REVISION" > "$RUNNER_TEMP/ts-public-run-binding/helper-revision.txt"
+          printf '%s\n' "$CANDIDATE_REVISION" > "$RUNNER_TEMP/ts-public-run-binding/candidate-revision.txt"
+          printf '%s\n' "$GITHUB_RUN_ID" > "$RUNNER_TEMP/ts-public-run-binding/run-id.txt"
+          printf '%s\n' "$GITHUB_REF" > "$RUNNER_TEMP/ts-public-run-binding/ref.txt"
+          if ! GH_TOKEN="$SOM_DEPENDENCY_ACTIONS_TOKEN" gh api \
+            "repos/faberline/som/actions/runs/$GITHUB_RUN_ID" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            -H 'User-Agent: som-native-source-bootstrap' \
+            --jq '{api_fetch_succeeded: true, id: .id, head_sha: .head_sha, run_attempt: .run_attempt, event: .event, repository: .repository.full_name, repository_id: .repository.id, path: .path, head_branch: .head_branch, status: .status, product_acceptance_passed: false}' \
+            > "$RUNNER_TEMP/ts-public-run-binding/run.json" \
+            2> "$RUNNER_TEMP/ts-public-run-binding-fetch.stderr"; then
+            printf '%s\n' '{"api_fetch_succeeded":false,"product_acceptance_passed":false}' > "$RUNNER_TEMP/ts-public-run-binding/run.json"
+          fi
+      - name: Keep only the public run binding fields
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ts-public-run-binding
+          path: ${{ runner.temp }}/ts-public-run-binding/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Derive the complete official Linux Node authority
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/ts-producer-evidence"
+          exec 3>&2
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"derive","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/derive.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            if [ "$original_exit" -ne 0 ]; then
+              cat "$RUNNER_TEMP/ts-producer-evidence/derive.stderr" >&3 || true
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" derive-node 3>&-
+          } > "$RUNNER_TEMP/ts-producer-evidence/derive.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/derive.stderr"
+      - name: Fetch only the original approved encrypted 19-package commit
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"fetch-original19","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/fetch-original19.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          git fetch --no-tags --depth=1 origin 02cd9e79cdcedfef92816f67a3ccdf2e089964ab
+          } > "$RUNNER_TEMP/ts-producer-evidence/fetch-original19.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/fetch-original19.stderr"
+      - name: Restore original 19 inputs with their V2 key only
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"original19","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/original19.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" restore-original19
+          } > "$RUNNER_TEMP/ts-producer-evidence/original19.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/original19.stderr"
+      - name: Reconstruct the exact frozen public npm source
+        env:
+          npm_config_offline: 'true'
+          npm_config_audit: 'false'
+          npm_config_fund: 'false'
+          npm_config_update_notifier: 'false'
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"npm-source","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/npm-source.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 https://registry.npmjs.org/npm/-/npm-11.17.0.tgz --output "$RUNNER_TEMP/npm.tgz"
+          test "$(sha256sum "$RUNNER_TEMP/npm.tgz" | cut -d ' ' -f 1)" = b290bbb35b9e72c3ef84edbe041f28c4479c4d9ee79f555817b8caafe7ce4bba
+          mkdir "$RUNNER_TEMP/bootstrap" "$RUNNER_TEMP/npm-prefix"
+          tar -xzf "$RUNNER_TEMP/npm.tgz" --strip-components=1 -C "$RUNNER_TEMP/bootstrap"
+          PATH="$RUNNER_TEMP/ts-node-tools/bin:/usr/bin:/bin" "$RUNNER_TEMP/ts-node-tools/bin/node" "$RUNNER_TEMP/bootstrap/bin/npm-cli.js" install --global --prefix "$RUNNER_TEMP/npm-prefix" "$RUNNER_TEMP/npm.tgz" > "$RUNNER_TEMP/ts-producer-evidence/npm-install.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/npm-install.stderr"
+          cp "$RUNNER_TEMP/bootstrap/package.json" "$RUNNER_TEMP/npm-prefix/lib/node_modules/npm/package.json"
+          printf 'prefix = /opt/homebrew\n' > "$RUNNER_TEMP/npm-prefix/lib/node_modules/npm/npmrc"
+          } > "$RUNNER_TEMP/ts-producer-evidence/npm-source.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/npm-source.stderr"
+      - name: Reconstruct all18 frozen bytecode members as data only
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"pyc","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/pyc.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" rebuild-pyc
+          python3 -I -S -B - <<'PY'
+          import os,pathlib,shutil
+          root=pathlib.Path(os.environ['RUNNER_TEMP']); dest=root/'ts-node-tools/lib/node_modules/npm'
+          dest.parent.mkdir(parents=True,exist_ok=True)
+          shutil.copytree(root/'npm-prefix/lib/node_modules/npm',dest,symlinks=True)
+          PY
+          } > "$RUNNER_TEMP/ts-producer-evidence/pyc.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/pyc.stderr"
+      - name: Materialize every role and create separate new-current profile records
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"materialize","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/materialize.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" materialize
+          } > "$RUNNER_TEMP/ts-producer-evidence/materialize.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/materialize.stderr"
+      - name: Seal only the new same-run role packet with V1
+        id: seal_ts_roles
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"seal","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/seal.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" seal
+          } > "$RUNNER_TEMP/ts-producer-evidence/seal.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/seal.stderr"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: upload_ts_roles
+        if: always() && steps.seal_ts_roles.outcome == 'success'
+        with:
+          name: same-candidate-typescript-regression-inputs
+          path: ${{ runner.temp }}/ts-role-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Download the actual full ZIP and verify actual AEAD before catalog output
+        id: origin
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+          TS_UPLOAD_ARTIFACT_ID: ${{ steps.upload_ts_roles.outputs.artifact-id }}
+          TS_UPLOAD_DIGEST: ${{ steps.upload_ts_roles.outputs.artifact-digest }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"origin","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/origin.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" origin
+          } > "$RUNNER_TEMP/ts-producer-evidence/origin.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/origin.stderr"
+      - name: Retain the complete original TS producer evidence with step-only V1
+        id: retain_ts_producer
+        if: always()
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+          TS_PRODUCER_PRIOR_STATUS: ${{ job.status }}
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-ts-producer-exporter-raw"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" retain > "$RUNNER_TEMP/som-ts-producer-exporter-raw/launch.stdout" 2> "$RUNNER_TEMP/som-ts-producer-exporter-raw/launch.stderr"
+      - name: Record only safe final exporter stream observations after its actual exit
+        if: always()
+        env:
+          TS_RETENTION_STEP_OUTCOME: ${{ steps.retain_ts_producer.outcome }}
+        run: |
+          python3 -I -S -B - <<'PYCONTROL'
+          import hashlib,json,os,pathlib
+          temporary=pathlib.Path(os.environ['RUNNER_TEMP'])
+          output=temporary/'som-ts-producer-retained-upload'
+          assert temporary.is_absolute() and '..' not in temporary.parts
+          assert not any(p.is_symlink() for p in (output,*output.parents))
+          output.mkdir(mode=0o700,exist_ok=True)
+          # This public step ends before the original-input or keyring steps.
+          diagnostics=output/'public-bootstrap-diagnostics'
+          diagnostics.mkdir(mode=0o700,exist_ok=True)
+          for name in ('derive.stderr','derive.step.json'):
+              path=temporary/'ts-producer-evidence'/name
+              if path.exists():
+                  assert path.is_file() and not path.is_symlink() and path.stat().st_nlink==1
+                  with (diagnostics/name).open('xb') as stream:stream.write(path.read_bytes())
+          streams={}
+          for name in ('launch.stdout','launch.stderr'):
+              path=temporary/'som-ts-producer-exporter-raw'/name
+              row={'publication':'UNARCHIVED','observed':False,'sha256':None,'bytes':None}
+              if path.exists():
+                  assert path.is_file() and not path.is_symlink() and path.stat().st_nlink==1
+                  h=hashlib.sha256();count=0
+                  with path.open('rb') as stream:
+                      while body:=stream.read(1024**2):h.update(body);count+=len(body)
+                  row.update(observed=True,sha256=h.hexdigest(),bytes=count)
+              streams[name]=row
+          outcome=os.environ.get('TS_RETENTION_STEP_OUTCOME')
+          assert outcome in {'success','failure','cancelled','skipped'}
+          value={'version':'som.ts-producer-retention-launch-control.v1','actual_step_outcome':outcome,
+              'private_archive_index_present':(output/'sealed/evidence-index.json').is_file(),
+              'raw_exporter_launch_streams':streams,'authenticated_archive_view_admitted':False,'product_acceptance_passed':False}
+          with (output/'launch-control.json').open('x') as stream:json.dump(value,stream,sort_keys=True);stream.write('\n')
+          PYCONTROL
+      - name: Publish only the separate encrypted producer audit and safe exporter controls
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: typescript-input-producer-private-retention
+          path: ${{ runner.temp }}/som-ts-producer-retained-upload
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+
+  same-candidate-full-products:
+    needs: [candidate-source-guard, public-input-reconstruction, experimental-native-compile,
+            product-cargo-closure, product-runtime-reuse, current-product-rust-tools, typescript-regression-inputs]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/rust-same-candidate-products.yml
+    secrets: inherit
+    with:
+      helper_revision: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+      candidate_revision: ${{ needs.candidate-source-guard.outputs.candidate_revision }}
+      runtime_manifest_sha256: ${{ needs.product-runtime-reuse.outputs.runtime_manifest_sha256 }}
+      typescript_input_producer_catalog: ${{ needs.typescript-regression-inputs.outputs.producer_catalog }}
+      artifact_spec: |
+        {
+          "public_inputs":{"id":${{ needs.public-input-reconstruction.outputs.artifact_id }},"name":"public-input-reconstruction","digest":"sha256:${{ needs.public-input-reconstruction.outputs.artifact_digest }}"},
+          "assembly":{"id":${{ needs.experimental-native-compile.outputs.assembly_id }},"name":"experimental-unsealed-native-compile","digest":"sha256:${{ needs.experimental-native-compile.outputs.assembly_digest }}"},
+          "carrier":{"id":${{ needs.experimental-native-compile.outputs.carrier_id }},"name":"same-job-current-candidate-carrier","digest":"sha256:${{ needs.experimental-native-compile.outputs.carrier_digest }}"},
+          "wheel":{"id":${{ needs.product-runtime-reuse.outputs.wheel_id }},"name":"python-wheel-closure-qualification","digest":"sha256:${{ needs.product-runtime-reuse.outputs.wheel_digest }}"},
+          "cargo":{"id":${{ needs.product-cargo-closure.outputs.artifact_id }},"name":"product-cargo-closure-candidate","digest":"sha256:${{ needs.product-cargo-closure.outputs.artifact_digest }}"},
+          "runtime":{"id":${{ needs.product-runtime-reuse.outputs.runtime_id }},"name":"same-run-qualified-runtime-capsule","digest":"sha256:${{ needs.product-runtime-reuse.outputs.runtime_digest }}"},
+          "rust_tools":{"id":${{ needs.current-product-rust-tools.outputs.artifact_id }},"name":"same-candidate-six-rust-tools","digest":"sha256:${{ needs.current-product-rust-tools.outputs.artifact_digest }}"}
+        }

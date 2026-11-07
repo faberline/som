@@ -1,0 +1,28 @@
+{
+  "version": "som.native-tool-compatibility.v1",
+  "amendment": 3,
+  "issue": 146,
+  "scope": "Native tool artifacts only; no semantic or product-file change",
+  "supported_hosts": [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-apple-darwin"
+  ],
+  "authority": "Human architecture/platform correction on 2026-10-28; deterministic CNL -> DSL -> Code needs no Apple Silicon or training",
+  "native_contract": {
+    "path": "som-rs/contracts/native-tools-v1/CONTRACT.md",
+    "sha256": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e"
+  },
+  "artifacts": {
+    "path": "som-rs/contracts/native-tools-v1/artifacts.json",
+    "sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+  },
+  "supersedes": "Historical toolchain host/install-path/executable-digest selection only. Logical tool versions, profiles, semantics, cases, product bytes and behavior gates are preserved.",
+  "descriptor_rule": "Actual per-host binary/formatter digests; changed backend and target contract maps. Old bundles fail normal asset matching.",
+  "required_evidence": [
+    "complete default Cargo suites for both packages",
+    "native tool integrity/version/changed-file refusals",
+    "unchanged generated file bytes and complete applicable product behavior gates",
+    "independent source/contract review and independent raw product audit"
+  ],
+  "product_acceptance": "not_run; unit tests and provisioning are not product acceptance"
+}

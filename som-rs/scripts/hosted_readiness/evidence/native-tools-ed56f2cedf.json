@@ -1,0 +1,252 @@
+{
+  "version": "som.native-tools-qualification.v1",
+  "issue": 146,
+  "milestone": 18,
+  "tested_commit": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+  "run": "https://github.com/faberline/som/actions/runs/40707956295",
+  "native_host": "x86_64-unknown-linux-gnu",
+  "status": "default-cargo-and-native-tool-qualification-passed",
+  "fixtures": {
+    "passed": 43,
+    "failed": 0,
+    "scope": "readiness and mocked provisioning controls"
+  },
+  "jobs": {
+    "compiler": {
+      "cargo_manifest": "som-rs/Cargo.toml",
+      "command": "cargo test --locked --offline --no-fail-fast --manifest-path MANIFEST -- --test-threads=1",
+      "raw_log_sha256": "dab899856f1811ac70ef31a3c47ef5e868dd115536516bb926a7ae25ad9eaeaf",
+      "test_result_rows": [
+        {
+          "passed": 24,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "totals": {
+        "passed": 48,
+        "failed": 0,
+        "ignored": 0,
+        "filtered_out": 0
+      },
+      "provisioning_receipt_sha256": "c0d6e9daa21b8edd997d0ba3885963fd06978f251176205403e1e0b252706a0e",
+      "provisioning_status": "ready",
+      "manifest_sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193",
+      "native_tools": {
+        "ruff": {
+          "executable_sha256": "03b22709bb8f62028a0732423eaac6f7792235bbcb05b3feaddaac3d992318d8",
+          "version_matches": true,
+          "version_stdout": "ruff 0.16.6"
+        },
+        "rustfmt": {
+          "executable_sha256": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+          "version_matches": true,
+          "version_stdout": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)"
+        },
+        "node": {
+          "executable_sha256": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538",
+          "version_matches": true,
+          "version_stdout": "v26.5.0"
+        },
+        "prettier": {
+          "executable_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+          "version_matches": true,
+          "version_stdout": "3.9.10"
+        }
+      }
+    },
+    "targets": {
+      "cargo_manifest": "som-rs/som-targets/Cargo.toml",
+      "command": "cargo test --locked --offline --no-fail-fast --manifest-path MANIFEST -- --test-threads=1",
+      "raw_log_sha256": "a3ae89618d6737a84ca683ffa32da0371c7f61cbef00f49f2b7012c92bd2415d",
+      "test_result_rows": [
+        {
+          "passed": 56,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ],
+      "totals": {
+        "passed": 61,
+        "failed": 0,
+        "ignored": 0,
+        "filtered_out": 0
+      },
+      "provisioning_receipt_sha256": "c0d6e9daa21b8edd997d0ba3885963fd06978f251176205403e1e0b252706a0e",
+      "provisioning_status": "ready",
+      "manifest_sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193",
+      "native_tools": {
+        "ruff": {
+          "executable_sha256": "03b22709bb8f62028a0732423eaac6f7792235bbcb05b3feaddaac3d992318d8",
+          "version_matches": true,
+          "version_stdout": "ruff 0.16.6"
+        },
+        "rustfmt": {
+          "executable_sha256": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+          "version_matches": true,
+          "version_stdout": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)"
+        },
+        "node": {
+          "executable_sha256": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538",
+          "version_matches": true,
+          "version_stdout": "v26.5.0"
+        },
+        "prettier": {
+          "executable_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+          "version_matches": true,
+          "version_stdout": "3.9.10"
+        }
+      }
+    }
+  },
+  "independent_observation": {
+    "source": "parallel project coordinator read the exact-head Actions jobs and raw Cargo logs independently",
+    "scope": "default Cargo execution only; not full product or milestone acceptance"
+  },
+  "preserved_failed_attempts": [
+    {
+      "commit": "1944b8c2312215d61df047a9ca85222a53c7a72c",
+      "run": "https://github.com/faberline/som/actions/runs/40707633998",
+      "status": "workflow rejected before jobs; runner context moved to a step before retry"
+    },
+    {
+      "commit": "b734cebcf188cf405adef675be63390ad72cb5b4",
+      "run": "https://github.com/faberline/som/actions/runs/40703324513",
+      "status": "Cargo library failures; missing assets and old formatter paths"
+    }
+  ],
+  "product_acceptance_passed": false,
+  "full_product_gates": "not_run",
+  "unchanged_output_byte_regression": "not_run",
+  "frozen_product_prerequisites": "blocked; separate job remains failed",
+  "limits": [
+    "No local build, test, service or downloaded tool execution.",
+    "Retired legacy-model feature is outside the current default compiler path and remains disabled.",
+    "Cargo tests and native tool success do not satisfy complete product behavior, unchanged baseline recordings or independent product audit."
+  ],
+  "compatibility_amendments": {
+    "rust": {
+      "path": "som-rs/evidence/rust-output-contract-amendment-007.json",
+      "sha256": "225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144",
+      "previous_descriptor": "ec825f3d584a05b05fd42103caead344bc03e62a358682f925fca3b997a7365d",
+      "candidate_descriptor": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+      "review_scope": "source/contract; native execution qualified separately here"
+    },
+    "typescript": {
+      "path": "som-rs/evidence/typescript-output-contract-amendment-003.json",
+      "sha256": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
+      "previous_descriptor": "34eb509d5568ebbf3b2f8117073104f2eb8809bc4f3219c887f05d9ed77d807d",
+      "candidate_descriptor": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f",
+      "review_scope": "source/contract; native execution qualified separately here"
+    }
+  }
+}
