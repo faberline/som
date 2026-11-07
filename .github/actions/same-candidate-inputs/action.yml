@@ -36,6 +36,7 @@ runs:
         ln -s -- "$BOOTSTRAP_PYTHON" "$bootstrap_bin/python3"
         printf '%s\n' "$bootstrap_bin" >> "$GITHUB_PATH"
     - name: Wait for the original exact live workflow binding
+      if: github.event_name != 'workflow_dispatch' || (github.job != 'products' && github.job != 'required-callbacks')
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}

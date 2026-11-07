@@ -84,6 +84,7 @@ class Fixture:
             'name': 'same-candidate-full-products / required-callbacks (m6-react003)',
             'runner_name': self.env['RUNNER_NAME'], 'status': 'in_progress',
         }
+        self.job_detail = {}
         self.jobs = {'total_count': 1, 'jobs': [self.job]}
         self.requests = []
         self.module_name = '_synthetic_bootstrap_fixture_' + uuid.uuid4().hex
@@ -115,9 +116,17 @@ class Fixture:
     def api(self, suffix):
         self.requests.append(suffix)
         records = {'/actions/runs/101': self.run, '/actions/workflows/303': self.workflow,
-                   '/actions/runs/101/attempts/2/jobs?per_page=100&page=1': self.jobs}
+                   '/actions/runs/101/attempts/2/jobs?per_page=100&page=1': self.jobs,
+                   '/actions/jobs/202': self.job_detail}
         self.case.assertIn(suffix, records)
         return json.loads(json.dumps(records[suffix]))
+
+    def queued_dispatch(self):
+        os.environ['GITHUB_EVENT_NAME'] = 'workflow_dispatch'
+        self.run.update(event='workflow_dispatch', status='queued', conclusion=None)
+        self.job.update(run_attempt=2, head_branch='main', runner_id=606,
+                        started_at='2026-11-06T23:50:25Z', completed_at=None, conclusion=None)
+        self.job_detail = dict(self.job)
 
     def bootstrap(self):
         return self.module.checked_bootstrap(self.root, self.revision, self.revision)
@@ -129,11 +138,25 @@ class Fixture:
                         'typescript-regression-inputs': 'typescript-regression-inputs',
                         'product-cargo-closure': 'Complete Rust registry closure (product gates unrun)'}
         prefix = direct_names[job] if job in self.module._ROOT_JOBS else 'same-candidate-full-products / ' + job
-        self.job['name'] = prefix + (' (phase1, 0, 1)' if job == 'products' else '')
+        suffix = {'products': ' (1, 0, phase1)', 'required-callbacks': ' (m6-react003)'}.get(job, '')
+        self.job['name'] = prefix + suffix
         self.main.__file__ = str(self.root / BOOTSTRAP_PATH)
 
 
 class SourceStrategyParentTests(unittest.TestCase):
+    def test_product_graph_entry_limits_operations_before_seed(self):
+        f = Fixture(self, graph_suffix='def admit_source(repo, helper, candidate):\n    raise RuntimeError("fixed setup reaches admission")')
+        f.select_job('products')
+        for operation in ([], ['join-graph'], ['artifact-inputs'], ['verify-callback'], ['restore-stage-set']):
+            with self.subTest(operation=operation), f.bootstrap() as bootstrap:
+                with self.assertRaisesRegex(ValueError, 'product Graph operation is outside fixed setup scope'):
+                    bootstrap.execute_entry('entry.native-graph', operation)
+                self.assertNotIn(f.module._TRUSTED_ENTRY_NAME, bootstrap._records)
+        for operation in ('admit', 'restore-carrier'):
+            with self.subTest(operation=operation), f.bootstrap() as bootstrap:
+                with self.assertRaisesRegex(RuntimeError, 'fixed setup reaches admission'):
+                    bootstrap.execute_entry('entry.native-graph', [operation])
+
     def test_fixed_deferred_graph_import_compiles_but_admission_importer_refuses_it(self):
         f = Fixture(self, graph_suffix='def active_controller_handle():\n    from _som_native_active_controls_binding import controls\n    return controls')
         with f.bootstrap() as bootstrap:
@@ -372,6 +395,51 @@ class NativeSourceBootstrapTests(unittest.TestCase):
                         f.bootstrap()
                 finally:
                     record[key] = original
+
+    def test_queued_dispatch_matrix_preserves_status_and_binds_two_live_job_records(self):
+        f = Fixture(self)
+        for job in ('products', 'required-callbacks'):
+            with self.subTest(job=job):
+                f.select_job(job)
+                f.queued_dispatch()
+                f.requests.clear()
+                with f.bootstrap() as bootstrap:
+                    self.assertEqual(bootstrap._binding['live_run']['status'], 'queued')
+                    self.assertEqual(bootstrap._binding['live_job']['status'], 'in_progress')
+                    self.assertEqual(bootstrap._binding['job_id'], 202)
+                self.assertEqual(f.requests[-2:], [
+                    '/actions/runs/101/attempts/2/jobs?per_page=100&page=1', '/actions/jobs/202'])
+
+    def test_queued_dispatch_refuses_stale_or_foreign_direct_job(self):
+        f = Fixture(self)
+        f.select_job('products')
+        f.queued_dispatch()
+        changes = {'id': 303, 'run_id': 102, 'run_attempt': 1, 'head_sha': '0' * 40, 'head_branch': 'other',
+                   'name': 'different matrix job', 'runner_name': 'foreign runner', 'runner_id': 607,
+                   'status': 'completed', 'completed_at': '2026-11-06T23:51:00Z', 'conclusion': 'failure'}
+        for key, value in changes.items():
+            with self.subTest(field=key):
+                f.job_detail = {**f.job, key: value}
+                with self.assertRaisesRegex(ValueError, 'queued matrix job liveness proof differs'):
+                    f.bootstrap()
+        del f.job['run_attempt']
+        f.job_detail = dict(f.job)
+        with self.assertRaisesRegex(ValueError, 'queued matrix job liveness proof differs'):
+            f.bootstrap()
+
+    def test_queued_run_is_refused_outside_dispatch_matrix(self):
+        f = Fixture(self)
+        for job, event, status in (('bind', 'workflow_dispatch', 'queued'), ('products', 'push', 'queued'),
+                                   ('products', 'workflow_dispatch', 'completed')):
+            with self.subTest(job=job, event=event, status=status):
+                f.select_job(job)
+                f.queued_dispatch()
+                os.environ['GITHUB_EVENT_NAME'] = event
+                f.run.update(event=event, status=status)
+                f.requests.clear()
+                with self.assertRaisesRegex(ValueError, 'live run source/workflow/event/ref/attempt differs'):
+                    f.bootstrap()
+                self.assertEqual(f.requests, ['/actions/runs/101'])
 
     def test_incomplete_duplicate_or_ambiguous_live_job_pages_are_refused(self):
         f = Fixture(self)
@@ -706,6 +774,7 @@ class NativeSourceBootstrapTests(unittest.TestCase):
         f = Fixture(self)
         method = f.module._ActiveTransfer.verify_entry_source
         calls = []
+        composite_jobs = []
         for relative in (ROOT_WORKFLOW, CALLED_WORKFLOW):
             job = None
             for line in (REPO / relative).read_text().splitlines():
@@ -714,15 +783,22 @@ class NativeSourceBootstrapTests(unittest.TestCase):
                     job = found.group(1)
                 if '--entry-role entry.native-graph -- ' in line:
                     calls.append(job)
+                if line == '      - uses: ./.github/actions/same-candidate-inputs':
+                    composite_jobs.append(job)
         self.assertEqual(len(calls), 12)
-        for job in calls:
+        self.assertEqual(composite_jobs, ['current-python-companions', 'products', 'product-join',
+                                          'required-callbacks', 'whole-graph-join'])
+        action = (REPO / INPUT_ACTION).read_text()
+        self.assertEqual(re.findall(r'--entry-role entry\.native-graph -- ([a-z-]+) ', action),
+                         ['admit', 'restore-carrier'])
+        for job in calls + composite_jobs:
             with self.subTest(job=job):
                 data = SimpleNamespace(_owner=SimpleNamespace(_binding={'job': job}))
                 method(data, f.module.GRAPH_ENTRY)
                 with self.assertRaisesRegex(ValueError, 'fixed reviewed job entry set'):
                     method(data, BASE + 'unlisted-source-fixture.py')
         with self.assertRaisesRegex(ValueError, 'fixed reviewed job entry set'):
-            method(SimpleNamespace(_owner=SimpleNamespace(_binding={'job': 'products'})),
+            method(SimpleNamespace(_owner=SimpleNamespace(_binding={'job': 'product-cargo-closure'})),
                    f.module.GRAPH_ENTRY)
 
     def test_derive_step_trap_keeps_raw_diagnostic_and_original_exit(self):

@@ -33,7 +33,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 BASE = 'som-rs/scripts/hosted_readiness/'
 SELF = BASE + 'native_source_bootstrap.py'
-SOURCE_SHA = '23036aa900c6c22d9547a800444096be7463b8eb97ee1cd79d27ff1cbe593b22'
+SOURCE_SHA = 'c893be8a9560d5c1a3af6e090f9758611a9fa11062ca70eda96b42543b3d243e'
 PROFILE_SHA = '0937e44ad864c497e04f56fd07f6e048c7a538e072f27bdfdd58708921d198bb'
 WORKFLOW_SHA = '855d8523516232ea577d834d390316e48eec6868f15b3ecdc22bacf9a290d12e'
 RUNTIME = '/home/runner/work/_temp/som-product-runtime-qualification'
@@ -63,7 +63,7 @@ def assembly_bytes():
     paths = (HERE / 'native_source_bootstrap.py', HERE / 'native_first_launch_profile_v1.json',
              REPO / '.github/workflows/rust-same-candidate-products.yml')
     result = []
-    for path, expected, size in zip(paths, (SOURCE_SHA, PROFILE_SHA, WORKFLOW_SHA), (128406, 85991, 42460)):
+    for path, expected, size in zip(paths, (SOURCE_SHA, PROFILE_SHA, WORKFLOW_SHA), (130001, 85991, 42460)):
         if any(item.is_symlink() for item in (path, *path.parents)):
             raise RuntimeError('physical future assembly source required')
         initial = path.lstat()

@@ -43,6 +43,7 @@ _CORE_NAME = '_som_native_active_controls'
 _TRUSTED_ENTRY_NAME = '_som_native_trusted_bootstrap_entry'
 _CALLED_JOBS = ('bind', 'current-python-companions', 'products', 'product-join',
                 'required-callbacks', 'whole-graph-join')
+_MATRIX_JOBS = ('products', 'required-callbacks')
 _ROOT_JOBS = ('experimental-native-compile', 'current-product-rust-tools',
               'typescript-regression-inputs', 'product-cargo-closure')
 _ENTRY_ROLES = MappingProxyType({
@@ -52,7 +53,7 @@ _ENTRY_ROLES = MappingProxyType({
     'product-cargo-closure': (BASE + 'product_runtime/provision_cargo.py',),
     'bind': (GRAPH_ENTRY,),
     'current-python-companions': (BASE + 'run_current_python_companions.py', GRAPH_ENTRY),
-    'products': (BASE + 'run_full_products.py',),
+    'products': (BASE + 'run_full_products.py', GRAPH_ENTRY),
     'product-join': (BASE + 'run_full_products.py', GRAPH_ENTRY),
     'required-callbacks': (BASE + 'run_full_products.py', BASE + 'run_candidate_semantic_gates.py',
                            BASE + 'run_current_candidate_gate.py', BASE + 'run_same_candidate_contracts.py', M6_ENTRY,
@@ -207,7 +208,8 @@ class _NoRedirect(HTTPRedirectHandler):
 
 
 def _github_json(suffix):
-    _require(re.fullmatch(r'/actions/(?:runs/[1-9][0-9]*(?:/attempts/[1-9][0-9]*/jobs\?per_page=100&page=[1-9][0-9]*)?|workflows/[1-9][0-9]*)', suffix),
+    _require(re.fullmatch(r'/actions/(?:runs/[1-9][0-9]*(?:/attempts/[1-9][0-9]*/jobs\?per_page=100&page=[1-9][0-9]*)?'
+                          r'|(?:jobs|workflows)/[1-9][0-9]*)', suffix),
              'unlisted bootstrap GitHub API route')
     token = os.environ['SOM_DEPENDENCY_ACTIONS_TOKEN']
     _require(type(token) is str and token and '\n' not in token and '\r' not in token, 'actual Actions token required')
@@ -286,12 +288,15 @@ def _workflow_binding(snapshot, candidate, entry):
     selected_workflow = root_workflow if job in _ROOT_JOBS else called_workflow
     _require(re.search(r'(?m)^  ' + re.escape(job) + r':$', selected_workflow), 'actual job absent from exact workflow source')
     record = _github_json('/actions/runs/' + str(run_id))
+    # GitHub can report the aggregate run queued while its matrix jobs execute.
+    queued_matrix = (job in _MATRIX_JOBS and env['GITHUB_EVENT_NAME'] == 'workflow_dispatch'
+                     and record['status'] == 'queued' and record['conclusion'] is None)
     _require(type(record['id']) is int and record['id'] == run_id and record['head_sha'] == candidate
              and type(record['run_attempt']) is int and record['run_attempt'] == attempt
              and record['event'] == env['GITHUB_EVENT_NAME'] and record['repository']['full_name'] == REPOSITORY
              and type(record['repository']['id']) is int and record['repository']['id'] == REPOSITORY_ID
              and record['path'] == WORKFLOW and record['head_branch'] == ref.split('/', 2)[2]
-             and record['status'] == 'in_progress', 'live run source/workflow/event/ref/attempt differs')
+             and (record['status'] == 'in_progress' or queued_matrix), 'live run source/workflow/event/ref/attempt differs')
     workflow_id = record['workflow_id']
     _require(type(workflow_id) is int and workflow_id > 0, 'actual workflow id required')
     workflow_record = _github_json('/actions/workflows/' + str(workflow_id))
@@ -321,7 +326,7 @@ def _workflow_binding(snapshot, candidate, entry):
              and len({row['id'] for row in observed}) == total,
              'complete live jobs identity universe differs')
     display, matrix = _job_display_name(selected_workflow, job)
-    _require(matrix == (job in ('products', 'required-callbacks')), 'fixed source job matrix shape differs')
+    _require(matrix == (job in _MATRIX_JOBS), 'fixed source job matrix shape differs')
     if job in _ROOT_JOBS:
         job_prefix = display
     else:
@@ -330,6 +335,8 @@ def _workflow_binding(snapshot, candidate, entry):
         job_prefix = caller_display + ' / ' + display
     runner_name = env['RUNNER_NAME']
     suffix = r'(?: \([^\r\n]+\))?' if matrix else ''
+    if queued_matrix:
+        suffix = r' \([^\r\n]+\)'
     matches = [row for row in observed if re.fullmatch(re.escape(job_prefix) + suffix, row['name'])
                and row.get('runner_name') == runner_name and row.get('status') == 'in_progress']
     _require(len(matches) == 1 and type(matches[0]['run_id']) is int and matches[0]['run_id'] == run_id
@@ -337,13 +344,26 @@ def _workflow_binding(snapshot, candidate, entry):
              and ('run_attempt' not in matches[0] or (type(matches[0]['run_attempt']) is int
                                                       and matches[0]['run_attempt'] == attempt)),
              'actual runner/job is missing, ambiguous or from another source')
+    live_job = matches[0]
+    if queued_matrix:
+        detail = _github_json('/actions/jobs/' + str(live_job['id']))
+        fields = ('id', 'run_id', 'run_attempt', 'head_sha', 'head_branch', 'name', 'runner_id',
+                  'runner_name', 'status', 'started_at', 'completed_at', 'conclusion')
+        _require(type(detail) is dict and all(key in live_job and key in detail
+                 and type(live_job[key]) is type(detail[key]) and live_job[key] == detail[key] for key in fields)
+                 and type(live_job['run_attempt']) is int and live_job['run_attempt'] == attempt
+                 and live_job['head_branch'] == ref.split('/', 2)[2]
+                 and type(live_job['runner_id']) is int and live_job['runner_id'] > 0
+                 and type(live_job['started_at']) is str and live_job['started_at']
+                 and live_job['completed_at'] is None and live_job['conclusion'] is None,
+                 'queued matrix job liveness proof differs')
     return {'repository': REPOSITORY, 'run_id': run_id, 'run_attempt': attempt, 'root_workflow': WORKFLOW,
             'called_workflow': CALLED_WORKFLOW if job in _CALLED_JOBS else None,
             'github_workflow_ref': env['GITHUB_WORKFLOW_REF'], 'github_workflow_sha': env['GITHUB_WORKFLOW_SHA'],
-            'job': job, 'job_display_name': display, 'job_api_name': matches[0]['name'],
-            'job_id': matches[0]['id'], 'runner_name': runner_name,
+            'job': job, 'job_display_name': display, 'job_api_name': live_job['name'],
+            'job_id': live_job['id'], 'runner_name': runner_name,
             'process_environment': tuple((key, env[key]) for key in _PROCESS_KEYS),
-            'live_run': record, 'live_workflow': workflow_record, 'live_job': matches[0]}
+            'live_run': record, 'live_workflow': workflow_record, 'live_job': live_job}
 
 
 def _code_closure(code):
@@ -774,6 +794,8 @@ class _BootstrapLease:
     def execute_entry(self, role, argv):
         """Seed only: fresh SELF body enters the ledger before the QA entry."""
         self.verify()
+        if self._binding['job'] == 'products' and role == 'entry.native-graph':
+            _require(argv[:1] in (['admit'], ['restore-carrier']), 'product Graph operation is outside fixed setup scope')
         _require(self._entry == SELF and _TRUSTED_ENTRY_NAME not in self._modules
                  and _TRUSTED_ENTRY_NAME not in sys.modules, 'retired or repeated trusted initial entry')
         raw = self._snapshot.read(SELF)
