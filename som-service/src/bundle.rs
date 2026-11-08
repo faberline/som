@@ -76,6 +76,43 @@ pub fn compile(value: &Value) -> Result<Value, Error> {
     bundle["digest"] = json!(digest);
     Ok(bundle)
 }
+pub fn compile_v2(value: &Value) -> Result<Value, Error> {
+    let prompt = model::validate_v2(value)?;
+    let mut bundle = json!({"version":VERSION,"assets":identity(),"prompt":prompt,"dsl":model::plan_v2(&prompt)});
+    let digest = hash(&canonical(&bundle));
+    bundle["digest"] = json!(digest);
+    Ok(bundle)
+}
+/// A v2 bundle is checked like v1, but it is not rendered yet (#163).
+fn assemble_v2(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
+    let prompt = model::validate_v2(&bundle["prompt"]).map_err(|_| {
+        Error::new(
+            "INVALID_BUNDLE",
+            "The bundle prompt is not admitted.",
+            "/bundle/prompt",
+        )
+    })?;
+    if bundle["dsl"] != model::plan_v2(&prompt) {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "The bundle DSL does not match its typed prompt.",
+            "/bundle/dsl",
+        ));
+    }
+    let content = json!({"version":VERSION,"assets":bundle["assets"],"prompt":bundle["prompt"],"dsl":bundle["dsl"]});
+    if bundle["digest"] != hash(&canonical(&content)) {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "The bundle digest is invalid.",
+            "/bundle/digest",
+        ));
+    }
+    Err(Error::new(
+        "INVALID_BUNDLE",
+        "Assembling a service prompt v2 bundle is not available yet.",
+        "/bundle/prompt/version",
+    ))
+}
 pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
     model::exact(
         bundle,
@@ -102,6 +139,9 @@ pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
             "Bundle service assets do not match this compiler.",
             "/bundle/assets",
         ));
+    }
+    if bundle["prompt"]["version"] == model::PROMPT_VERSION_V2 {
+        return assemble_v2(bundle);
     }
     let prompt = model::validate(&bundle["prompt"]).map_err(|_| {
         Error::new(

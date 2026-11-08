@@ -3,13 +3,16 @@
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use som_service::{
-    Error, assemble, assemble_json, compile_cnl, compile_json, compile_prompt, health,
+    Error, assemble, assemble_json, compile_cnl, compile_json, compile_prompt, compile_prompt_v2,
+    health,
 };
 use std::collections::BTreeSet;
 
 const CNL: &str = include_str!("../contract/task-status.cnl");
 const PROMPT: &str = include_str!("../contract/prompt.json");
 const DSL: &str = include_str!("../contract/dsl.json");
+const PROMPT_V2: &str = include_str!("fixtures/defer-four.prompt.json");
+const DSL_V2: &str = include_str!("fixtures/defer-four.dsl.json");
 
 fn value(text: &str) -> Value {
     serde_json::from_str(text).expect("independent JSON fixture")
@@ -513,10 +516,20 @@ fn health_advertises_only_the_new_compiler_family() {
     for (key, expected) in [
         (
             "formats",
-            vec!["som.cnl.service.v1", "som.prompt-json.service.v1"],
+            vec![
+                "som.cnl.service.v1",
+                "som.prompt-json.service.v1",
+                "som.prompt-json.service.v2",
+            ],
         ),
-        ("prompt_versions", vec!["som.prompt.service.v1"]),
-        ("dsl_versions", vec!["som.dsl.service.v1"]),
+        (
+            "prompt_versions",
+            vec!["som.prompt.service.v1", "som.prompt.service.v2"],
+        ),
+        (
+            "dsl_versions",
+            vec!["som.dsl.service.v1", "som.dsl.service.v2"],
+        ),
         ("targets", vec!["rust-service-client.v1"]),
     ] {
         let actual: BTreeSet<_> = health[key]
@@ -567,4 +580,199 @@ fn wire_contract_lists_the_four_defer_operations_and_keeps_task_status() {
     // task_status data is unchanged: five success bodies, four errors.
     assert_eq!(wire["success_bodies"].as_array().unwrap().len(), 5);
     assert_eq!(wire["errors"].as_array().unwrap().len(), 4);
+}
+
+#[test]
+fn prompt_json_v2_lowers_four_operations_to_the_golden_dsl() {
+    let bundle = ok(compile_prompt_v2(&value(PROMPT_V2)));
+    assert_eq!(bundle["dsl"], value(DSL_V2));
+    assert_eq!(bundle["prompt"], value(PROMPT_V2));
+    assert_eq!(bundle["version"], "som.bundle.service.v1");
+    let mut expected = bundle.clone();
+    rehash(&mut expected);
+    assert_eq!(bundle["digest"], expected["digest"]);
+    let http = ok(compile_json(
+        &json!({"format":"som.prompt-json.service.v2","prompt":value(PROMPT_V2)}).to_string(),
+    ));
+    assert_eq!(http["bundle"], bundle);
+}
+
+#[test]
+fn v2_dsl_matches_wire_contract_methods_and_paths() {
+    let wire = value(include_str!("../contract/wire.json"));
+    let dsl = value(DSL_V2);
+    let operations = dsl["operations"].as_array().unwrap();
+    let find = |name: &str| {
+        operations
+            .iter()
+            .find(|op| op["name"] == name)
+            .unwrap_or_else(|| panic!("missing {name}"))
+    };
+    for name in ["task_create", "queue_put", "task_cancel"] {
+        assert_eq!(
+            find(name)["method"],
+            wire["operations"][name]["method"],
+            "{name}"
+        );
+        assert_eq!(
+            find(name)["path"],
+            wire["operations"][name]["path"],
+            "{name}"
+        );
+    }
+    assert_eq!(find("task_status")["method"], "GET");
+    assert_eq!(
+        find("task_status")["path"],
+        "/v1/queues/{queue}/tasks/{task_id}"
+    );
+}
+
+#[test]
+fn v2_input_order_does_not_change_dsl_inputs() {
+    let mut prompt = value(PROMPT_V2);
+    let first = prompt["operations"][0]["inputs"].as_array_mut().unwrap();
+    first.reverse();
+    let last = prompt["operations"][3]["inputs"].as_array_mut().unwrap();
+    last.reverse();
+    let bundle = ok(compile_prompt_v2(&prompt));
+    assert_eq!(bundle["dsl"]["operations"], value(DSL_V2)["operations"]);
+    assert_eq!(
+        bundle["dsl"]["operations"][1]["request_body"]["name"],
+        "task"
+    );
+}
+
+#[test]
+fn v2_refuses_bad_input_with_a_json_path() {
+    let cases: Vec<(Value, u16, &str, &str)> = vec![
+        (
+            json!("task_delete"),
+            422,
+            "UNSUPPORTED_OPERATION",
+            "/operations/0/name",
+        ),
+        (
+            json!("string"),
+            400,
+            "INVALID_VALUE",
+            "/operations/1/inputs/1/type",
+        ),
+        (
+            json!("integer"),
+            400,
+            "INVALID_VALUE",
+            "/operations/0/inputs/0/type",
+        ),
+        (
+            json!("queue"),
+            400,
+            "INVALID_VALUE",
+            "/operations/3/inputs/1/parameter",
+        ),
+        (
+            json!("read_task_status"),
+            400,
+            "INVALID_VALUE",
+            "/operations/2/alias",
+        ),
+        (
+            json!("som.prompt.service.v1"),
+            422,
+            "UNSUPPORTED_VERSION",
+            "/version",
+        ),
+    ];
+    for (replacement, status, code, path) in cases {
+        let mut prompt = value(PROMPT_V2);
+        let segments: Vec<&str> = path.trim_start_matches('/').split('/').collect();
+        let mut target = &mut prompt;
+        for segment in &segments[..segments.len() - 1] {
+            target = match segment.parse::<usize>() {
+                Ok(index) => &mut target[index],
+                Err(_) => &mut target[*segment],
+            };
+        }
+        let last = segments[segments.len() - 1];
+        match last.parse::<usize>() {
+            Ok(index) => target[index] = replacement,
+            Err(_) => target[last] = replacement,
+        }
+        let error = refused(compile_prompt_v2(&prompt), status, code);
+        pointer(&error, path);
+    }
+    let mut prompt = value(PROMPT_V2);
+    prompt["operations"] = json!([]);
+    pointer(
+        &refused(compile_prompt_v2(&prompt), 400, "INVALID_SCHEMA"),
+        "/operations",
+    );
+    let mut prompt = value(PROMPT_V2);
+    prompt["operations"][1]["extra"] = json!(true);
+    pointer(
+        &refused(compile_prompt_v2(&prompt), 400, "INVALID_SCHEMA"),
+        "/operations/1",
+    );
+    let mut prompt = value(PROMPT_V2);
+    prompt["operations"][1]["inputs"]
+        .as_array_mut()
+        .unwrap()
+        .remove(1);
+    pointer(
+        &refused(compile_prompt_v2(&prompt), 400, "INVALID_SCHEMA"),
+        "/operations/1/inputs",
+    );
+    let mut prompt = value(PROMPT_V2);
+    prompt["operations"][3]["name"] = json!("task_status");
+    prompt["operations"][3]["alias"] = json!("other_status");
+    pointer(
+        &refused(compile_prompt_v2(&prompt), 400, "INVALID_VALUE"),
+        "/operations/3/name",
+    );
+}
+
+#[test]
+fn v1_and_v2_formats_do_not_accept_each_others_prompts() {
+    refused(
+        compile_json(
+            &json!({"format":"som.prompt-json.service.v1","prompt":value(PROMPT_V2)}).to_string(),
+        ),
+        400,
+        "INVALID_SCHEMA",
+    );
+    refused(
+        compile_json(
+            &json!({"format":"som.prompt-json.service.v2","prompt":value(PROMPT)}).to_string(),
+        ),
+        400,
+        "INVALID_SCHEMA",
+    );
+}
+
+#[test]
+fn v2_bundle_validates_but_is_not_assembled_yet() {
+    let bundle = ok(compile_prompt_v2(&value(PROMPT_V2)));
+    let error = refused(assemble(&bundle), 400, "INVALID_BUNDLE");
+    pointer(&error, "/bundle/prompt/version");
+
+    let mut changed = bundle.clone();
+    changed["dsl"]["operations"][0]["method"] = json!("DELETE");
+    rehash(&mut changed);
+    pointer(
+        &refused(assemble(&changed), 400, "INVALID_BUNDLE"),
+        "/bundle/dsl",
+    );
+
+    let mut zeroed = bundle.clone();
+    zeroed["digest"] = json!("0".repeat(64));
+    pointer(
+        &refused(assemble(&zeroed), 400, "INVALID_BUNDLE"),
+        "/bundle/digest",
+    );
+}
+
+#[test]
+fn v1_bundle_bytes_are_unchanged_by_v2() {
+    let bundle = ok(compile_prompt(&value(PROMPT)));
+    assert_eq!(bundle["dsl"], value(DSL));
+    assert_eq!(bundle["prompt"], value(PROMPT));
 }

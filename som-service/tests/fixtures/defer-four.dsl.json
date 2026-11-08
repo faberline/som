@@ -1,0 +1,12 @@
+{
+  "version": "som.dsl.service.v2",
+  "package": "defer_client",
+  "target": "rust-service-client.v1",
+  "provider": {"id":"defer.http.v2","revision":"5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0","contract":"defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0"},
+  "operations": [
+    {"alias":"read_task_status","name":"task_status","method":"GET","path":"/v1/queues/{queue}/tasks/{task_id}","path_segments":[{"literal":"v1"},{"literal":"queues"},{"param":"queue"},{"literal":"tasks"},{"param":"task_id"}],"inputs":[{"name":"queue","type":"string","parameter":"queue"},{"name":"task_id","type":"string","parameter":"task_id"}],"request_body":false,"response":"TaskStatusResponse","errors":"native-status-body.v1","authorization":"queue-read"},
+    {"alias":"create_task","name":"task_create","method":"POST","path":"/v1/queues/{queue}/tasks","path_segments":[{"literal":"v1"},{"literal":"queues"},{"param":"queue"},{"literal":"tasks"}],"inputs":[{"name":"queue","type":"string","parameter":"queue"}],"request_body":{"name":"task","type":"CreateTask","content_type":"application/json"},"response":"none","errors":"native-status-body.v1","authorization":"queue-write"},
+    {"alias":"put_queue","name":"queue_put","method":"PUT","path":"/v1/queues/{queue}","path_segments":[{"literal":"v1"},{"literal":"queues"},{"param":"queue"}],"inputs":[{"name":"queue","type":"string","parameter":"queue"}],"request_body":{"name":"policy","type":"QueuePolicy","content_type":"application/json"},"response":"QueueSnapshot","errors":"native-status-body.v1","authorization":"queue-write"},
+    {"alias":"cancel_task","name":"task_cancel","method":"DELETE","path":"/v1/queues/{queue}/tasks/{task_id}","path_segments":[{"literal":"v1"},{"literal":"queues"},{"param":"queue"},{"literal":"tasks"},{"param":"task_id"}],"inputs":[{"name":"queue","type":"string","parameter":"queue"},{"name":"task_id","type":"string","parameter":"task_id"}],"request_body":false,"response":"none","errors":"native-status-body.v1","authorization":"queue-write"}
+  ]
+}

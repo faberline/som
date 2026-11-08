@@ -38,12 +38,17 @@ pub fn compile_cnl(source: &str) -> Result<Compilation, Error> {
 pub fn compile_prompt(prompt: &Value) -> Result<Value, Error> {
     bundle::compile(prompt)
 }
+pub fn compile_prompt_v2(prompt: &Value) -> Result<Value, Error> {
+    bundle::compile_v2(prompt)
+}
 pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
     bundle::assemble(bundle)
 }
 pub fn health() -> Value {
-    json!({"status":"ok","compiler":"som-service.v1","formats":[model::CNL_FORMAT,model::JSON_FORMAT],
-        "prompt_versions":[model::PROMPT_VERSION],"dsl_versions":[model::DSL_VERSION],"targets":[model::TARGET],
+    json!({"status":"ok","compiler":"som-service.v1",
+        "formats":[model::CNL_FORMAT,model::JSON_FORMAT,model::JSON_FORMAT_V2],
+        "prompt_versions":[model::PROMPT_VERSION,model::PROMPT_VERSION_V2],
+        "dsl_versions":[model::DSL_VERSION,model::DSL_VERSION_V2],"targets":[model::TARGET],
         "model_loaded":false,"assets":bundle::identity()})
 }
 fn json_error(doc: &strict_json::Document, error: Error, prefix: &str) -> Error {
@@ -92,6 +97,13 @@ pub fn compile_json(source: &str) -> Result<Value, Error> {
                 .map_err(|e| json_error(&doc, e, ""))?;
             let result =
                 compile_prompt(&doc.value["prompt"]).map_err(|e| json_error(&doc, e, "/prompt"))?;
+            Ok(json!({"status":"ok","bundle":result}))
+        }
+        Some(model::JSON_FORMAT_V2) => {
+            model::exact(&doc.value, &["format", "prompt"], "")
+                .map_err(|e| json_error(&doc, e, ""))?;
+            let result = compile_prompt_v2(&doc.value["prompt"])
+                .map_err(|e| json_error(&doc, e, "/prompt"))?;
             Ok(json!({"status":"ok","bundle":result}))
         }
         _ => Err(json_error(

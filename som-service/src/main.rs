@@ -35,17 +35,30 @@ enum Command {
     /// Print the source manifest used for the service asset identity.
     Identity,
 }
+/// Wraps a source file in the compile envelope. JSON is sent as raw text, so
+/// duplicate keys are still caught by the server.
+fn compile_payload(text: &str) -> String {
+    if text.trim_start().starts_with('{') {
+        format!(
+            "{{\"format\":\"{}\",\"prompt\":{text}}}",
+            som_service::model::JSON_FORMAT_V2
+        )
+    } else {
+        json!({"format":som_service::model::CNL_FORMAT,"source":text}).to_string()
+    }
+}
 async fn post(
     url: &str,
     path: &str,
-    value: Value,
+    body: String,
     key: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let reply = reqwest::Client::builder()
         .redirect(reqwest::redirect::Policy::none())
         .build()?
         .post(format!("{}{path}", url.trim_end_matches('/')))
-        .json(&value)
+        .header("content-type", "application/json")
+        .body(body)
         .send()
         .await?;
     let status = reply.status();
@@ -67,13 +80,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             eprintln!("som-service listening on {}", listener.local_addr()?);
             axum::serve(listener, som_service::server::router()).await?;
         }
-        Command::Compile { source, url } => post(
-            &url,
-            "/compile",
-            json!({"format":som_service::model::CNL_FORMAT,"source":fs::read_to_string(source)?}),
-            "bundle",
-        )
-        .await?,
+        Command::Compile { source, url } => {
+            post(
+                &url,
+                "/compile",
+                compile_payload(&fs::read_to_string(source)?),
+                "bundle",
+            )
+            .await?
+        }
         Command::Generate { prompt, url } => {
             let raw = fs::read_to_string(prompt)?;
             // Preserve duplicate-key checks: send the typed JSON without decoding/re-encoding it.
@@ -123,4 +138,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ),
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::compile_payload;
+    #[test]
+    fn json_file_is_sent_as_prompt_json_v2_and_other_text_as_cnl() {
+        assert_eq!(
+            compile_payload("  {\"a\":1}"),
+            "{\"format\":\"som.prompt-json.service.v2\",\"prompt\":  {\"a\":1}}"
+        );
+        let cnl = compile_payload("Package x.");
+        assert_eq!(
+            cnl,
+            "{\"format\":\"som.cnl.service.v1\",\"source\":\"Package x.\"}"
+        );
+    }
 }
