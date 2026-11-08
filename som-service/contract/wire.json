@@ -194,5 +194,250 @@
         "message": "queue `missing` is not configured"
       }
     }
-  ]
+  ],
+  "operations": {
+      "task_create": {
+        "method": "POST",
+        "path": "/v1/queues/{queue}/tasks",
+        "path_parameters": [
+          "queue"
+        ],
+        "request_body": {
+          "content_type": "application/json",
+          "required": true,
+          "schema": "CreateTask",
+          "fields": [
+            {
+              "name": "task_id",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "target",
+              "type": "object",
+              "required": true,
+              "fields": [
+                {
+                  "name": "url",
+                  "type": "string",
+                  "required": true
+                },
+                {
+                  "name": "method",
+                  "type": "string",
+                  "required": false,
+                  "default": "POST"
+                },
+                {
+                  "name": "headers",
+                  "type": "map<string,string>",
+                  "required": false,
+                  "default": {}
+                }
+              ]
+            },
+            {
+              "name": "schedule_at",
+              "type": "RFC 3339 UTC timestamp",
+              "required": true
+            },
+            {
+              "name": "payload",
+              "type": "any JSON",
+              "required": false,
+              "default": null
+            },
+            {
+              "name": "priority",
+              "type": "u8",
+              "required": false,
+              "default": 10
+            },
+            {
+              "name": "max_attempts",
+              "type": "u32",
+              "required": false,
+              "default": 3
+            }
+          ]
+        },
+        "success": {
+          "status": 201,
+          "body": null
+        },
+        "errors": [
+          {
+            "condition": "Queue absent",
+            "status": 404,
+            "body": {
+              "error": "not_found",
+              "message": "queue `missing` is not configured"
+            }
+          },
+          {
+            "condition": "task_id already exists",
+            "status": 409,
+            "body": {
+              "error": "conflict",
+              "message": "task `dup` already exists"
+            }
+          },
+          {
+            "condition": "Queue control state is Disabled",
+            "status": 409,
+            "body": {
+              "error": "queue_disabled",
+              "message": "queue `jobs` is disabled"
+            }
+          }
+        ],
+        "auth": "Write on queue",
+        "source": {
+          "example": "{\"task_id\":\"hello\",\"target\":{\"url\":\"http://x\",\"method\":\"POST\",\"headers\":{}},\"payload\":{},\"schedule_at\":\"2026-11-06T00:00:00Z\",\"priority\":10,\"max_attempts\":2}",
+          "cites": [
+            "crates/defer-queue/src/server.rs:228-249",
+            "clients/openapi.json:209",
+            "crates/defer-shared-kernel/src/types.rs:27-37",
+            "crates/defer-shared-kernel/src/types.rs:144-148",
+            "crates/defer/tests/it/http_api.rs:690-734"
+          ]
+        }
+      },
+      "queue_put": {
+        "method": "PUT",
+        "path": "/v1/queues/{queue}",
+        "path_parameters": [
+          "queue"
+        ],
+        "request_body": {
+          "content_type": "application/json",
+          "required": true,
+          "schema": "QueuePolicy",
+          "fields": [
+            {
+              "name": "max_in_flight",
+              "type": "usize",
+              "required": true
+            },
+            {
+              "name": "max_dispatch_per_tick",
+              "type": "usize",
+              "required": true
+            },
+            {
+              "name": "max_dispatches_per_second",
+              "type": "u32",
+              "required": true
+            },
+            {
+              "name": "max_burst_size",
+              "type": "usize",
+              "required": true
+            },
+            {
+              "name": "lease_ttl_ms",
+              "type": "u64",
+              "required": true
+            },
+            {
+              "name": "retry_backoff_ms",
+              "type": "u64",
+              "required": true
+            }
+          ],
+          "default_policy": {
+            "max_in_flight": 100,
+            "max_dispatch_per_tick": 100,
+            "max_dispatches_per_second": 100,
+            "max_burst_size": 100,
+            "lease_ttl_ms": 30000,
+            "retry_backoff_ms": 1000
+          }
+        },
+        "success": {
+          "status": 200,
+          "schema": "QueueSnapshot",
+          "body": {
+            "queue": "jobs",
+            "control_state": "Running",
+            "policy": {
+              "max_in_flight": 100,
+              "max_dispatch_per_tick": 100,
+              "max_dispatches_per_second": 100,
+              "max_burst_size": 100,
+              "lease_ttl_ms": 30000,
+              "retry_backoff_ms": 1000
+            },
+            "task_count": 0,
+            "scheduled_count": 0,
+            "in_flight_count": 0,
+            "terminal_count": 0
+          },
+          "control_states": [
+            "Running",
+            "Paused",
+            "Disabled"
+          ]
+        },
+        "errors": [
+          {
+            "condition": "Body is not a valid QueuePolicy",
+            "status": 400,
+            "body": {
+              "error": "bad_request",
+              "message": "<human-readable detail; text not frozen>"
+            }
+          }
+        ],
+        "auth": "Write on queue",
+        "source": {
+          "cites": [
+            "crates/defer-queue/src/server.rs:182-203",
+            "clients/openapi.json:73",
+            "crates/defer-shared-kernel/src/types.rs:48-66",
+            "crates/defer-shared-kernel/src/types.rs:71-88",
+            "crates/defer/tests/it/http_api.rs:205-212"
+          ]
+        }
+      },
+      "task_cancel": {
+        "method": "DELETE",
+        "path": "/v1/queues/{queue}/tasks/{task_id}",
+        "path_parameters": [
+          "queue",
+          "task_id"
+        ],
+        "request_body": null,
+        "success": {
+          "status": 204,
+          "body": null
+        },
+        "errors": [
+          {
+            "condition": "Task is missing or already terminal",
+            "status": 404,
+            "body": {
+              "error": "not_found",
+              "message": "task is missing or terminal"
+            }
+          },
+          {
+            "condition": "Queue absent",
+            "status": 404,
+            "body": {
+              "error": "not_found",
+              "message": "queue `missing` is not configured"
+            }
+          }
+        ],
+        "auth": "Write on queue",
+        "source": {
+          "cites": [
+            "crates/defer-queue/src/server.rs:307-335",
+            "clients/openapi.json:311",
+            "crates/defer/tests/it/http_api.rs:471-509"
+          ]
+        }
+      }
+    }
 }

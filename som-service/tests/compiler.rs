@@ -538,3 +538,33 @@ fn health_advertises_only_the_new_compiler_family() {
         ok(compile_prompt(&value(PROMPT)))["assets"]
     );
 }
+
+#[test]
+fn wire_contract_lists_the_four_defer_operations_and_keeps_task_status() {
+    let wire = value(include_str!("../contract/wire.json"));
+    let ops = wire["operations"].as_object().unwrap();
+    let keys: Vec<&str> = ops.keys().map(String::as_str).collect();
+    assert_eq!(keys, ["queue_put", "task_cancel", "task_create"]);
+    let expect = [
+        ("task_create", "POST", "/v1/queues/{queue}/tasks", 201),
+        ("queue_put", "PUT", "/v1/queues/{queue}", 200),
+        (
+            "task_cancel",
+            "DELETE",
+            "/v1/queues/{queue}/tasks/{task_id}",
+            204,
+        ),
+    ];
+    for (name, method, path, status) in expect {
+        assert_eq!(ops[name]["method"], method, "{name}");
+        assert_eq!(ops[name]["path"], path, "{name}");
+        assert_eq!(ops[name]["success"]["status"], status, "{name}");
+        assert!(
+            !ops[name]["source"]["cites"].as_array().unwrap().is_empty(),
+            "{name}"
+        );
+    }
+    // task_status data is unchanged: five success bodies, four errors.
+    assert_eq!(wire["success_bodies"].as_array().unwrap().len(), 5);
+    assert_eq!(wire["errors"].as_array().unwrap().len(), 4);
+}
