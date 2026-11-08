@@ -52,6 +52,10 @@ pub fn source_manifest() -> Value {
             include_bytes!("../templates/lib.rs.txt"),
         ),
         (
+            "templates/lib_v2.rs.txt",
+            include_bytes!("../templates/lib_v2.rs.txt"),
+        ),
+        (
             "templates/README.md.txt",
             include_bytes!("../templates/README.md.txt"),
         ),
@@ -83,7 +87,7 @@ pub fn compile_v2(value: &Value) -> Result<Value, Error> {
     bundle["digest"] = json!(digest);
     Ok(bundle)
 }
-/// A v2 bundle is checked like v1, but it is not rendered yet (#163).
+/// A v2 bundle is checked like v1, then rendered with one method per operation (#163).
 fn assemble_v2(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
     let prompt = model::validate_v2(&bundle["prompt"]).map_err(|_| {
         Error::new(
@@ -107,11 +111,7 @@ fn assemble_v2(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
             "/bundle/digest",
         ));
     }
-    Err(Error::new(
-        "INVALID_BUNDLE",
-        "Assembling a service prompt v2 bundle is not available yet.",
-        "/bundle/prompt/version",
-    ))
+    Ok(render::render_v2(&prompt.package, &bundle["dsl"]))
 }
 pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
     model::exact(
