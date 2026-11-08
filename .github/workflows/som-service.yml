@@ -1,0 +1,52 @@
+name: som-service
+
+on:
+  pull_request:
+    paths:
+      - 'som-service/**'
+      - '.github/workflows/som-service.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: som-service-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: som-service checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Install Rust 1.96.1
+        run: |
+          rustup toolchain install 1.96.1 --profile minimal --component rustfmt --component clippy
+          rustup default 1.96.1
+      - name: Prefetch generated client dependencies
+        run: |
+          dir="$RUNNER_TEMP/som-client-prefetch"
+          mkdir -p "$dir/src"
+          sed 's/{{PACKAGE}}/som_client_prefetch/g' som-service/templates/Cargo.toml.txt > "$dir/Cargo.toml"
+          sed 's/{{PACKAGE}}/som_client_prefetch/g' som-service/templates/Cargo.lock.txt > "$dir/Cargo.lock"
+          : > "$dir/src/lib.rs"
+          cargo fetch --locked --manifest-path "$dir/Cargo.toml"
+      - name: Check formatting
+        run: cargo fmt --manifest-path som-service/Cargo.toml --check
+      - name: Run clippy
+        run: cargo clippy --manifest-path som-service/Cargo.toml --locked --all-targets -- -D warnings
+      - name: Run tests
+        run: cargo test --manifest-path som-service/Cargo.toml --locked
