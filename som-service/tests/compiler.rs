@@ -749,10 +749,71 @@ fn v1_and_v2_formats_do_not_accept_each_others_prompts() {
 }
 
 #[test]
-fn v2_bundle_validates_but_is_not_assembled_yet() {
+fn v2_bundle_assembles_four_methods_in_operation_order() {
+    let files = ok(assemble(&ok(compile_prompt_v2(&value(PROMPT_V2)))));
+    let keys: Vec<&str> = files.keys().map(String::as_str).collect();
+    assert_eq!(
+        keys,
+        ["Cargo.lock", "Cargo.toml", "README.md", "src/lib.rs"]
+    );
+
+    let lib = &files["src/lib.rs"];
+    assert!(lib.contains(include_str!("fixtures/defer-four.methods.rs")));
+    assert!(!lib.contains("{{"));
+    let positions: Vec<usize> = [
+        "read_task_status",
+        "create_task",
+        "put_queue",
+        "cancel_task",
+    ]
+    .iter()
+    .map(|name| {
+        lib.find(&format!("pub async fn {name}("))
+            .unwrap_or_else(|| panic!("missing method {name}"))
+    })
+    .collect();
+    assert!(positions.windows(2).all(|pair| pair[0] < pair[1]));
+    assert_eq!(
+        files["Cargo.toml"],
+        include_str!("../templates/Cargo.toml.txt").replace("{{PACKAGE}}", "defer_client")
+    );
+    assert_eq!(
+        files,
+        ok(assemble(&ok(compile_prompt_v2(&value(PROMPT_V2)))))
+    );
+}
+
+#[test]
+fn v2_assemble_follows_aliases_and_argument_names() {
+    let mut prompt = value(PROMPT_V2);
+    prompt["operations"] = json!([{
+        "alias": "drop_task", "name": "task_cancel",
+        "inputs": [
+            {"name": "body", "type": "string", "parameter": "queue"},
+            {"name": "status", "type": "string", "parameter": "task_id"}
+        ]
+    }]);
+    let files = ok(assemble(&ok(compile_prompt_v2(&prompt))));
+    let lib = &files["src/lib.rs"];
+    assert!(lib.contains("pub async fn drop_task("));
+    assert!(lib.contains(r#"&["v1", "queues", body, "tasks", status]"#));
+    assert!(lib.contains(r#"("queue", body), ("task_id", status)"#));
+}
+
+#[test]
+fn v2_single_operation_bundle_assembles_only_that_method() {
+    let mut prompt = value(PROMPT_V2);
+    prompt["operations"] = json!([value(PROMPT_V2)["operations"][2].clone()]);
+    let files = ok(assemble(&ok(compile_prompt_v2(&prompt))));
+    let lib = &files["src/lib.rs"];
+    assert!(lib.contains("pub async fn put_queue("));
+    assert!(!lib.contains("pub async fn cancel_task("));
+    assert!(!lib.contains("reqwest::Method::DELETE"));
+}
+
+#[test]
+fn v2_bundle_is_checked_before_it_is_assembled() {
     let bundle = ok(compile_prompt_v2(&value(PROMPT_V2)));
-    let error = refused(assemble(&bundle), 400, "INVALID_BUNDLE");
-    pointer(&error, "/bundle/prompt/version");
 
     let mut changed = bundle.clone();
     changed["dsl"]["operations"][0]["method"] = json!("DELETE");
@@ -768,6 +829,21 @@ fn v2_bundle_validates_but_is_not_assembled_yet() {
         &refused(assemble(&zeroed), 400, "INVALID_BUNDLE"),
         "/bundle/digest",
     );
+
+    let mut reassets = bundle.clone();
+    reassets["assets"]["sha256"] = json!("0".repeat(64));
+    refused(assemble(&reassets), 400, "ASSET_HASH_MISMATCH");
+}
+
+#[test]
+fn v1_files_are_unchanged_by_the_v2_renderer() {
+    let files = ok(assemble(&ok(compile_prompt(&value(PROMPT)))));
+    let expected = include_str!("../templates/lib.rs.txt")
+        .replace("{{ALIAS}}", "read_task_status")
+        .replace("{{QUEUE_ARGUMENT}}", "queue")
+        .replace("{{TASK_ARGUMENT}}", "task_id");
+    assert_eq!(files["src/lib.rs"], expected);
+    assert!(!files["src/lib.rs"].contains("call_json"));
 }
 
 #[test]
