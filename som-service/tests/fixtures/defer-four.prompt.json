@@ -1,0 +1,12 @@
+{
+  "version": "som.prompt.service.v2",
+  "package": "defer_client",
+  "target": "rust-service-client.v1",
+  "service": {"name":"defer","contract":"defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0"},
+  "operations": [
+    {"alias":"read_task_status","name":"task_status","inputs":[{"name":"queue","type":"string","parameter":"queue"},{"name":"task_id","type":"string","parameter":"task_id"}]},
+    {"alias":"create_task","name":"task_create","inputs":[{"name":"queue","type":"string","parameter":"queue"},{"name":"task","type":"CreateTask","parameter":"body"}]},
+    {"alias":"put_queue","name":"queue_put","inputs":[{"name":"queue","type":"string","parameter":"queue"},{"name":"policy","type":"QueuePolicy","parameter":"body"}]},
+    {"alias":"cancel_task","name":"task_cancel","inputs":[{"name":"queue","type":"string","parameter":"queue"},{"name":"task_id","type":"string","parameter":"task_id"}]}
+  ]
+}
