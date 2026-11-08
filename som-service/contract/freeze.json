@@ -9,7 +9,7 @@
     "contract/dsl.json": "6a4d3b5f8c9c396542b7dd32942b4127a8daff5347ddcd84b31f512c400b7a19",
     "contract/prompt.json": "1aa3f3f0eaa5030a2d8973ddd45138b3aa30556df246ae44a94d7baee8fbaa14",
     "contract/task-status.cnl": "47f6d19af8b24536c6230958f0c937b3ad5778f165be7730db0ca67d18158e11",
-    "contract/wire.json": "10db721d0144a02c92761b11343d9503ef2b9f68d31bbb7854bf1072d73ee049"
+    "contract/wire.json": "383e469507ee6d4c9642e2408208b8cc39d4054d3d27d1fcf2983d7a54b81b61"
   },
   "syntax_api": {
     "module": "service",
