@@ -48,6 +48,13 @@ The new HTTP service exposes `/health`, `/compile` and `/assemble`.
 Use `som.cnl.service.v1` or `som.prompt-json.service.v1` at `/compile`.
 The existing `som` service and its old versions stay unchanged.
 
+## CI
+
+Workflow `som-service`, job `som-service checks` (check name `som-service / som-service checks`),
+runs fmt, clippy and tests with `--locked` on every pull request that touches `som-service/**`
+or the workflow, and on push to main. The repository owner can make this check required
+in the branch protection of main.
+
 ## Fixed sources and ownership
 
 - NLP: `4207cf7c39a48f4203278d0d695f0a9245424293`.

@@ -39,10 +39,6 @@ pub fn diagnostic(
     }]})
 }
 
-pub fn envelope_error(code: &str, detail: &str, allowed: &str) -> Value {
-    diagnostic("", Span { start: 0, end: 0 }, None, code, detail, allowed)
-}
-
 impl Document {
     pub fn error(&self, pointer: &str, code: &str, detail: &str, allowed: &str) -> Value {
         let mut selected = pointer.to_owned();
@@ -249,6 +245,7 @@ impl Reader<'_> {
     }
 }
 
+#[cfg(test)]
 pub fn parse(source: &str) -> Result<Document, Value> {
     parse_with_duplicate_code(source, "INVALID_JSON")
 }
