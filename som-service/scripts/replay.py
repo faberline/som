@@ -12,7 +12,7 @@ import tempfile
 SERVICE = Path(__file__).resolve().parents[1]
 REPO = SERVICE.parent
 RUST = Path("/opt/homebrew/Cellar/rust/1.96.1/bin")
-NLP_REV = "4207cf7c39a48f4203278d0d695f0a9245424293"
+NLP_REV = "4ceb753b5cde60a0c474903be9ea2ae3717bb6e5"
 
 
 def digest(path):

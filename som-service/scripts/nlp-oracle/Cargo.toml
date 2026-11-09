@@ -6,6 +6,6 @@ publish = false
 
 [dependencies]
 baseline = { package = "faberline-nlp-cnl", git = "https://github.com/faberline/nlp.git", rev = "8ddb1f6df55eec0764ca50772b2c038441361727" }
-candidate = { package = "faberline-nlp-cnl", git = "https://github.com/faberline/nlp.git", rev = "4207cf7c39a48f4203278d0d695f0a9245424293" }
+candidate = { package = "faberline-nlp-cnl", git = "https://github.com/faberline/nlp.git", rev = "4ceb753b5cde60a0c474903be9ea2ae3717bb6e5" }
 serde_json = "=1.0.151"
 sha2 = "=0.10.9"

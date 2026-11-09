@@ -68,7 +68,7 @@ dependencies = [
 [[package]]
 name = "faberline-nlp-cnl"
 version = "0.1.0"
-source = "git+https://github.com/faberline/nlp.git?rev=4207cf7c39a48f4203278d0d695f0a9245424293#4207cf7c39a48f4203278d0d695f0a9245424293"
+source = "git+https://github.com/faberline/nlp.git?rev=4ceb753b5cde60a0c474903be9ea2ae3717bb6e5#4ceb753b5cde60a0c474903be9ea2ae3717bb6e5"
 dependencies = [
  "pest",
  "pest_derive",
@@ -272,7 +272,7 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 name = "som-service-nlp-compatibility"
 version = "0.1.0"
 dependencies = [
- "faberline-nlp-cnl 0.1.0 (git+https://github.com/faberline/nlp.git?rev=4207cf7c39a48f4203278d0d695f0a9245424293)",
+ "faberline-nlp-cnl 0.1.0 (git+https://github.com/faberline/nlp.git?rev=4ceb753b5cde60a0c474903be9ea2ae3717bb6e5)",
  "faberline-nlp-cnl 0.1.0 (git+https://github.com/faberline/nlp.git?rev=8ddb1f6df55eec0764ca50772b2c038441361727)",
  "serde_json",
  "sha2",
