@@ -1,6 +1,10 @@
 # CI stages: lint -> test -> e2e -> gate.
 # See https://github.com/faberline/aw/blob/main/docs/standards/ci.md
 # The ruleset requires only the "gate" job. Keep its name fixed.
+#
+# Known exception: som-rs and som-rs/som-targets are not in lint. Their source is
+# sealed by hashes in contracts/compiler-v1/ and scripts/; fmt and clippy fixes
+# there need a user-approved amendment (issue #180). They are still tested.
 name: ci
 
 on:
@@ -23,29 +27,21 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           toolchain: 1.96.1
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
-          workspaces: |
-            som-rs
-            som-rs/som-targets
-            som-service
-      # This repository has no root workspace, so each crate is checked by its manifest.
-      - name: "fmt: som-rs"
-        run: cargo fmt --all --manifest-path som-rs/Cargo.toml -- --check
-      - name: "fmt: som-targets"
-        run: cargo fmt --all --manifest-path som-rs/som-targets/Cargo.toml -- --check
+          workspaces: som-service
       - name: "fmt: som-service"
-        run: cargo fmt --all --manifest-path som-service/Cargo.toml -- --check
-      - name: "clippy: som-rs"
-        run: cargo clippy --manifest-path som-rs/Cargo.toml --all-targets --locked -- -D warnings
-      - name: "clippy: som-targets"
-        run: cargo clippy --manifest-path som-rs/som-targets/Cargo.toml --all-targets --locked -- -D warnings
+        working-directory: som-service
+        run: cargo fmt --all -- --check
       - name: "clippy: som-service"
-        run: cargo clippy --manifest-path som-service/Cargo.toml --all-targets --locked -- -D warnings
+        working-directory: som-service
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
   test-som-service:
     name: "test: som-service"
@@ -54,6 +50,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           toolchain: 1.96.1
@@ -68,7 +66,8 @@ jobs:
           sed 's/{{PACKAGE}}/som_client_prefetch/g' som-service/templates/Cargo.lock.txt > "$dir/Cargo.lock"
           : > "$dir/src/lib.rs"
           cargo fetch --locked --manifest-path "$dir/Cargo.toml"
-      - run: cargo test --manifest-path som-service/Cargo.toml --locked
+      - name: "test: som-service"
+        run: cargo test --manifest-path som-service/Cargo.toml --locked
 
   test-som-rs:
     name: "test: som-rs compiler"
@@ -76,17 +75,38 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
+      RUSTUP_TOOLCHAIN: 1.96.1
       CARGO_BUILD_JOBS: 2
+      HELPER_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           toolchain: 1.96.1
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           workspaces: som-rs
-      - run: cargo fetch --locked --manifest-path som-rs/Cargo.toml
-      - run: cargo test --locked --no-fail-fast --manifest-path som-rs/Cargo.toml -- --test-threads=1
+      - name: Fetch locked public crates
+        run: cargo fetch --locked --manifest-path som-rs/Cargo.toml
+      - name: Provision verified native tools
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/provision_native.py -- \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)"
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Package compiler assets from tracked source
+        run: |
+          cargo run --locked --offline --manifest-path som-rs/Cargo.toml \
+            --bin som-compiler-assets -- \
+            --destination som-rs/compiler-assets/current \
+            --formatter "$SOM_RUFF"
+      - name: "test: som-rs compiler"
+        run: cargo test --locked --offline --no-fail-fast --manifest-path som-rs/Cargo.toml -- --test-threads=1
 
   test-som-targets:
     name: "test: som-rs targets"
@@ -94,17 +114,42 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
+      RUSTUP_TOOLCHAIN: 1.96.1
       CARGO_BUILD_JOBS: 2
+      HELPER_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           toolchain: 1.96.1
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
-          workspaces: som-rs/som-targets
-      - run: cargo fetch --locked --manifest-path som-rs/som-targets/Cargo.toml
-      - run: cargo test --locked --no-fail-fast --manifest-path som-rs/som-targets/Cargo.toml -- --test-threads=1
+          workspaces: |
+            som-rs
+            som-rs/som-targets
+      - name: Fetch locked public crates
+        run: |
+          cargo fetch --locked --manifest-path som-rs/Cargo.toml
+          cargo fetch --locked --manifest-path som-rs/som-targets/Cargo.toml
+      - name: Provision verified native tools
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/provision_native.py -- \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)"
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Package compiler assets from tracked source
+        run: |
+          cargo run --locked --offline --manifest-path som-rs/Cargo.toml \
+            --bin som-compiler-assets -- \
+            --destination som-rs/compiler-assets/current \
+            --formatter "$SOM_RUFF"
+      - name: "test: som-rs targets"
+        run: cargo test --locked --offline --no-fail-fast --manifest-path som-rs/som-targets/Cargo.toml -- --test-threads=1
 
   test-scripts:
     name: "test: python and node scripts"
@@ -113,6 +158,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Quickstart unit tests
         run: python3 -m unittest discover -s som-rs/scripts/react_quickstart -p 'test_*.py' -v
       - name: Acceptance runner unit tests (Python)
