@@ -1,0 +1,142 @@
+# CI stages: lint -> test -> e2e -> gate.
+# See https://github.com/faberline/aw/blob/main/docs/standards/ci.md
+# The ruleset requires only the "gate" job. Keep its name fixed.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: "lint: fmt, clippy"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          toolchain: 1.96.1
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: |
+            som-rs
+            som-rs/som-targets
+            som-service
+      # This repository has no root workspace, so each crate is checked by its manifest.
+      - name: "fmt: som-rs"
+        run: cargo fmt --all --manifest-path som-rs/Cargo.toml -- --check
+      - name: "fmt: som-targets"
+        run: cargo fmt --all --manifest-path som-rs/som-targets/Cargo.toml -- --check
+      - name: "fmt: som-service"
+        run: cargo fmt --all --manifest-path som-service/Cargo.toml -- --check
+      - name: "clippy: som-rs"
+        run: cargo clippy --manifest-path som-rs/Cargo.toml --all-targets --locked -- -D warnings
+      - name: "clippy: som-targets"
+        run: cargo clippy --manifest-path som-rs/som-targets/Cargo.toml --all-targets --locked -- -D warnings
+      - name: "clippy: som-service"
+        run: cargo clippy --manifest-path som-service/Cargo.toml --all-targets --locked -- -D warnings
+
+  test-som-service:
+    name: "test: som-service"
+    needs: [lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          toolchain: 1.96.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: som-service
+      - name: Prefetch generated client dependencies
+        run: |
+          dir="$RUNNER_TEMP/som-client-prefetch"
+          mkdir -p "$dir/src"
+          sed 's/{{PACKAGE}}/som_client_prefetch/g' som-service/templates/Cargo.toml.txt > "$dir/Cargo.toml"
+          sed 's/{{PACKAGE}}/som_client_prefetch/g' som-service/templates/Cargo.lock.txt > "$dir/Cargo.lock"
+          : > "$dir/src/lib.rs"
+          cargo fetch --locked --manifest-path "$dir/Cargo.toml"
+      - run: cargo test --manifest-path som-service/Cargo.toml --locked
+
+  test-som-rs:
+    name: "test: som-rs compiler"
+    needs: [lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          toolchain: 1.96.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: som-rs
+      - run: cargo fetch --locked --manifest-path som-rs/Cargo.toml
+      - run: cargo test --locked --no-fail-fast --manifest-path som-rs/Cargo.toml -- --test-threads=1
+
+  test-som-targets:
+    name: "test: som-rs targets"
+    needs: [lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          toolchain: 1.96.1
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: som-rs/som-targets
+      - run: cargo fetch --locked --manifest-path som-rs/som-targets/Cargo.toml
+      - run: cargo test --locked --no-fail-fast --manifest-path som-rs/som-targets/Cargo.toml -- --test-threads=1
+
+  test-scripts:
+    name: "test: python and node scripts"
+    needs: [lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Quickstart unit tests
+        run: python3 -m unittest discover -s som-rs/scripts/react_quickstart -p 'test_*.py' -v
+      - name: Acceptance runner unit tests (Python)
+        run: python3 -I -S -B -m unittest discover -s som-rs/scripts/react_output_acceptance -p 'test_*.py' -v
+      - name: Acceptance runner unit tests (Node)
+        run: node --test som-rs/scripts/react_output_acceptance/test_*.mjs
+      - name: Audit unit tests
+        run: python3 -m unittest discover -s som-rs/scripts/react_output_acceptance/audit -p 'test_*.py' -v
+      - name: Release tool unit tests
+        run: |
+          python3 -m venv "$RUNNER_TEMP/release-venv"
+          "$RUNNER_TEMP/release-venv/bin/python" -m pip install 'jsonschema==4.25.1' 'psycopg[binary]==3.2.10' 'referencing==0.36.2' 'alembic==1.16.5' 'SQLAlchemy==2.0.44'
+          "$RUNNER_TEMP/release-venv/bin/python" -m unittest discover -s som-rs/scripts/rust_output_release -p 'test_*.py' -v
+
+  gate:
+    name: gate
+    if: always()
+    needs: [lint, test-som-service, test-som-rs, test-som-targets, test-scripts]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check every stage
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo "$RESULTS" | jq -e '.lint.result == "success"' > /dev/null
+          echo "$RESULTS" | jq -e 'all(.[]; .result == "success" or .result == "skipped")' > /dev/null
