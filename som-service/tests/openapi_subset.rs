@@ -1,0 +1,149 @@
+//! Subset selection over the pinned Defer OpenAPI document (issue #171).
+use serde_json::Value;
+use sha2::{Digest, Sha256};
+use som_service::openapi::{
+    DEFER_OPENAPI, defer_document, operation_ids, select_operations, unresolved_refs,
+};
+use std::collections::BTreeSet;
+use std::path::Path;
+
+const RECORDED_SHA256: &str = "60610be0037ed1be2eaac8ffb6fd20a98e5698975e43211fd0804b5eae68d920";
+const RECORDED_REVISION: &str = "bffe799847277c07c12605a8d333b53e962302d4";
+const METHODS: [&str; 8] = [
+    "get", "put", "post", "delete", "patch", "head", "options", "trace",
+];
+
+const PROMPT_V2: &str = include_str!("fixtures/defer-four.prompt.json");
+
+fn hex_sha256(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
+}
+
+fn manifest_file(name: &str) -> Vec<u8> {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(name);
+    std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()))
+}
+
+/// Every (path, method, operationId) triple in a document's `paths`.
+fn operations(document: &Value) -> BTreeSet<(String, String, String)> {
+    let mut out = BTreeSet::new();
+    for (path, item) in document["paths"].as_object().expect("paths object") {
+        for method in METHODS {
+            if let Some(op) = item.get(method) {
+                out.insert((
+                    path.clone(),
+                    method.to_owned(),
+                    op["operationId"].as_str().expect("operationId").to_owned(),
+                ));
+            }
+        }
+    }
+    out
+}
+
+fn selection() -> Value {
+    select_operations(&defer_document(), &["task_status", "task_create"])
+        .expect("select task_status and task_create")
+}
+
+#[test]
+fn subset_keeps_only_selected_operations() {
+    let subset = selection();
+    let expected: BTreeSet<(String, String, String)> = [
+        ("/v1/queues/{queue}/tasks/{task_id}", "get", "task_status"),
+        ("/v1/queues/{queue}/tasks", "post", "task_create"),
+    ]
+    .into_iter()
+    .map(|(p, m, id)| (p.to_owned(), m.to_owned(), id.to_owned()))
+    .collect();
+    assert_eq!(operations(&subset), expected);
+
+    let paths = subset["paths"].as_object().expect("paths object");
+    assert_eq!(paths.len(), 2, "exactly two path items: {paths:?}");
+    assert!(
+        paths["/v1/queues/{queue}/tasks/{task_id}"]
+            .get("delete")
+            .is_none(),
+        "task_cancel must not be kept"
+    );
+}
+
+#[test]
+fn subset_keeps_referenced_schemas() {
+    let subset = selection();
+
+    let schema_names: BTreeSet<&str> = subset["components"]["schemas"]
+        .as_object()
+        .expect("schemas object")
+        .keys()
+        .map(String::as_str)
+        .collect();
+    assert_eq!(
+        schema_names,
+        BTreeSet::from(["CreateTask", "Target", "TaskStatus", "TaskStatusResponse"]),
+    );
+
+    let expected_unresolved: BTreeSet<String> = [
+        "#/components/schemas/AttemptId",
+        "#/components/schemas/DateTime",
+        "#/components/schemas/TaskId",
+        "#/components/schemas/service_http.ErrorEnvelope",
+    ]
+    .into_iter()
+    .map(str::to_owned)
+    .collect();
+    assert_eq!(unresolved_refs(&subset), expected_unresolved);
+
+    // Cutting the document must not break anything the full document did not already break.
+    let full_unresolved = unresolved_refs(&defer_document());
+    for r in unresolved_refs(&subset) {
+        assert!(full_unresolved.contains(&r), "new unresolved ref {r}");
+    }
+}
+
+#[test]
+fn unknown_operation_is_an_error() {
+    let document = defer_document();
+    let err = select_operations(&document, &["task_status", "no_such_op"])
+        .expect_err("unknown operationId must fail");
+    assert_eq!(err.status, 422);
+    assert_eq!(err.body["code"], "UNSUPPORTED_OPERATION");
+    assert!(
+        err.body["detail"]
+            .as_str()
+            .expect("detail string")
+            .contains("no_such_op"),
+        "detail must name the id: {}",
+        err.body["detail"]
+    );
+
+    let empty = select_operations(&document, &[]).expect_err("empty ids must fail");
+    assert_eq!(empty.body["code"], "INVALID_SCHEMA");
+}
+
+#[test]
+fn contract_hash_matches_recorded_hash() {
+    let source: Value =
+        serde_json::from_slice(&manifest_file("contract/defer.openapi.source.json"))
+            .expect("source record JSON");
+    let file_hash = hex_sha256(&manifest_file("contract/defer.openapi.json"));
+
+    assert_eq!(file_hash, RECORDED_SHA256);
+    assert_eq!(source["sha256"], RECORDED_SHA256);
+    assert_eq!(source["revision"], RECORDED_REVISION);
+    assert_eq!(hex_sha256(DEFER_OPENAPI.as_bytes()), RECORDED_SHA256);
+}
+
+#[test]
+fn operation_ids_follow_the_v2_prompt() {
+    let prompt: Value = serde_json::from_str(PROMPT_V2).expect("v2 prompt fixture");
+    let ids = operation_ids(&prompt);
+    assert_eq!(
+        ids,
+        ["task_status", "task_create", "queue_put", "task_cancel"]
+    );
+
+    let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
+    let subset = select_operations(&defer_document(), &refs).expect("four operations");
+    assert_eq!(operations(&subset).len(), 4);
+}
