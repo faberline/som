@@ -1,0 +1,130 @@
+//! A server for Defer's pinned HTTP contract.
+use axum::response::IntoResponse;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use std::{fmt, future::Future, sync::Arc};
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct TaskStatusResponse {
+    pub task_id: String,
+    pub status: TaskStatus,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub enum TaskStatus {
+    Scheduled,
+    Leased {
+        attempt_id: String,
+        executor_node: u64,
+        epoch: u64,
+        expires_at: DateTime<Utc>,
+    },
+    Succeeded,
+    DeadLettered,
+    Canceled,
+}
+
+/// Native HTTP error data. Read these fields explicitly when needed.
+#[derive(Clone, Deserialize, Serialize, PartialEq, Eq)]
+pub struct ErrorEnvelope {
+    pub error: String,
+    pub message: String,
+}
+
+impl fmt::Debug for ErrorEnvelope {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ErrorEnvelope").finish_non_exhaustive()
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct CreateTask {
+    pub task_id: String,
+    pub target: TaskTarget,
+    pub schedule_at: DateTime<Utc>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payload: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub priority: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_attempts: Option<u32>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct TaskTarget {
+    pub url: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub method: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub headers: Option<std::collections::BTreeMap<String, String>>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct QueuePolicy {
+    pub max_in_flight: u64,
+    pub max_dispatch_per_tick: u64,
+    pub max_dispatches_per_second: u64,
+    pub max_burst_size: u64,
+    pub lease_ttl_ms: u64,
+    pub retry_backoff_ms: u64,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub enum ControlState {
+    Running,
+    Paused,
+    Disabled,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct QueueSnapshot {
+    pub queue: String,
+    pub control_state: ControlState,
+    pub policy: QueuePolicy,
+    pub task_count: u64,
+    pub scheduled_count: u64,
+    pub in_flight_count: u64,
+    pub terminal_count: u64,
+}
+
+#[derive(Clone, Debug)]
+pub struct ServerError {
+    pub status: u16,
+    pub body: ErrorEnvelope,
+}
+
+impl ServerError {
+    pub fn new(status: u16, error: &str, message: &str) -> Self {
+        Self {
+            status,
+            body: ErrorEnvelope {
+                error: error.to_owned(),
+                message: message.to_owned(),
+            },
+        }
+    }
+}
+
+impl IntoResponse for ServerError {
+    fn into_response(self) -> axum::response::Response {
+        let status = axum::http::StatusCode::from_u16(self.status)
+            .unwrap_or(axum::http::StatusCode::INTERNAL_SERVER_ERROR);
+        (status, axum::Json(self.body)).into_response()
+    }
+}
+
+pub trait Handler: Send + Sync + 'static {
+{{TRAIT_METHODS}}
+}
+
+pub fn router<H: Handler>(handler: Arc<H>) -> axum::Router {
+    axum::Router::new()
+{{ROUTES}}
+        .with_state(handler)
+}
+
+pub async fn serve<H: Handler>(listener: tokio::net::TcpListener, handler: Arc<H>) -> std::io::Result<()> {
+    axum::serve(listener, router(handler)).await
+}
+
+{{HANDLERS}}

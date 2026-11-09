@@ -44,6 +44,9 @@ pub fn compile_prompt_v2(prompt: &Value) -> Result<Value, Error> {
 pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
     bundle::assemble(bundle)
 }
+pub fn assemble_server(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
+    bundle::assemble_server(bundle)
+}
 pub fn health() -> Value {
     json!({"status":"ok","compiler":"som-service.v1",
         "formats":[model::CNL_FORMAT,model::JSON_FORMAT,model::JSON_FORMAT_V2],
@@ -126,7 +129,22 @@ pub fn assemble_json(source: &str) -> Result<Value, Error> {
         ));
     }
     let doc = strict_json::parse_service(source).map_err(Error::from_body)?;
-    model::exact(&doc.value, &["bundle"], "").map_err(|e| json_error(&doc, e, ""))?;
-    let files = assemble(&doc.value["bundle"]).map_err(|e| json_error(&doc, e, ""))?;
+    let emit = if doc.value.get("emit").is_some() {
+        model::exact(&doc.value, &["bundle", "emit"], "").map_err(|e| json_error(&doc, e, ""))?;
+        doc.value["emit"].as_str().unwrap_or("")
+    } else {
+        model::exact(&doc.value, &["bundle"], "").map_err(|e| json_error(&doc, e, ""))?;
+        "client"
+    };
+    let files = match emit {
+        "client" => assemble(&doc.value["bundle"]),
+        "server" => assemble_server(&doc.value["bundle"]),
+        _ => Err(Error::new(
+            "INVALID_SCHEMA",
+            "Expected emit to be client or server.",
+            "/emit",
+        )),
+    }
+    .map_err(|e| json_error(&doc, e, ""))?;
     Ok(json!({"status":"ok","files":files}))
 }

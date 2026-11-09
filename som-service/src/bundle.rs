@@ -56,6 +56,14 @@ pub fn source_manifest() -> Value {
             include_bytes!("../templates/lib_v2.rs.txt"),
         ),
         (
+            "templates/server_Cargo.toml.txt",
+            include_bytes!("../templates/server_Cargo.toml.txt"),
+        ),
+        (
+            "templates/server_lib.rs.txt",
+            include_bytes!("../templates/server_lib.rs.txt"),
+        ),
+        (
             "templates/README.md.txt",
             include_bytes!("../templates/README.md.txt"),
         ),
@@ -87,33 +95,8 @@ pub fn compile_v2(value: &Value) -> Result<Value, Error> {
     bundle["digest"] = json!(digest);
     Ok(bundle)
 }
-/// A v2 bundle is checked like v1, then rendered with one method per operation (#163).
-fn assemble_v2(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
-    let prompt = model::validate_v2(&bundle["prompt"]).map_err(|_| {
-        Error::new(
-            "INVALID_BUNDLE",
-            "The bundle prompt is not admitted.",
-            "/bundle/prompt",
-        )
-    })?;
-    if bundle["dsl"] != model::plan_v2(&prompt) {
-        return Err(Error::new(
-            "INVALID_BUNDLE",
-            "The bundle DSL does not match its typed prompt.",
-            "/bundle/dsl",
-        ));
-    }
-    let content = json!({"version":VERSION,"assets":bundle["assets"],"prompt":bundle["prompt"],"dsl":bundle["dsl"]});
-    if bundle["digest"] != hash(&canonical(&content)) {
-        return Err(Error::new(
-            "INVALID_BUNDLE",
-            "The bundle digest is invalid.",
-            "/bundle/digest",
-        ));
-    }
-    Ok(render::render_v2(&prompt.package, &bundle["dsl"]))
-}
-pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
+/// The checks every service bundle passes before it is rendered.
+fn check_header(bundle: &Value) -> Result<(), Error> {
     model::exact(
         bundle,
         &["version", "assets", "prompt", "dsl", "digest"],
@@ -140,8 +123,39 @@ pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
             "/bundle/assets",
         ));
     }
+    Ok(())
+}
+/// The checks of a v2 bundle (#163). Returns the package name of its prompt.
+fn check_v2(bundle: &Value) -> Result<String, Error> {
+    let prompt = model::validate_v2(&bundle["prompt"]).map_err(|_| {
+        Error::new(
+            "INVALID_BUNDLE",
+            "The bundle prompt is not admitted.",
+            "/bundle/prompt",
+        )
+    })?;
+    if bundle["dsl"] != model::plan_v2(&prompt) {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "The bundle DSL does not match its typed prompt.",
+            "/bundle/dsl",
+        ));
+    }
+    let content = json!({"version":VERSION,"assets":bundle["assets"],"prompt":bundle["prompt"],"dsl":bundle["dsl"]});
+    if bundle["digest"] != hash(&canonical(&content)) {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "The bundle digest is invalid.",
+            "/bundle/digest",
+        ));
+    }
+    Ok(prompt.package)
+}
+pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
+    check_header(bundle)?;
     if bundle["prompt"]["version"] == model::PROMPT_VERSION_V2 {
-        return assemble_v2(bundle);
+        // A v2 bundle is rendered with one method per operation (#163).
+        return Ok(render::render_v2(&check_v2(bundle)?, &bundle["dsl"]));
     }
     let prompt = model::validate(&bundle["prompt"]).map_err(|_| {
         Error::new(
@@ -174,5 +188,23 @@ pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
         &prompt.operation.alias,
         inputs[0]["name"].as_str().unwrap(),
         inputs[1]["name"].as_str().unwrap(),
+    ))
+}
+
+/// A server is rendered only from a checked v2 bundle, the same one the client
+/// comes from (#161).
+pub fn assemble_server(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
+    check_header(bundle)?;
+    if bundle["prompt"]["version"] != model::PROMPT_VERSION_V2 {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "A server needs a v2 bundle.",
+            "/bundle/prompt/version",
+        ));
+    }
+    let package = check_v2(bundle)?;
+    Ok(render::render_server_v2(
+        &format!("{package}_server"),
+        &bundle["dsl"],
     ))
 }
