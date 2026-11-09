@@ -2,16 +2,19 @@
 
 ## Goal
 
-SOM's end goal is code for four scenarios: backend, frontend, SRE, and AI.
+The mainline is **R1 — Rust API**: a Rust API ecosystem built on core.
+`som-service` turns CNL or typed JSON into the DSL, then into a Rust client and an axum server.
+It is built on core `openapi-codegen` and `service-http`.
 
-| Scenario | Python | Rust | TypeScript | React |
-|---|---|---|---|---|
-| BE | supported | supported | phase 1: v1–v5, PostgreSQL ([#65](https://github.com/faberline/som/issues/65)) | — |
-| SRE | planned ([#66](https://github.com/faberline/som/issues/66)) | planned | planned | — |
-| AI | planned ([#67](https://github.com/faberline/som/issues/67)) | planned | planned | — |
-| FE | — | — | — | planned ([#68](https://github.com/faberline/som/issues/68)) |
+The milestone order drives the development order. `aw` claims the lowest `som@X.Y.Z` first.
 
-FE starts with React only. Read [the goal](docs/goal.md) and [the scenario roadmap](docs/roadmap.md).
+1. R1 — Rust API 主線 (`som@0.6.0`)
+2. M6 — React 前端 (`som@0.7.0`)
+3. M9 — SRE (`som@0.8.0`)
+4. M10 — AI (`som@0.9.0`)
+5. M12 — Rust CI (`som@0.10.0`)
+
+`som-rs` (the Python output) is frozen. It is not the mainline.
 
 ## Current state
 
