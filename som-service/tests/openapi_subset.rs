@@ -7,8 +7,8 @@ use som_service::openapi::{
 use std::collections::BTreeSet;
 use std::path::Path;
 
-const RECORDED_SHA256: &str = "60610be0037ed1be2eaac8ffb6fd20a98e5698975e43211fd0804b5eae68d920";
-const RECORDED_REVISION: &str = "bffe799847277c07c12605a8d333b53e962302d4";
+const RECORDED_SHA256: &str = "295e46df0d2379a198b48f19183d62a777a22b2d4c72f725486ef149dd7382c4";
+const RECORDED_REVISION: &str = "c408d0b101d20276d5f8c0a81aa787405bd0b58d";
 const METHODS: [&str; 8] = [
     "get", "put", "post", "delete", "patch", "head", "options", "trace",
 ];
@@ -80,24 +80,69 @@ fn subset_keeps_referenced_schemas() {
         .collect();
     assert_eq!(
         schema_names,
-        BTreeSet::from(["CreateTask", "Target", "TaskStatus", "TaskStatusResponse"]),
+        BTreeSet::from([
+            "CreateTask",
+            "ErrorEnvelope",
+            "Target",
+            "TaskStatus",
+            "TaskStatusResponse"
+        ]),
     );
 
-    let expected_unresolved: BTreeSet<String> = [
-        "#/components/schemas/AttemptId",
-        "#/components/schemas/DateTime",
-        "#/components/schemas/TaskId",
-        "#/components/schemas/service_http.ErrorEnvelope",
-    ]
-    .into_iter()
-    .map(str::to_owned)
-    .collect();
-    assert_eq!(unresolved_refs(&subset), expected_unresolved);
+    assert!(
+        unresolved_refs(&subset).is_empty(),
+        "subset has unresolved refs: {:?}",
+        unresolved_refs(&subset)
+    );
+    assert!(
+        unresolved_refs(&defer_document()).is_empty(),
+        "full document has unresolved refs: {:?}",
+        unresolved_refs(&defer_document())
+    );
 
     // Cutting the document must not break anything the full document did not already break.
     let full_unresolved = unresolved_refs(&defer_document());
     for r in unresolved_refs(&subset) {
         assert!(full_unresolved.contains(&r), "new unresolved ref {r}");
+    }
+}
+
+#[test]
+fn defer_openapi_refs_all_resolve() {
+    fn collect_refs<'a>(value: &'a Value, out: &mut Vec<&'a str>) {
+        match value {
+            Value::Object(map) => {
+                for (key, child) in map {
+                    if key == "$ref" {
+                        out.push(child.as_str().expect("$ref string"));
+                    } else {
+                        collect_refs(child, out);
+                    }
+                }
+            }
+            Value::Array(items) => {
+                for item in items {
+                    collect_refs(item, out);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let document = defer_document();
+    let mut refs = Vec::new();
+    collect_refs(&document, &mut refs);
+    assert!(!refs.is_empty(), "document has no $ref at all");
+
+    let schemas = document["components"]["schemas"]
+        .as_object()
+        .expect("components.schemas object");
+    for r in &refs {
+        let name = r
+            .strip_prefix("#/components/schemas/")
+            .unwrap_or_else(|| panic!("$ref not under components/schemas: {r}"));
+        assert!(!name.contains('/'), "$ref has extra path segments: {r}");
+        assert!(schemas.contains_key(name), "dangling $ref: {r}");
     }
 }
 
