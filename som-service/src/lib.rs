@@ -2,6 +2,7 @@ pub mod bundle;
 pub mod error;
 mod lower;
 pub mod model;
+pub mod openapi;
 pub mod render;
 pub mod server;
 mod strict_json;
