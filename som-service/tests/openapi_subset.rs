@@ -7,8 +7,8 @@ use som_service::openapi::{
 use std::collections::BTreeSet;
 use std::path::Path;
 
-const RECORDED_SHA256: &str = "295e46df0d2379a198b48f19183d62a777a22b2d4c72f725486ef149dd7382c4";
-const RECORDED_REVISION: &str = "c408d0b101d20276d5f8c0a81aa787405bd0b58d";
+const RECORDED_SHA256: &str = "9d756c6bc0c1c7af5243cb510af23fea1679cff4fb6f3d8290ab248b61bb4a1f";
+const RECORDED_REVISION: &str = "024f29630976a24283cb7843aaef9ccdcfdb4a31";
 const METHODS: [&str; 8] = [
     "get", "put", "post", "delete", "patch", "head", "options", "trace",
 ];
