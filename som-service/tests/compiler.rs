@@ -307,7 +307,7 @@ fn missing_duplicate_extra_and_wrong_header_are_structural_refusals() {
         "CNL_SYNTAX",
     );
     refused(
-        compile_cnl(&CNL.replace("version 1.", "version 2.")),
+        compile_cnl(&CNL.replace("version 1.", "version 3.")),
         422,
         "UNSUPPORTED_VERSION",
     );

@@ -1,0 +1,16 @@
+Service prompt version 2.
+Package defer_client.
+Target rust-service-client.v1.
+Bind service defer using contract "defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0".
+Bind operation read_task_status to task_status.
+Accept queue as string for queue.
+Accept task_id as string for task_id.
+Bind operation create_task to task_create.
+Accept queue as string for queue.
+Send body task as CreateTask.
+Bind operation put_queue to queue_put.
+Accept queue as string for queue.
+Send body policy as QueuePolicy.
+Bind operation cancel_task to task_cancel.
+Accept queue as string for queue.
+Accept task_id as string for task_id.

@@ -57,12 +57,12 @@ in the branch protection of main.
 
 ## Fixed sources and ownership
 
-- NLP: `4ceb753b5cde60a0c474903be9ea2ae3717bb6e5`.
+- NLP: `2f7e519d4037033d0ef69629c8f8bdfba837794a`.
 - Defer HTTP contract: `5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0`.
 - Defer's Core dependency: `029e765efaac4080bb9e8283005a9c6792953f54`.
 - Old SOM still uses NLP `8ddb1f6df55eec0764ca50772b2c038441361727`.
 
-NLP owns `parse_service_document` and service syntax report v1. Its old
+NLP owns `parse_service_document` and service syntax report (CNL versions 1 and 2). Its old
 API2 and Pest entry points remain supported. SOM owns the typed contract,
 source maps, diagnostics, DSL, checked bundle assembly and Rust templates.
 Defer owns task state, authorization and execution. This client adds no scheduler.

@@ -29,7 +29,12 @@ pub fn compile_cnl(source: &str) -> Result<Compilation, Error> {
         ));
     }
     let (prompt, source_map) = lower::parse(source)?;
-    let bundle = compile_prompt(&prompt).map_err(|e| e.with_map(&source_map))?;
+    let bundle = if prompt["version"] == model::PROMPT_VERSION_V2 {
+        compile_prompt_v2(&prompt)
+    } else {
+        compile_prompt(&prompt)
+    }
+    .map_err(|e| e.with_map(&source_map))?;
     Ok(Compilation {
         prompt,
         source_map,
