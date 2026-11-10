@@ -135,7 +135,7 @@
    },
    "audit": {
     "/status": "passed",
-    "/run": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/release-020/run-002"
+    "/run": "<repo>/.local/rust-compiler-goal/acceptance/release-020/run-002"
    }
   },
   "python_canary_source": {

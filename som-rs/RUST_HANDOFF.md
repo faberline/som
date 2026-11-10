@@ -247,7 +247,7 @@ Expected refusal and signal cases remain failed/nonzero restore results. The QA 
 The retained M2 launch command is:
 
 ```sh
-/Users/chrischeng/faberlines/som/som-rs/runtime/versions/14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6/som serve --model /Users/chrischeng/faberlines/som/som-rs/models/current --blocks /Users/chrischeng/faberlines/som/som-code-python/data/blocks/current/blocks.json --port 8765
+<repo>/som-rs/runtime/versions/14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6/som serve --model <repo>/som-rs/models/current --blocks <repo>/som-code-python/data/blocks/current/blocks.json --port 8765
 ```
 
 A controller may use this command only after verifying the current compiler owner,
@@ -273,5 +273,5 @@ Models, source archives, runtime assets, and raw measurements stay local.
 
 The old M3 heartbeat remains paused. Do not resume model training.
 Keep all models, raw records, source archives, and the original seven changes in
-`/Users/chrischeng/.codex/worktrees/76af/som`.
+`<repo>`.
 The controller still owns its claim while acceptance writes are in progress.

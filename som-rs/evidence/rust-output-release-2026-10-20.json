@@ -61,7 +61,7 @@
      "failed": 0,
      "unrun": 0
     },
-    "/run": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/rust-output-055/run-003"
+    "/run": "<repo>/.local/rust-compiler-goal/acceptance/rust-output-055/run-003"
    }
   },
   "python_canary_source": {

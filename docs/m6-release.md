@@ -113,7 +113,7 @@ The commands below are a historical deployment draft, not an executable plan.
 First prepare a concrete deployment package and rollback command.
 Bind the exact candidate binary, assets, formatter tree, accepted receipts, release scripts, and current default receipt.
 Resolve write ownership of the production checkout before changing it.
-The current production checkout is `/Users/chrischeng/faberlines/som`.
+The current production checkout is `<repo>`.
 The managed development worktree does not hold the production default receipt.
 An earlier read-only inspection found no listener on port `8765` and no process with the receipt's recorded PID.
 Check the current state again before any authorized production action.
@@ -140,7 +140,7 @@ PR #151 changed `switch.py`, so the earlier package and approval bindings are st
 Rebind and independently review the package against the tested helper bytes
 before requesting any production approval.
 
-The historical draft targets `/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/react-131-release-001`.
+The historical draft targets `<repo>/.local/rust-compiler-goal/acceptance/react-131-release-001`.
 Any replacement plan must use the tested `release_common.py`, `switch.py`, `check_default.py`, and `resume_default.py` helper bytes.
 It must check each old file hash before installation and keep byte and mode backups.
 It must check each new hash before any service action.
@@ -151,7 +151,7 @@ The approval files do not exist until the user explicitly approves the start, sw
 After a verified resume, bind the switch approval to the fresh receipt that the resume wrote.
 
 ```sh
-SOM_RELEASE_ROOT=/Users/chrischeng/faberlines/som
+SOM_RELEASE_ROOT=<repo>
 SOM_RELEASE_DATA="$SOM_RELEASE_ROOT/.local/rust-compiler-goal/acceptance/react-131-release-001"
 SOM_RELEASE_TOOLS="$SOM_RELEASE_ROOT/som-rs/scripts/rust_output_release"
 SOM_RELEASE_PYTHON=/opt/homebrew/opt/python@3.12/bin/python3.12

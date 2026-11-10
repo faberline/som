@@ -24,7 +24,7 @@ def main():
     parser.add_argument("--output", type=Path, help="A new evidence directory; default is a new temporary directory")
     parser.add_argument("--cargo-home", type=Path, default=REPO/".local/defer-task-status/cargo-home")
     parser.add_argument("--native-cargo-home", type=Path, default=Path("/private/tmp/sift-pr29-cargo.giYPjY"))
-    parser.add_argument("--defer-repo", type=Path, default=Path("/Users/chrischeng/faberlines/defer"))
+    parser.add_argument("--defer-repo", type=Path, default=Path.home() / "faberlines" / "defer")
     parser.add_argument("--legacy-evidence", type=Path, default=REPO/".local/cnl-parser-replacement")
     parser.add_argument("--preserved-source", type=Path, default=REPO/".local/defer-task-status/preserved-source.json")
     args = parser.parse_args()

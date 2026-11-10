@@ -33,7 +33,7 @@ As stated in [product-layout.json](../som-rs/contracts/rust-output-v1/product-la
 - **Rust toolchain:** Homebrew Rust `1.96.1` at `/opt/homebrew/Cellar/rust/1.96.1/bin` (`rustc 1.96.1 (31fca3adb 2026-06-26)`, LLVM `22.1.8`, `cargo 1.96.1`, `rustfmt 1.9.0 (31fca3adbe 2026-06-26)`, `clippy 0.1.96 (31fca3adbe 2026-06-26)`, edition `2024`, host target `aarch64-apple-darwin`).
 - **Phase 1 crates ([reference/Cargo.toml](../som-rs/contracts/rust-output-v1/reference/Cargo.toml), 204 packages in [reference/Cargo.lock](../som-rs/contracts/rust-output-v1/reference/Cargo.lock)):** `axum =0.8.9`, `chrono =0.4.44`, `serde =1.0.229`, `serde_json =1.0.154`, `sqlx =0.8.6`, and `tokio =1.53.3`, plus dev-dependencies `http-body-util =0.1.5` and `tower =0.5.3`.
 - **Phase 2 crates ([reference-phase2/Cargo.toml](../som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml), 335 packages in [reference-phase2/Cargo.lock](../som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock)):** adds `base64 =0.22.1`, `flate2 =1.1.10`, `hmac =0.12.1`, `hyper =1.12.0`, `hyper-rustls =0.27.10`, `hyper-util =0.1.21`, `mongodb =3.9.1`, `ring =0.17.14`, and `sha2 =0.10.9`.
-- **PostgreSQL and Python:** PostgreSQL `17.7 (Homebrew)` at `/opt/homebrew/opt/postgresql@17/bin` and Python `3.12.11` at `/Users/chrischeng/.pyenv/versions/3.12.11/bin/python3`.
+- **PostgreSQL and Python:** PostgreSQL `17.7 (Homebrew)` at `/opt/homebrew/opt/postgresql@17/bin` and Python `3.12.11` at `<home>/.pyenv/versions/3.12.11/bin/python3`.
 
 Run [check_toolchain.py](../som-rs/scripts/rust_toolchain/check_toolchain.py) to verify every pinned Rust binary and the `rustfmt` SHA-256 against [toolchain.json](../som-rs/contracts/rust-output-v1/toolchain.json):
 

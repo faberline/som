@@ -160,7 +160,7 @@
     "som-rs/models/current": "flow-m2-candidate/smoke-r31-001",
     "som-code-python/data/blocks/current": "flow-v7-compact"
   },
-  "local_archive": "/Users/chrischeng/faberlines/som/.local/roadmap-reset-2026-10-13",
+  "local_archive": "<repo>/.local/roadmap-reset-2026-10-13",
   "local_records_sha256": {
     "github-mutation-journal.json": "ecadb61a2ee15298eb61015ffd5b918e9d5dec935e551dac23da41244b1f01ac",
     "active-handoff-before.md": "896b92ab0d46a4c2610f033d3ec03a30afbd52fce8d0b8295d78b4e07558b401",
@@ -181,7 +181,7 @@
     "github-mutation-journal-reviewed.json": "e3177427bb043d8c7711ab6b88ea0f4ce923ea94668e6e9a8ceb8ff86cd9fbf4"
   },
   "preserved_worktree": {
-    "path": "/Users/chrischeng/.codex/worktrees/76af/som",
+    "path": "<repo>",
     "head": "1a688c12e8af5edfa531c016debee3bb2a2554cb",
     "files_sha256": {
       "som-core/src/som_core/flow_m3_target.py": "94f8b095188f9984f5d48b2c52f5fe1f7682577ca66ffd45fcb3e8018a94cc7a",
