@@ -18,50 +18,70 @@ fn span(s: &faberline_nlp_cnl::SourceSpan) -> SourceSpan {
         byte_end: s.byte_end,
     }
 }
-fn slot_pointer(slot: Option<ServiceSlot>) -> String {
-    match slot {
-        Some(ServiceSlot::Header) => "/version".into(),
-        Some(ServiceSlot::Package) => "/package".into(),
-        Some(ServiceSlot::Target) => "/target".into(),
-        Some(ServiceSlot::ServiceBinding) => "/service".into(),
-        Some(ServiceSlot::OperationBinding) => "/operation".into(),
-        Some(ServiceSlot::Input(i)) => format!("/operation/inputs/{i}"),
-        _ => String::new(),
-    }
+fn slot_pointer(slot: Option<ServiceSlot>, v2: bool) -> String {
+    let pointer = match slot {
+        Some(ServiceSlot::Header) => "/version",
+        Some(ServiceSlot::Package) => "/package",
+        Some(ServiceSlot::Target) => "/target",
+        Some(ServiceSlot::ServiceBinding) => "/service",
+        Some(ServiceSlot::OperationBinding) if !v2 => "/operation",
+        Some(ServiceSlot::Input(i)) if !v2 => return format!("/operation/inputs/{i}"),
+        _ if v2 => "/operations",
+        _ => "",
+    };
+    pointer.into()
 }
-fn form(slot: Option<ServiceSlot>) -> &'static str {
+fn form(slot: Option<ServiceSlot>, v2: bool) -> &'static str {
     match slot {
+        Some(ServiceSlot::Header) if v2 => "Service prompt version 2.",
         Some(ServiceSlot::Header) => "Service prompt version 1.",
         Some(ServiceSlot::Package) => "Package NAME.",
         Some(ServiceSlot::Target) => "Target PROFILE.",
         Some(ServiceSlot::ServiceBinding) => "Bind service NAME using contract JSON_STRING.",
         Some(ServiceSlot::OperationBinding) => "Bind operation ALIAS to OPERATION.",
         Some(ServiceSlot::Input(_)) => "Accept NAME as TYPE for PARAMETER.",
+        Some(ServiceSlot::Body) => "Send body NAME as TYPE.",
+        Some(ServiceSlot::End) if v2 => "End of source after the last operation.",
         Some(ServiceSlot::End) => "End of source after two input statements.",
+        None if v2 => "A version 2 service document with one or more operations.",
         None => "Seven complete service statements with a final period on each line.",
     }
 }
-fn syntax_error(issue: ServiceSyntaxIssue) -> Error {
+fn syntax_error(issue: ServiceSyntaxIssue, v2: bool) -> Error {
     let code = match issue.kind {
         IssueKind::UnsupportedVersion => "UNSUPPORTED_VERSION",
         IssueKind::Missing => "CNL_MISSING",
         IssueKind::Duplicate => "CNL_DUPLICATE",
         _ => "CNL_SYNTAX",
     };
-    let mut pointer = slot_pointer(issue.slot);
+    let mut pointer = slot_pointer(issue.slot, v2);
     let detail = match &issue.rule {
         ServiceSyntaxRule::UnsupportedVersion => {
-            "Only service prompt version 1 is supported.".to_owned()
+            "Only service prompt versions 1 and 2 are supported.".to_owned()
         }
-        ServiceSyntaxRule::MissingStatement => format!("Missing statement: {}", form(issue.slot)),
+        ServiceSyntaxRule::MissingStatement => {
+            format!("Missing statement: {}", form(issue.slot, v2))
+        }
         ServiceSyntaxRule::DuplicateStatement => "A singleton statement is repeated.".to_owned(),
         ServiceSyntaxRule::DuplicateInput => {
-            pointer.push_str("/name");
+            if !v2 {
+                pointer.push_str("/name");
+            }
             "An input name is repeated.".to_owned()
         }
         ServiceSyntaxRule::ExtraInput => "Only two input statements are supported.".to_owned(),
         ServiceSyntaxRule::UnexpectedStatement => {
-            format!("Expected statement: {}", form(issue.slot))
+            format!("Expected statement: {}", form(issue.slot, v2))
+        }
+        ServiceSyntaxRule::DuplicateOperation => "An operation alias is repeated.".to_owned(),
+        ServiceSyntaxRule::InputBeforeOperation => {
+            "An input must follow a Bind operation statement.".to_owned()
+        }
+        ServiceSyntaxRule::BodyBeforeOperation => {
+            "A body must follow a Bind operation statement.".to_owned()
+        }
+        ServiceSyntaxRule::DuplicateBody => {
+            "An operation has at most one body statement.".to_owned()
         }
         ServiceSyntaxRule::ExpectedWord => "Expected an unquoted word.".to_owned(),
         ServiceSyntaxRule::Base(base) => match base {
@@ -90,11 +110,68 @@ fn syntax_error(issue: ServiceSyntaxIssue) -> Error {
         },
     };
     let mut error = Error::new(code, detail, &pointer).with_span(&span(&issue.span));
-    error.body["diagnostics"][0]["allowed_form"] = json!(form(issue.slot));
+    error.body["diagnostics"][0]["allowed_form"] = json!(form(issue.slot, v2));
     error
 }
 fn token(map: &mut BTreeMap<String, SourceSpan>, pointer: &str, t: &Token) {
     map.insert(pointer.into(), span(&t.span));
+}
+/// Widens the span at `key` (or creates it) so that it ends where `next` ends.
+fn extend(map: &mut BTreeMap<String, SourceSpan>, key: &str, next: &SourceSpan) {
+    map.entry(key.into())
+        .and_modify(|s| {
+            s.end_line = next.end_line;
+            s.end_column = next.end_column;
+            s.byte_end = next.byte_end;
+        })
+        .or_insert_with(|| next.clone());
+}
+/// Adds one input (or body, when `parameter` is `None`) to the newest version 2 operation.
+fn v2_input(
+    prompt: &mut Value,
+    map: &mut BTreeMap<String, SourceSpan>,
+    index: usize,
+    at: &faberline_nlp_cnl::SourceSpan,
+    name: &Token,
+    ty: &Token,
+    parameter: Option<&Token>,
+) -> Result<(), Error> {
+    let Some(op) = prompt["operations"]
+        .as_array()
+        .map_or(0, Vec::len)
+        .checked_sub(1)
+    else {
+        return Err(Error::new(
+            "CNL_SYNTAX",
+            "An input must follow a Bind operation statement.",
+            "/operations",
+        )
+        .with_span(&span(at)));
+    };
+    let base = format!("/operations/{op}/inputs/{index}");
+    let at = span(at);
+    map.insert(base.clone(), at.clone());
+    token(map, &format!("{base}/name"), name);
+    token(map, &format!("{base}/type"), ty);
+    let parameter_text = match parameter {
+        Some(p) => {
+            token(map, &format!("{base}/parameter"), p);
+            p.text.clone()
+        }
+        None => "body".to_owned(),
+    };
+    for key in [
+        format!("/operations/{op}"),
+        format!("/operations/{op}/inputs"),
+        "/operations".to_owned(),
+    ] {
+        extend(map, &key, &at);
+    }
+    prompt["operations"][op]["inputs"]
+        .as_array_mut()
+        .expect("array")
+        .push(json!({"name":name.text,"type":ty.text,"parameter":parameter_text}));
+    Ok(())
 }
 pub fn parse(source: &str) -> Result<(Value, BTreeMap<String, SourceSpan>), Error> {
     let report = parse_service_document(source);
@@ -105,10 +182,18 @@ pub fn parse(source: &str) -> Result<(Value, BTreeMap<String, SourceSpan>), Erro
             "",
         ));
     }
+    let v2 = matches!(
+        report.events.first().map(|e| &e.kind),
+        Some(ServiceEventKind::Header { version }) if version.text == "2"
+    );
     if let Some(issue) = report.issue {
-        return Err(syntax_error(issue));
+        return Err(syntax_error(issue, v2));
     }
-    let mut prompt = json!({"version":model::PROMPT_VERSION,"package":"","target":"","service":{"name":"","contract":""},"operation":{"alias":"","name":"","inputs":[]}});
+    let mut prompt = if v2 {
+        json!({"version":model::PROMPT_VERSION_V2,"package":"","target":"","service":{"name":"","contract":""},"operations":[]})
+    } else {
+        json!({"version":model::PROMPT_VERSION,"package":"","target":"","service":{"name":"","contract":""},"operation":{"alias":"","name":"","inputs":[]}})
+    };
     let mut map = BTreeMap::new();
     let mut whole = span(&report.eof);
     whole.line = 1;
@@ -138,12 +223,42 @@ pub fn parse(source: &str) -> Result<(Value, BTreeMap<String, SourceSpan>), Erro
                 })?;
                 prompt["service"]["contract"] = json!(value);
             }
+            ServiceEventKind::OperationBinding { alias, operation } if v2 => {
+                let op = prompt["operations"].as_array().map_or(0, Vec::len);
+                let op_span = span(&event.span);
+                let op_pointer = format!("/operations/{op}");
+                map.insert(op_pointer.clone(), op_span.clone());
+                extend(&mut map, "/operations", &op_span);
+                token(&mut map, &format!("{op_pointer}/alias"), &alias);
+                token(&mut map, &format!("{op_pointer}/name"), &operation);
+                prompt["operations"]
+                    .as_array_mut()
+                    .expect("array")
+                    .push(json!({"alias":alias.text,"name":operation.text,"inputs":[]}));
+                input_count = 0;
+            }
             ServiceEventKind::OperationBinding { alias, operation } => {
                 map.insert("/operation".into(), span(&event.span));
                 token(&mut map, "/operation/alias", &alias);
                 token(&mut map, "/operation/name", &operation);
                 prompt["operation"]["alias"] = json!(alias.text);
                 prompt["operation"]["name"] = json!(operation.text);
+            }
+            ServiceEventKind::InputBinding {
+                name,
+                ty,
+                parameter,
+            } if v2 => {
+                v2_input(
+                    &mut prompt,
+                    &mut map,
+                    input_count,
+                    &event.span,
+                    &name,
+                    &ty,
+                    Some(&parameter),
+                )?;
+                input_count += 1;
             }
             ServiceEventKind::InputBinding {
                 name,
@@ -169,8 +284,32 @@ pub fn parse(source: &str) -> Result<(Value, BTreeMap<String, SourceSpan>), Erro
                     .push(json!({"name":name.text,"type":ty.text,"parameter":parameter.text}));
                 input_count += 1;
             }
+            ServiceEventKind::BodyBinding { name, ty } => {
+                if !v2 {
+                    return Err(Error::new(
+                        "CNL_SYNTAX",
+                        "A body statement needs service prompt version 2.",
+                        "",
+                    )
+                    .with_span(&span(&event.span)));
+                }
+                v2_input(
+                    &mut prompt,
+                    &mut map,
+                    input_count,
+                    &event.span,
+                    &name,
+                    &ty,
+                    None,
+                )?;
+                input_count += 1;
+            }
         }
     }
-    model::validate(&prompt).map_err(|e| e.with_map(&map))?;
+    if v2 {
+        model::validate_v2(&prompt).map_err(|e| e.with_map(&map))?;
+    } else {
+        model::validate(&prompt).map_err(|e| e.with_map(&map))?;
+    }
     Ok((prompt, map))
 }
