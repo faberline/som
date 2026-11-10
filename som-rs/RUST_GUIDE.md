@@ -11,7 +11,7 @@ The legacy M2 runtime, model and block links remain saved for rollback.
 
 ## Use the installed CLI
 
-Run these commands from `/Users/chrischeng/faberlines/som`.
+Run these commands from `<repo>`.
 The installed CLI is `som-rs/runtime/current/som`. Its default URL is `http://127.0.0.1:8765`.
 Do not start a second server on 8765.
 

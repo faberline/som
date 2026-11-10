@@ -12,14 +12,14 @@
   "policy_source_commit": "59dd63396bc2a2f1f3eb60853413029eb7c0e6f2",
   "recorded_at": "2026-10-12T08:06:15.026730+00:00",
   "base_commit": "6bffdc53be57fc1dc2ea6490b9d821547acdb03f",
-  "source_round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4",
-  "candidate": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/flow-first-r10-20261012-004",
+  "source_round": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4",
+  "candidate": "<repo>/som-rs/models/flow-m3-candidate/flow-first-r10-20261012-004",
   "status_at_capture": "target-parity",
   "controller_pid": 50628,
-  "controller_path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/run_round.py",
+  "controller_path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/run_round.py",
   "controller_sha256": "81d2eb8962ddee8161e3210023da4db802cffb43522d19de4ceb6e6222ca4bad",
   "launch": {
-    "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/launch.json",
+    "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/launch.json",
     "sha256": "1c158c3618024f3fe2d6a238f93b30f19e35252f520461ad04d0ac4f90de65f9"
   },
   "source_changes": {
@@ -80,7 +80,7 @@
   },
   "previous_rounds": [
     {
-      "round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1",
+      "round": "<repo>/som-rs/evals/m3-flow-2026-10-12/r1",
       "status": "failed_or_interrupted",
       "pipeline_receipt_sha256": "00410cb90655d2023d503d213a7cc4fbe13a47c3ae74c0b686b9604e791932e3",
       "failure": "KeyboardInterrupt('M3 continuation controller interrupted')",
@@ -88,7 +88,7 @@
       "note": "All original records remain local; no partial result is reused as a new admission pass"
     },
     {
-      "round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r2",
+      "round": "<repo>/som-rs/evals/m3-flow-2026-10-12/r2",
       "status": "failed_or_interrupted",
       "pipeline_receipt_sha256": "bc660d3f9f4b6a0779ae8101a0f9c9b7719e1e1c745a50758475092862291eed",
       "failure": "KeyboardInterrupt('M3 continuation controller interrupted')",
@@ -96,7 +96,7 @@
       "note": "All original records remain local; no partial result is reused as a new admission pass"
     },
     {
-      "round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r3",
+      "round": "<repo>/som-rs/evals/m3-flow-2026-10-12/r3",
       "status": "failed_or_interrupted",
       "pipeline_receipt_sha256": "60cba2c74bd6037df0f31547538c623dc7b19e7e7630205d8b209f6d6ccb5e46",
       "failure": "KeyboardInterrupt('M3 continuation controller interrupted')",
@@ -106,13 +106,13 @@
   ],
   "prerequisites": {
     "python-prerequisites-001.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/python-prerequisites-001.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/python-prerequisites-001.json",
       "sha256": "088086dc28d6c3b207a365c0c3fe89b036c7ce1e19815d111ba34782175ee2c7",
       "passed": true,
       "exit_code": 0
     },
     "repair-rust-tests-001.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/repair-rust-tests-001.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/repair-rust-tests-001.json",
       "sha256": "3b3480b3391abbe0e72d3774abd4a613c5eb7d004436e9cd864aeaee5d0841eb",
       "passed": true,
       "exit_code": 0,
@@ -120,40 +120,40 @@
       "ignored_tests": 3
     },
     "rust-build-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/rust-build-001/result.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/rust-build-001/result.json",
       "sha256": "1e34ae4bf7ea3faf569a8ee9a3467e73afc980bd4a2cb069b52b55c8a376c247",
       "passed": true,
       "exit_code": 0
     },
     "runtime-retention-001.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/runtime-retention-001.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/runtime-retention-001.json",
       "sha256": "51ef9325f07afe7825f0d8941d792fe1683e512472bc0cbdd9f934a126e75337",
       "passed": true
     },
     "loader-error-format-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/loader-error-format-001/result.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/loader-error-format-001/result.json",
       "sha256": "efbcde9c789eb6c7294e13085eabe9de670837eb7a83f381d2523a8606c70fd5",
       "passed": true,
       "scope": "metadata-only native loader diagnostic; no weights",
       "exit_code": 1
     },
     "mask-parity-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/mask-parity-001/result.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/mask-parity-001/result.json",
       "sha256": "4e964d4918b487945429b69c9c25bffd9627d0b1b19408951618ed90550d3476",
       "passed": true
     },
     "native-constrained-smoke-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/native-constrained-smoke-001/result.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/native-constrained-smoke-001/result.json",
       "sha256": "6061b1be2fc798bdd194a7998de35e1c5b02fae8a280dc34e50dce41a468f2f8",
       "passed": true
     },
     "compact-codec-refusals-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/compact-codec-refusals-001/result.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/compact-codec-refusals-001/result.json",
       "sha256": "6c1844848a688b064b4f41ec57ba9247d950d3b3ed4d22f190ad0fbfad83b9c8",
       "passed": true
     },
     "compact-compiler-refusals-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/compact-compiler-refusals-001/result.json",
+      "path": "<repo>/som-rs/evals/m3-flow-2026-10-12/r4/compact-compiler-refusals-001/result.json",
       "sha256": "ec07e91ad94c4c0ed5a474c4c3d03d59996f1386ba91edbac4111468cee15547",
       "passed": true
     }
@@ -179,7 +179,7 @@
   "training": {
     "started": false,
     "continuation_mode": "fresh candidate from seed 17; not an exact resume of checkpoint 74000",
-    "shared_budget": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/training-budget.json",
+    "shared_budget": "<repo>/som-rs/models/flow-m3-candidate/training-budget.json",
     "limit_seconds": 604800,
     "spent_seconds_before_training": 231398.2452680124,
     "remaining_seconds_before_training": 373401.7547319876,

@@ -25,7 +25,7 @@ The original corpus still hashes to
 `260bb1662225144c4044576a4c43e388e4ea6033a0157ffbddd0589a03e9ddf3`.
 
 Evidence is retained under
-`/Users/chrischeng/.codex/worktrees/b81a/som/.local/defer-task-status/`:
+`<repo>/.local/defer-task-status/`:
 
 - `compiler-tests.log` and `service-all-tests.log`.
 - `entrypoints-v2/report.json` and `entrypoints-v2/generated/`.

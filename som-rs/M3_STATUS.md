@@ -14,7 +14,7 @@ The recovery work for #21, #22 and #23 is complete.
 Their results are saved on GitHub. All three tickets are closed as completed.
 The [recovery index](evidence/m3-2026-10-12-recovery.json) binds the new receipts.
 Recovery receipts stay in the `76af/som` worktree on this workstation.
-The original model and runtime assets stay in `/Users/chrischeng/faberlines/som`.
+The original model and runtime assets stay in `<repo>`.
 
 ## Verified progress
 
@@ -153,7 +153,7 @@ No M3 training or formal model check has started yet.
 The controller PID is 50628. Its local command is:
 
 ```text
-/Users/chrischeng/faberlines/som/som-rs/runtime/acceptance-m3-venv/bin/python /Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/run_round.py
+<repo>/som-rs/runtime/acceptance-m3-venv/bin/python <repo>/som-rs/evals/m3-flow-2026-10-12/r4/run_round.py
 ```
 
 After complete admission, it creates a fresh seed-17 candidate.

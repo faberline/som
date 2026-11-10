@@ -29,9 +29,9 @@ Read [the current status](M3_STATUS.md) before work starts.
 ## Start the next session
 
 1. Read the active controller state before using a source worktree from main.
-   Retained model and runtime assets are in `/Users/chrischeng/faberlines/som`.
+   Retained model and runtime assets are in `<repo>`.
    Recovery documents and receipts are in
-   `/Users/chrischeng/.codex/worktrees/76af/som`.
+   `<repo>`.
    Read [M3_STATUS.md](M3_STATUS.md) and
    [the ticket plan](plans/m3-work-breakdown-2026-10-11.json).
 2. Read the [recovery index](evidence/m3-2026-10-12-recovery.json).

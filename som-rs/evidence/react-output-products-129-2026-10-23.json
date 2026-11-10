@@ -158,7 +158,7 @@
     "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/check_products.py --url http://127.0.0.1:18972 --manifest .local/react-output/bundles-129-003/products/manifest.json --out .local/react-output/products-129-003",
     "report": ".local/react-output/products-129-003/report.json",
     "report_sha256": "157aed7a27ae340ffa7fa879c32133d33e01e8d1b6c8f6fd862e1b870a700b38",
-    "vendored_cache": "/Users/chrischeng/faberlines/som/.local/react-output/npm-cache-001",
+    "vendored_cache": "<repo>/.local/react-output/npm-cache-001",
     "case_count": 129,
     "complete": true,
     "failed": [],

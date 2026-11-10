@@ -16,7 +16,7 @@ Run this after the service compiler generates the contract fixture:
 ```sh
 python3 som-service/acceptance/run.py \
   --generated-dir /absolute/path/to/generated/defer_status_client \
-  --defer-repo /Users/chrischeng/faberlines/defer \
+  --defer-repo <defer-repo> \
   --output /private/tmp/dfr07-client-acceptance \
   --cargo /opt/homebrew/Cellar/rust/1.96.1/bin/cargo \
   --native-cargo-home /private/tmp/sift-pr29-cargo.giYPjY \

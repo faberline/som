@@ -9,42 +9,42 @@
   "git_baseline": "82f3b87ccad40277713326e42ac35f921ba34663",
   "candidate": {
     "binary": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/som",
+      "path": "<repo>/.local/rust-compiler-goal/candidate-003/som",
       "sha256": "3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02"
     },
     "source": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/source.json",
+      "path": "<repo>/.local/rust-compiler-goal/candidate-003/source.json",
       "sha256": "1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd"
     },
     "acceptance_tools": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/acceptance-tools.json",
+      "path": "<repo>/.local/rust-compiler-goal/candidate-003/acceptance-tools.json",
       "sha256": "a3797384a1010de52ef3b86c5de22d18dd9c062f5aeb60b8282d35b033a23da3"
     },
     "model_loaded": false
   },
   "saved_gate_receipts": {
     "public127": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/public-products-003b/result.json",
+      "path": "<repo>/.local/rust-compiler-goal/acceptance/public-products-003b/result.json",
       "sha256": "a00324170bcebd84772c5ce482533912e6f4f47eed0b545b6e601d75d1994c75"
     },
     "runtime37": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/runtime-003/result.json",
+      "path": "<repo>/.local/rust-compiler-goal/acceptance/runtime-003/result.json",
       "sha256": "550e1d0cde6efb4962e6e0b1a1d624fdd093ce1c9a72eeb371942217fb9ba940"
     },
     "gaps31": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/gaps-003/result.json",
+      "path": "<repo>/.local/rust-compiler-goal/acceptance/gaps-003/result.json",
       "sha256": "c115c15cddbdd6bcc49ee97f3e0604f435e2d2ad872f90a96469ef3ff7a664fe"
     },
     "diagnostic101": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/diagnostic-003/results.json",
+      "path": "<repo>/.local/rust-compiler-goal/acceptance/diagnostic-003/results.json",
       "sha256": "49ca7cab7e0771eb9eede1a5fc540e167b49d5a61d1d727134a2f606d09198d9"
     },
     "frozen": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/frozen-003b.json",
+      "path": "<repo>/.local/rust-compiler-goal/acceptance/frozen-003b.json",
       "sha256": "4be531b0f3fe746bef2fe465e98d21dd3b9237c8254080d9f13993894394d4fe"
     },
     "renderer11": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/renderer_behavior/run-003/summary.json",
+      "path": "<repo>/.local/rust-compiler-goal/acceptance/renderer_behavior/run-003/summary.json",
       "sha256": "722f1ea38b901cf0b0a37ef9e9b2cf114fae34435b60d1275254b5a966848d43"
     }
   },
@@ -58,7 +58,7 @@
     "remaining": 368,
     "distinct_prompts": 540,
     "snapshot": {
-      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/interim-land-2026-10-15/legacy544-progress.json",
+      "path": "<repo>/.local/rust-compiler-goal/acceptance/interim-land-2026-10-15/legacy544-progress.json",
       "sha256": "49756a337d366a9346721ba182689877f19a28f17ab811f65e0253f3b62adc3c"
     },
     "not_final_acceptance": true
@@ -186,7 +186,7 @@
   },
   "cleanup": {
     "receipt": {
-      "path": "/Users/chrischeng/faberlines/som/.local/training-data-archive-2026-10-14/cleanup-001/result.json",
+      "path": "<repo>/.local/training-data-archive-2026-10-14/cleanup-001/result.json",
       "sha256": "5321f43c7ff18989befa4b99b3abd871da6492d696cf83102d0170ff247c803a"
     },
     "removed_unused_files": 55,
@@ -201,7 +201,7 @@
     "model_selector": "flow-m2-candidate/smoke-r31-001",
     "block_selector": "flow-v7-compact",
     "receipt": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/runtime/default.json",
+      "path": "<repo>/som-rs/runtime/default.json",
       "sha256": "e035e04c5fd8d38e2c26b0664f10fe3becb61c5c3237d0c1c84f2adf689c4698"
     }
   },
