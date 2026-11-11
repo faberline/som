@@ -1,7 +1,10 @@
 # Defer task-status client compiler
 
-Compile a fixed English request into a Rust client for Defer task status.
-This version supports one GET operation. It preserves the native status
+`som-service` (Rust) is the one supported path. It compiles a fixed English
+request (CNL) or typed JSON into a Rust client and an axum server for Defer.
+The compiler supports four operations: `task_status`, `task_create`,
+`queue_put` and `task_cancel`. List operations (`queue_list`, `queue_get`,
+`task_list`) are planned. The generated client preserves the native status
 types, HTTP errors and response bytes.
 
 The CNL example is [contract/task-status.cnl](contract/task-status.cnl).

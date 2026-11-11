@@ -16,6 +16,11 @@ The milestone order drives the development order. `aw` claims the lowest `som@X.
 
 `som-rs` (the Python output) is frozen. It is not the mainline.
 
+## Supported path
+
+There is one supported path: `som-service` (Rust). It compiles CNL or typed JSON into the DSL and then into a Rust client and an axum server. Read [som-service/README.md](som-service/README.md).
+`som-rs` (the Python output) is frozen and is not the supported path.
+
 ## Current state
 
 The new Rust compiler passed independent acceptance and is the local default.
