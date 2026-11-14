@@ -14,8 +14,9 @@ grep -rInE --exclude-dir=.git --exclude-dir=target 'som-code-python/data/NAME([^
 grep -rn 'include_\(str\|bytes\|dir\)!' som-rs/src som-service
 # ci-test: a test that test-som-rs runs (not #[ignore]) must read the data
 grep -n '#\[ignore\|cfg(' som-rs/tests/*.rs som-rs/src/*.rs
-# frozen record: evidence or contracts that name the path
-grep -rIn 'NAME' som-rs | grep '/evidence/\|/contracts/'
+# frozen record: any hit in a frozen som-rs/ file (evidence, contracts, docs, scripts)
+grep -rInE --exclude-dir=target 'som-core/data/NAME([^A-Za-z0-9_-]|$)' som-rs
+grep -rInE --exclude-dir=target 'som-code-python/data/NAME([^A-Za-z0-9_-]|$)' som-rs
 ```
 
 Classes, tested in this order: `embedded` (an include macro in `som-rs/src/` or `som-service/`), `ci-test` (a non-ignored test in `som-rs/tests/` or a `cfg(test)` module in `som-rs/src/`, both run by job `test-som-rs`; job `test-scripts` reads no legacy data), `qa-only` (named only by `som-core/scripts/`, `som-core/tests/` (not run by `ci.yml`), `som-rs/scripts/`, a `som-core/src` module, a doc or an evidence file), `unnamed` (no name outside the folder). MB = `du` KiB / 1024.
@@ -56,7 +57,7 @@ Classes, tested in this order: `embedded` (an include macro in `som-rs/src/` or 
 | `som-core/data/flow-v7-r4` | 0.0 MB | nothing outside the folder | unnamed | n/a |
 | `som-core/data/flow-v7-r5` | 0.4 MB | nothing outside the folder | unnamed | n/a |
 | `som-core/data/flow-v7-r6` | 0.4 MB | nothing outside the folder | unnamed | n/a |
-| `som-core/data/flow-v7-r7` | 0.7 MB | `som-core/scripts/finalize_m1.py:80`, `som-rs/M1_CLOSEOUT.md:115` | qa-only | no |
+| `som-core/data/flow-v7-r7` | 0.7 MB | `som-core/scripts/finalize_m1.py:80`, `som-rs/M1_CLOSEOUT.md:115` | qa-only | yes, `som-rs/M1_CLOSEOUT.md:115` (path) |
 | `som-core/data/flow-v7-r8` | 0.4 MB | nothing outside the folder | unnamed | n/a |
 | `som-core/data/flow-v7-r9` | 1.5 MB | `som-core/scripts/finalize_flow_draft.py:96` | qa-only | no |
 | `som-core/data/flow-v7-unsealed-001` | 0.0 MB | nothing outside the folder | unnamed | n/a |
@@ -65,7 +66,7 @@ Classes, tested in this order: `embedded` (an include macro in `som-rs/src/` or 
 | ↳ `som-core/data/related-service/train.jsonl` | 4.4 MB | `som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json:622` | qa-only | yes, `som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json:622` |
 | `som-core/data/service-regression-v4` | 1.6 MB | CI test: `som-rs/tests/parity.rs:112`, `:115` (not ignored); also named by hosted_readiness scripts (not CI) | ci-test | n/a |
 | ↳ `som-core/data/service-regression-v4/heldout.expected.jsonl` | 1.2 MB | CI test: `som-rs/tests/parity.rs:115` (test at line 110, not ignored) | ci-test | n/a |
-| `som-core/data/service-stress-v3` | 0.8 MB | `som-core/scripts/build_date_corpus_v4.py:26`, `som-core/scripts/build_service_regression_v4.py:12`, `som-core/scripts/build_service_stress_v3.py:21` and 3 more | qa-only | no |
+| `som-core/data/service-stress-v3` | 0.8 MB | `som-rs/SERVICE_V3.md:63` (link to `manifest.json`), `som-core/scripts/build_date_corpus_v4.py:26`, `som-core/scripts/build_service_regression_v4.py:12`, `som-core/scripts/build_service_stress_v3.py:21` and 3 more | qa-only | yes, `som-rs/SERVICE_V3.md:63` (path) |
 | `som-core/data/service-v3` | 0.8 MB | CI test: `som-rs/tests/parity.rs:91`, `:93`, `:159` (not ignored); also named by evidence and scripts | ci-test | n/a |
 | `som-core/data/v1` | 0.4 MB | CI test: `som-rs/tests/parity.rs:51`, `:53` (not ignored); also named by evidence and scripts | ci-test | n/a |
 
