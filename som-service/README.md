@@ -47,7 +47,7 @@ Pass `None` for Defer open mode. HTTP failures retain status, raw bytes and an
 optional native error object. Interrupted responses retain the received status
 and body prefix. Debug and Display omit response bodies and credentials.
 
-The new HTTP service exposes `/health`, `/compile` and `/assemble`.
+The new HTTP service exposes `/health`, `/compile` and `/assemble`. It also serves the core probe routes `/healthz`, `/readyz`, `/metrics`, `/openapi.json` and `/docs`.
 Use `som.cnl.service.v1` or `som.prompt-json.service.v1` at `/compile`.
 The existing `som` service and its old versions stay unchanged.
 
