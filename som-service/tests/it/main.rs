@@ -9,6 +9,7 @@ mod compiler;
 mod openapi_subset;
 mod properties;
 mod readme_cnl_split;
+mod readme_links;
 mod readme_mainline;
 mod readme_supported_path;
 mod server_render;
