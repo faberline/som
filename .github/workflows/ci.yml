@@ -80,7 +80,7 @@ jobs:
           persist-credentials: false
       - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
         with:
-          tool: cargo-deny@0.18.3
+          tool: cargo-deny@0.20.2
       - name: "audit: cargo deny"
         working-directory: som-service
         run: cargo deny --locked check
