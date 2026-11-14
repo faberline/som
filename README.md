@@ -42,14 +42,13 @@ The fresh complete gates passed 127 public products and 544 historical jobs.
 Read [the guide](som-rs/RUST_GUIDE.md), [the status](som-rs/RUST_STATUS.md),
 [the acceptance report](som-rs/RUST_REPORT.md), and [the roadmap](som-rs/RUST_ROADMAP.md).
 
-## CNL split with nlp
+## CNL ownership
 
-som owns CNL meaning: business rules, admission, lowering to the DSL and code generation.
-CNL syntax comes from `faberline-nlp-cnl` ([faberline/nlp](https://github.com/faberline/nlp)).
-A syntax change starts as an nlp issue. After it merges, som moves its pinned revision.
+som owns CNL syntax and CNL meaning: the parser, business rules, admission, lowering to the DSL and code generation.
+The syntax crate `faberline-nlp-cnl` lives in `som-service/cnl/`. It was moved from [faberline/nlp](https://github.com/faberline/nlp) at revision `2f7e519d4037033d0ef69629c8f8bdfba837794a` without a change of grammar, AST, API versions or diagnostic spans.
+A CNL syntax change is a som issue.
 `som-rs/contracts/compiler-v1/grammar.ebnf` stays as the frozen compiler-v1 contract. New syntax is not added there.
-`som-rs` and `som-service` pin different nlp revisions today.
-`som-rs` keeps its sealed pin until the owner approves a re-pin ([#180](https://github.com/faberline/som/issues/180)).
+`som-rs` keeps its sealed nlp pin (`faberline-nlp-cnl` in `som-rs/Cargo.toml`) until the owner approves a re-pin ([#180](https://github.com/faberline/som/issues/180)).
 
 ## Historical model roadmap and retained legacy service
 
