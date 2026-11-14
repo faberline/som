@@ -67,6 +67,12 @@ jobs:
           sed 's/{{PACKAGE}}/som_client_prefetch/g' som-service/templates/Cargo.lock.txt > "$dir/Cargo.lock"
           : > "$dir/src/lib.rs"
           cargo fetch --locked --manifest-path "$dir/Cargo.toml"
+          v2="$RUNNER_TEMP/som-client-v2-prefetch"
+          mkdir -p "$v2/src"
+          sed 's/{{PACKAGE}}/som_client_v2_prefetch/g' som-service/templates/client_v2_Cargo.toml.txt > "$v2/Cargo.toml"
+          sed 's/{{PACKAGE}}/som_client_v2_prefetch/g' som-service/templates/client_v2_Cargo.lock.txt > "$v2/Cargo.lock"
+          : > "$v2/src/lib.rs"
+          cargo fetch --locked --manifest-path "$v2/Cargo.toml"
       - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
         with:
           tool: cargo-llvm-cov@0.9.1
