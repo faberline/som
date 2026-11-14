@@ -1,0 +1,33 @@
+# Proof batch of ci-on-gke (som#214, faberline/aw#390). Not the CI of som:
+# ci-on-gke-proof.yml runs it by hand. Format: docs/standards/ci-on-gke.md
+# in faberline/aw.
+version: 1
+image: ghcr.io/faberline/ci-rust:1.99.1
+jobs:
+  - name: source
+    stage: test
+    command: |
+      test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      test -f aw.toml
+      echo "source is at $GITHUB_SHA"
+    resources: { cpu: "1", memory: 1Gi }
+    timeout: 10m
+
+  - name: toolchain
+    stage: test
+    command: |
+      rustc --version
+      cargo --version
+      sccache --version
+      id
+    resources: { cpu: "1", memory: 1Gi }
+    timeout: 10m
+
+  # Fails on purpose: the stage must fail and the table must show this row.
+  - name: fails-on-purpose
+    stage: test
+    command: |
+      echo "this Job fails on purpose"
+      exit 3
+    resources: { cpu: "1", memory: 1Gi }
+    timeout: 10m

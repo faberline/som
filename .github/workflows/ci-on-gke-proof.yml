@@ -1,0 +1,25 @@
+# Proof of ci-on-gke (som#214, design faberline/aw#390): one small batch
+# through ci-stage.yml, started by hand. The batch has a Job that fails on
+# purpose, so a red run is the correct result: check the summary table, the
+# logs, that the namespace is gone and that the nodes return to 0.
+# This is not the CI of som; ci.yml is.
+name: ci-on-gke-proof
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-gke:
+    name: test
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    uses: faberline/aw/.github/workflows/ci-stage.yml@main
+    with:
+      stage: test
+      manifest: .github/ci/proof-jobs.yaml
+      timeout-minutes: 30
