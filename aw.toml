@@ -1,5 +1,5 @@
 [standards.coverage]
-line = 81.30
+line = 83.25
 target = 100
 
 [[standards.core_reuse.exception]]
