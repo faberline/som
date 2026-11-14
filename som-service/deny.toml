@@ -11,6 +11,10 @@ allow = ["MIT", "Apache-2.0", "Apache-2.0 WITH LLVM-exception", "BSD-2-Clause", 
 confidence-threshold = 0.8
 [licenses.private]
 ignore = true
+[[licenses.clarify]]
+crate = "cli-std"
+expression = "MIT"
+license-files = []
 
 [bans]
 multiple-versions = "warn"
@@ -20,4 +24,4 @@ wildcards = "allow"
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = ["https://github.com/faberline/nlp.git"]
+allow-git = ["https://github.com/faberline/nlp.git", "https://github.com/faberline/core"]
