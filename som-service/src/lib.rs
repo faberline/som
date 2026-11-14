@@ -1,4 +1,5 @@
 pub mod bundle;
+pub mod codegen;
 pub mod error;
 mod lower;
 pub mod model;

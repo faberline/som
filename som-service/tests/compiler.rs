@@ -556,7 +556,8 @@ fn health_advertises_only_the_new_compiler_family() {
 fn wire_contract_lists_the_four_defer_operations_and_keeps_task_status() {
     let wire = value(include_str!("../contract/wire.json"));
     let ops = wire["operations"].as_object().unwrap();
-    let keys: Vec<&str> = ops.keys().map(String::as_str).collect();
+    let mut keys: Vec<&str> = ops.keys().map(String::as_str).collect();
+    keys.sort_unstable();
     assert_eq!(keys, ["queue_put", "task_cancel", "task_create"]);
     let expect = [
         ("task_create", "POST", "/v1/queues/{queue}/tasks", 201),
