@@ -13,9 +13,11 @@ som has one supported path: `som-service` (Rust). Read `README.md` first.
 
 ## CNL syntax
 
-CNL syntax belongs to `faberline/nlp`. A syntax change starts as an nlp issue.
-After it merges, move the `faberline-nlp-cnl` revision in
-`som-service/Cargo.toml`. som owns only CNL meaning, lowering and code generation.
+som owns its CNL parser, its syntax, its meaning, lowering and code generation.
+A CNL syntax change is a som issue, not an nlp issue.
+Until som#217 merges, `som-service` still pins `faberline-nlp-cnl` from the nlp
+repo in `som-service/Cargo.toml`. Only som#217 moves it. Do not move that
+revision in any other change.
 
 ## Verify
 
