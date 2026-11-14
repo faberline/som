@@ -1,4 +1,4 @@
-//! The root README states the CNL split with nlp (issue #184).
+//! The root README states CNL ownership (issues #184, #217).
 use std::path::Path;
 
 fn readme() -> String {
@@ -7,30 +7,43 @@ fn readme() -> String {
 }
 
 #[test]
-fn readme_states_cnl_split() {
+fn readme_states_cnl_ownership() {
     let text = readme();
     for needle in [
-        "## CNL split with nlp",
-        "som owns CNL meaning",
-        "faberline-nlp-cnl",
-        "A syntax change starts as an nlp issue",
+        "## CNL ownership",
+        "som owns CNL syntax and CNL meaning",
+        "som-service/cnl/",
+        "A CNL syntax change is a som issue",
         "compiler-v1/grammar.ebnf",
         "frozen",
+        "faberline-nlp-cnl",
     ] {
         assert!(text.contains(needle), "README lacks: {needle}");
     }
 }
 
 #[test]
-fn readme_split_section_is_one_section_before_history() {
+fn readme_no_longer_routes_syntax_to_nlp() {
     let text = readme();
-    let heading = "## CNL split with nlp";
+    for stale in [
+        "A syntax change starts as an nlp issue",
+        "## CNL split with nlp",
+        "pin different nlp revisions",
+    ] {
+        assert!(!text.contains(stale), "README still says: {stale}");
+    }
+}
+
+#[test]
+fn readme_ownership_section_is_one_section_before_history() {
+    let text = readme();
+    let heading = "## CNL ownership";
     assert_eq!(
         text.matches(heading).count(),
         1,
         "README must contain {heading:?} exactly once"
     );
-    let split = text.find(heading).expect("heading present");
+    let ownership = text.find(heading).expect("heading present");
     let current = text
         .find("## Current state")
         .expect("README has ## Current state");
@@ -38,11 +51,11 @@ fn readme_split_section_is_one_section_before_history() {
         .find("## Historical model roadmap and retained legacy service")
         .expect("README has the historical roadmap heading");
     assert!(
-        current < split,
-        "CNL split section must come after ## Current state"
+        current < ownership,
+        "CNL ownership section must come after ## Current state"
     );
     assert!(
-        split < history,
-        "CNL split section must come before the historical roadmap"
+        ownership < history,
+        "CNL ownership section must come before the historical roadmap"
     );
 }

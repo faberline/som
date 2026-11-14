@@ -8,7 +8,7 @@ The compiler supports four operations: `task_status`, `task_create`,
 types, HTTP errors and response bytes.
 
 The CNL example is [contract/task-status.cnl](contract/task-status.cnl).
-Its typed input and expected DSL are fixed beside it. NLP parses the source.
+Its typed input and expected DSL are fixed beside it. The local crate `cnl/` parses the source.
 SOM checks names and types, selects the approved operation and emits code.
 
 The client supports Scheduled, Leased, Succeeded, DeadLettered and Canceled.
@@ -60,18 +60,18 @@ in the branch protection of main.
 
 ## Fixed sources and ownership
 
-- NLP: `2f7e519d4037033d0ef69629c8f8bdfba837794a`.
+- CNL syntax crate: `som-service/cnl/`, moved from nlp revision `2f7e519d4037033d0ef69629c8f8bdfba837794a`.
 - Defer HTTP contract: `5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0`.
 - Defer's Core dependency: `029e765efaac4080bb9e8283005a9c6792953f54`.
 - Old SOM still uses NLP `8ddb1f6df55eec0764ca50772b2c038441361727`.
 
-NLP owns `parse_service_document` and service syntax report (CNL versions 1 and 2). Its old
+The `cnl/` crate owns `parse_service_document` and service syntax report (CNL versions 1 and 2). Its old
 API2 and Pest entry points remain supported. SOM owns the typed contract,
 source maps, diagnostics, DSL, checked bundle assembly and Rust templates.
 Defer owns task state, authorization and execution. This client adds no scheduler.
 
 The service compiler has its own Cargo lock and asset family. Its source
-fingerprint includes the actual NLP sources, compiler code, contracts and client
+fingerprint includes the actual `cnl/` sources, compiler code, contracts and client
 templates. Saved bundles must match that fingerprint. The old compiler files,
 two old lockfiles, assets and tests are retained unchanged.
 
@@ -91,7 +91,7 @@ Use `--help` for the source, cache and evidence paths.
 
 The command fetches fixed public build inputs, then runs locked offline builds.
 It checks CNL and typed input, DSL, source maps, HTTP/CLI, saved bundles,
-generated-client transport, the real pinned Defer router, both NLP entry points,
+generated-client transport, the real pinned Defer router, both CNL entry points,
 and the old 1,930-record SOM comparison. No expected result is regenerated.
 
 The native harness uses a controlled clock and committed Raft commands.
