@@ -1,0 +1,7 @@
+[standards.coverage]
+line = 80.80
+target = 100
+
+[[standards.core_reuse.exception]]
+check = "CR5"
+reason = "som-service and the frozen som-rs build binaries without core cli-std; som-service takes core crates when #172 and #173 land, som-rs stays frozen (#180)"
