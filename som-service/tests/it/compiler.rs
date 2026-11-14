@@ -8,9 +8,9 @@ use som_service::{
 };
 use std::collections::BTreeSet;
 
-const CNL: &str = include_str!("../contract/task-status.cnl");
-const PROMPT: &str = include_str!("../contract/prompt.json");
-const DSL: &str = include_str!("../contract/dsl.json");
+const CNL: &str = include_str!("../../contract/task-status.cnl");
+const PROMPT: &str = include_str!("../../contract/prompt.json");
+const DSL: &str = include_str!("../../contract/dsl.json");
 const PROMPT_V2: &str = include_str!("fixtures/defer-four.prompt.json");
 const DSL_V2: &str = include_str!("fixtures/defer-four.dsl.json");
 
@@ -115,7 +115,7 @@ fn assert_map_token(source: &str, path: &str, line: usize, token: &str) {
 
 #[test]
 fn frozen_contract_files_keep_their_independent_hashes() {
-    let freeze = value(include_str!("../contract/freeze.json"));
+    let freeze = value(include_str!("../../contract/freeze.json"));
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     for (path, expected) in freeze["files_sha256"].as_object().unwrap() {
         assert_eq!(
@@ -554,7 +554,7 @@ fn health_advertises_only_the_new_compiler_family() {
 
 #[test]
 fn wire_contract_lists_the_four_defer_operations_and_keeps_task_status() {
-    let wire = value(include_str!("../contract/wire.json"));
+    let wire = value(include_str!("../../contract/wire.json"));
     let ops = wire["operations"].as_object().unwrap();
     let mut keys: Vec<&str> = ops.keys().map(String::as_str).collect();
     keys.sort_unstable();
@@ -600,7 +600,7 @@ fn prompt_json_v2_lowers_four_operations_to_the_golden_dsl() {
 
 #[test]
 fn v2_dsl_matches_wire_contract_methods_and_paths() {
-    let wire = value(include_str!("../contract/wire.json"));
+    let wire = value(include_str!("../../contract/wire.json"));
     let dsl = value(DSL_V2);
     let operations = dsl["operations"].as_array().unwrap();
     let find = |name: &str| {
@@ -781,7 +781,7 @@ fn v2_bundle_assembles_four_operations() {
     );
     assert_eq!(
         files["Cargo.toml"],
-        include_str!("../templates/client_v2_Cargo.toml.txt")
+        include_str!("../../templates/client_v2_Cargo.toml.txt")
             .replace("{{PACKAGE}}", "defer_client")
     );
     assert_eq!(
@@ -846,7 +846,7 @@ fn v2_bundle_is_checked_before_it_is_assembled() {
 #[test]
 fn v1_files_are_unchanged_by_the_v2_renderer() {
     let files = ok(assemble(&ok(compile_prompt(&value(PROMPT)))));
-    let expected = include_str!("../templates/lib.rs.txt")
+    let expected = include_str!("../../templates/lib.rs.txt")
         .replace("{{ALIAS}}", "read_task_status")
         .replace("{{QUEUE_ARGUMENT}}", "queue")
         .replace("{{TASK_ARGUMENT}}", "task_id");
