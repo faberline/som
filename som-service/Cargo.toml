@@ -1,3 +1,8 @@
+[workspace]
+members = [".", "cnl"]
+default-members = [".", "cnl"]
+exclude = ["scripts/nlp-oracle"]
+
 [package]
 name = "som-service"
 version = "0.1.0"
@@ -8,7 +13,7 @@ publish = false
 [dependencies]
 axum = "=0.8.9"
 clap = { version = "=4.6.7", features = ["derive"] }
-faberline-nlp-cnl = { git = "https://github.com/faberline/nlp.git", rev = "2f7e519d4037033d0ef69629c8f8bdfba837794a" }
+faberline-nlp-cnl = { path = "cnl" }
 openapi-codegen = { git = "https://github.com/faberline/core", tag = "v0.5.0" }
 reqwest = { version = "=0.12.28", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "=1.0.229", features = ["derive"] }
