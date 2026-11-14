@@ -6,8 +6,8 @@ use som_service::{Error, assemble, compile_cnl, compile_json, compile_prompt, co
 const CNL_V2: &str = include_str!("fixtures/defer-four.cnl");
 const PROMPT_V2: &str = include_str!("fixtures/defer-four.prompt.json");
 const DSL_V2: &str = include_str!("fixtures/defer-four.dsl.json");
-const CNL_V1: &str = include_str!("../contract/task-status.cnl");
-const PROMPT_V1: &str = include_str!("../contract/prompt.json");
+const CNL_V1: &str = include_str!("../../contract/task-status.cnl");
+const PROMPT_V1: &str = include_str!("../../contract/prompt.json");
 
 fn value(text: &str) -> Value {
     serde_json::from_str(text).expect("JSON fixture")
