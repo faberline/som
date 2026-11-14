@@ -362,7 +362,6 @@ dependencies = [
 [[package]]
 name = "faberline-nlp-cnl"
 version = "0.1.0"
-source = "git+https://github.com/faberline/nlp.git?rev=2f7e519d4037033d0ef69629c8f8bdfba837794a#2f7e519d4037033d0ef69629c8f8bdfba837794a"
 dependencies = [
  "pest",
  "pest_derive",
