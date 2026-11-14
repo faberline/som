@@ -215,6 +215,9 @@ fn delete_sends_no_body_and_accepts_204() {
 
 #[test]
 fn post_error_bodies_from_the_wire_contract() {
+    let example: Value = serde_json::from_str(
+        wire()["operations"]["task_create"]["source"]["example"].as_str().unwrap(),
+    ).unwrap();
     for case in wire()["operations"]["task_create"]["errors"].as_array().unwrap() {
         let status = case["status"].as_u64().unwrap() as u16;
         let body = serde_json::to_vec(&case["body"]).unwrap();
@@ -227,14 +230,18 @@ fn post_error_bodies_from_the_wire_contract() {
         };
         assert_eq!(error_code, case["body"]["error"].as_str().unwrap());
         assert_eq!(message, case["body"]["message"].as_str().unwrap());
-        worker.join().unwrap();
+        let request = request_text(worker);
+        assert!(request.starts_with("POST /v1/queues/jobs/tasks HTTP/1.1\r\n"), "{request}");
+        assert_eq!(sent_body(&request), example);
     }
     let (origin, worker) = reply(400, "", br#"{"error":"bad_request","message":"x"}"#);
     match Client::new(&origin).task_create("jobs".into(), sample_task()).unwrap_err() {
         ApiError::Api(TaskCreateError::Status400(e)) => assert_eq!(e.error, "bad_request"),
         other => panic!("expected task_create 400: {other:?}"),
     }
-    worker.join().unwrap();
+    let request = request_text(worker);
+    assert!(request.starts_with("POST /v1/queues/jobs/tasks HTTP/1.1\r\n"), "{request}");
+    assert_eq!(sent_body(&request), example);
 }
 
 #[test]
