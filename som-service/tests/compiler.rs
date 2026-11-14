@@ -860,3 +860,33 @@ fn v1_bundle_bytes_are_unchanged_by_v2() {
     assert_eq!(bundle["dsl"], value(DSL));
     assert_eq!(bundle["prompt"], value(PROMPT));
 }
+
+#[test]
+fn assemble_refuses_a_bundle_without_all_its_parts() {
+    let mut partial = ok(compile_prompt_v2(&value(PROMPT_V2)));
+    partial.as_object_mut().unwrap().remove("digest");
+    pointer(
+        &refused(assemble(&partial), 400, "INVALID_BUNDLE"),
+        "/bundle",
+    );
+}
+
+#[test]
+fn assemble_refuses_an_invalid_v1_prompt() {
+    let mut bundle = ok(compile_prompt(&value(PROMPT)));
+    bundle["prompt"]["package"] = json!("Bad Name");
+    pointer(
+        &refused(assemble(&bundle), 400, "INVALID_BUNDLE"),
+        "/bundle/prompt",
+    );
+}
+
+#[test]
+fn assemble_refuses_an_invalid_v2_prompt() {
+    let mut bundle = ok(compile_prompt_v2(&value(PROMPT_V2)));
+    bundle["prompt"]["package"] = json!("Bad Name");
+    pointer(
+        &refused(assemble(&bundle), 400, "INVALID_BUNDLE"),
+        "/bundle/prompt",
+    );
+}
