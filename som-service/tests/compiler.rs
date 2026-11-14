@@ -750,33 +750,39 @@ fn v1_and_v2_formats_do_not_accept_each_others_prompts() {
 }
 
 #[test]
-fn v2_bundle_assembles_four_methods_in_operation_order() {
+fn v2_bundle_assembles_four_operations() {
     let files = ok(assemble(&ok(compile_prompt_v2(&value(PROMPT_V2)))));
     let keys: Vec<&str> = files.keys().map(String::as_str).collect();
     assert_eq!(
         keys,
-        ["Cargo.lock", "Cargo.toml", "README.md", "src/lib.rs"]
+        [
+            ".openapi-codegen.json",
+            "Cargo.lock",
+            "Cargo.toml",
+            "README.md",
+            "src/client.rs",
+            "src/lib.rs",
+            "src/models.rs",
+        ]
     );
 
-    let lib = &files["src/lib.rs"];
-    assert!(lib.contains(include_str!("fixtures/defer-four.methods.rs")));
-    assert!(!lib.contains("{{"));
-    let positions: Vec<usize> = [
-        "read_task_status",
-        "create_task",
-        "put_queue",
-        "cancel_task",
-    ]
-    .iter()
-    .map(|name| {
-        lib.find(&format!("pub async fn {name}("))
-            .unwrap_or_else(|| panic!("missing method {name}"))
-    })
-    .collect();
-    assert!(positions.windows(2).all(|pair| pair[0] < pair[1]));
+    let client = &files["src/client.rs"];
+    assert!(!client.contains("{{"));
+    for name in ["task_status", "task_create", "queue_put", "task_cancel"] {
+        assert!(
+            client.contains(&format!("fn {name}(")),
+            "missing method {name}"
+        );
+    }
+    let manifest: Value = serde_json::from_str(&files[".openapi-codegen.json"]).unwrap();
+    assert_eq!(
+        manifest["operations"],
+        json!(["task_status", "task_create", "queue_put", "task_cancel"])
+    );
     assert_eq!(
         files["Cargo.toml"],
-        include_str!("../templates/Cargo.toml.txt").replace("{{PACKAGE}}", "defer_client")
+        include_str!("../templates/client_v2_Cargo.toml.txt")
+            .replace("{{PACKAGE}}", "defer_client")
     );
     assert_eq!(
         files,
@@ -785,7 +791,7 @@ fn v2_bundle_assembles_four_methods_in_operation_order() {
 }
 
 #[test]
-fn v2_assemble_follows_aliases_and_argument_names() {
+fn v2_assemble_names_methods_by_operation_id() {
     let mut prompt = value(PROMPT_V2);
     prompt["operations"] = json!([{
         "alias": "drop_task", "name": "task_cancel",
@@ -795,10 +801,11 @@ fn v2_assemble_follows_aliases_and_argument_names() {
         ]
     }]);
     let files = ok(assemble(&ok(compile_prompt_v2(&prompt))));
-    let lib = &files["src/lib.rs"];
-    assert!(lib.contains("pub async fn drop_task("));
-    assert!(lib.contains(r#"&["v1", "queues", body, "tasks", status]"#));
-    assert!(lib.contains(r#"("queue", body), ("task_id", status)"#));
+    let client = &files["src/client.rs"];
+    assert!(client.contains("fn task_cancel("));
+    assert!(!client.contains("drop_task"));
+    let manifest: Value = serde_json::from_str(&files[".openapi-codegen.json"]).unwrap();
+    assert_eq!(manifest["operations"], json!(["task_cancel"]));
 }
 
 #[test]
@@ -806,10 +813,10 @@ fn v2_single_operation_bundle_assembles_only_that_method() {
     let mut prompt = value(PROMPT_V2);
     prompt["operations"] = json!([value(PROMPT_V2)["operations"][2].clone()]);
     let files = ok(assemble(&ok(compile_prompt_v2(&prompt))));
-    let lib = &files["src/lib.rs"];
-    assert!(lib.contains("pub async fn put_queue("));
-    assert!(!lib.contains("pub async fn cancel_task("));
-    assert!(!lib.contains("reqwest::Method::DELETE"));
+    let client = &files["src/client.rs"];
+    assert!(client.contains("fn queue_put("));
+    assert!(!client.contains("fn task_cancel("));
+    assert!(!client.contains(".delete("));
 }
 
 #[test]
@@ -852,4 +859,34 @@ fn v1_bundle_bytes_are_unchanged_by_v2() {
     let bundle = ok(compile_prompt(&value(PROMPT)));
     assert_eq!(bundle["dsl"], value(DSL));
     assert_eq!(bundle["prompt"], value(PROMPT));
+}
+
+#[test]
+fn assemble_refuses_a_bundle_without_all_its_parts() {
+    let mut partial = ok(compile_prompt_v2(&value(PROMPT_V2)));
+    partial.as_object_mut().unwrap().remove("digest");
+    pointer(
+        &refused(assemble(&partial), 400, "INVALID_BUNDLE"),
+        "/bundle",
+    );
+}
+
+#[test]
+fn assemble_refuses_an_invalid_v1_prompt() {
+    let mut bundle = ok(compile_prompt(&value(PROMPT)));
+    bundle["prompt"]["package"] = json!("Bad Name");
+    pointer(
+        &refused(assemble(&bundle), 400, "INVALID_BUNDLE"),
+        "/bundle/prompt",
+    );
+}
+
+#[test]
+fn assemble_refuses_an_invalid_v2_prompt() {
+    let mut bundle = ok(compile_prompt_v2(&value(PROMPT_V2)));
+    bundle["prompt"]["package"] = json!("Bad Name");
+    pointer(
+        &refused(assemble(&bundle), 400, "INVALID_BUNDLE"),
+        "/bundle/prompt",
+    );
 }

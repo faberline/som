@@ -31,6 +31,7 @@ pub fn source_manifest() -> Value {
             include_bytes!("../contract/task-status.cnl"),
         ),
         ("src/lib.rs", include_bytes!("lib.rs")),
+        ("src/codegen.rs", include_bytes!("codegen.rs")),
         ("src/model.rs", include_bytes!("model.rs")),
         ("src/lower.rs", include_bytes!("lower.rs")),
         ("src/error.rs", include_bytes!("error.rs")),
@@ -52,8 +53,12 @@ pub fn source_manifest() -> Value {
             include_bytes!("../templates/lib.rs.txt"),
         ),
         (
-            "templates/lib_v2.rs.txt",
-            include_bytes!("../templates/lib_v2.rs.txt"),
+            "templates/client_v2_Cargo.toml.txt",
+            include_bytes!("../templates/client_v2_Cargo.toml.txt"),
+        ),
+        (
+            "templates/client_v2_Cargo.lock.txt",
+            include_bytes!("../templates/client_v2_Cargo.lock.txt"),
         ),
         (
             "templates/server_Cargo.toml.txt",

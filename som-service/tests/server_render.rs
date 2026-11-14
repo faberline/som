@@ -6,8 +6,6 @@ use som_service::{Error, assemble_json, assemble_server, compile_prompt, compile
 const PROMPT_V2: &str = include_str!("fixtures/defer-four.prompt.json");
 const V1_PROMPT: &str = include_str!("../contract/prompt.json");
 const SERVER_CARGO: &str = include_str!("../templates/server_Cargo.toml.txt");
-const SERVER_LIB: &str = include_str!("../templates/server_lib.rs.txt");
-const CLIENT_LIB_V2: &str = include_str!("../templates/lib_v2.rs.txt");
 const GOLDEN: &str = include_str!("fixtures/defer-four.server.rs");
 
 fn value(text: &str) -> Value {
@@ -51,13 +49,6 @@ fn rehash(bundle: &mut Value) {
     bundle["digest"] = json!(sha(&serde_json::to_vec(&payload).unwrap()));
 }
 
-/// The text from `start` up to, not including, the first `end` after it.
-fn block<'a>(source: &'a str, start: &str, end: &str) -> &'a str {
-    let from = source.find(start).expect("block start marker");
-    let to = from + source[from..].find(end).expect("block end marker");
-    &source[from..to]
-}
-
 #[test]
 fn server_files_for_four_operations() {
     let files = ok(assemble_server(&ok(compile_prompt_v2(&value(PROMPT_V2)))));
@@ -84,28 +75,6 @@ fn server_files_for_four_operations() {
             .unwrap_or_else(|| panic!("golden part missing or out of order:\n{part}"));
         at += found + part.len();
     }
-}
-
-#[test]
-fn server_types_are_the_client_types() {
-    let block_a = block(
-        CLIENT_LIB_V2,
-        "#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]\npub struct TaskStatusResponse",
-        "pub enum ClientError {",
-    );
-    let block_b = block(
-        CLIENT_LIB_V2,
-        "#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]\npub struct CreateTask",
-        "#[derive(Clone)]\npub struct DeferClient",
-    );
-    assert!(
-        SERVER_LIB.contains(block_a),
-        "server types drifted from the client (block A)"
-    );
-    assert!(
-        SERVER_LIB.contains(block_b),
-        "server types drifted from the client (block B)"
-    );
 }
 
 #[test]
