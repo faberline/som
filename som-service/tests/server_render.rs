@@ -163,3 +163,18 @@ fn server_keeps_aliases_and_argument_names() {
     assert!(lib.contains("handle_drop_task::<H>"), "{lib}");
     assert!(lib.contains("let (body, status) = __path;"), "{lib}");
 }
+
+#[test]
+fn server_uses_core_error_envelope() {
+    assert!(SERVER_CARGO.contains(
+        "service-http = { git = \"https://github.com/faberline/core\", tag = \"v0.5.0\" }"
+    ));
+    let files = ok(assemble_server(&ok(compile_prompt_v2(&value(PROMPT_V2)))));
+    let lib = &files["src/lib.rs"];
+    assert!(
+        lib.contains("pub use service_http::ErrorEnvelope;"),
+        "{lib}"
+    );
+    assert!(!lib.contains("pub struct ErrorEnvelope"), "{lib}");
+    assert!(!lib.contains("{{"), "placeholder left in src/lib.rs");
+}

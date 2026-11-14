@@ -6,13 +6,29 @@ use axum::{
     http::StatusCode,
     routing::{get, post},
 };
-use serde_json::Value;
+use serde_json::{Value, json};
+use server_lifecycle::DrainController;
+use service_http::{ErrorEnvelope, standard_probe_routes_canonical_json};
+use std::sync::Arc;
 
 type Reply = Result<Json<Value>, (StatusCode, Json<Value>)>;
 fn rejected(error: Error) -> (StatusCode, Json<Value>) {
+    let envelope = ErrorEnvelope {
+        error: error.body["code"]
+            .as_str()
+            .unwrap_or("invalid_request")
+            .to_ascii_lowercase(),
+        message: error.body["detail"]
+            .as_str()
+            .unwrap_or("The request was rejected.")
+            .to_owned(),
+    };
+    let mut body = error.body;
+    body["error"] = Value::String(envelope.error);
+    body["message"] = Value::String(envelope.message);
     (
         StatusCode::from_u16(error.status).unwrap_or(StatusCode::BAD_REQUEST),
-        Json(error.body),
+        Json(body),
     )
 }
 fn body(payload: Result<Bytes, BytesRejection>) -> Result<String, (StatusCode, Json<Value>)> {
@@ -40,7 +56,18 @@ async fn assemble(payload: Result<Bytes, BytesRejection>) -> Reply {
         .map(Json)
         .map_err(rejected)
 }
+pub fn openapi_json() -> String {
+    json!({"openapi":"3.0.3","info":{"title":"som-service","version":env!("CARGO_PKG_VERSION")},
+        "paths":{"/health":{"get":{"responses":{"200":{"description":"Compiler descriptor."}}}},
+            "/compile":{"post":{"responses":{"200":{"description":"Compiled bundle."}}}},
+            "/assemble":{"post":{"responses":{"200":{"description":"Rendered files."}}}}}})
+    .to_string()
+}
 pub fn router() -> Router {
+    standard_probe_routes_canonical_json(Arc::new(DrainController::new()), None, openapi_json)
+        .merge(data_routes())
+}
+fn data_routes() -> Router {
     Router::new()
         .route("/health", get(|| async { Json(crate::health()) }))
         .route(

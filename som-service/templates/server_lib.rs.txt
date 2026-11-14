@@ -2,7 +2,7 @@
 use axum::response::IntoResponse;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::{fmt, future::Future, sync::Arc};
+use std::{future::Future, sync::Arc};
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct TaskStatusResponse {
@@ -24,18 +24,8 @@ pub enum TaskStatus {
     Canceled,
 }
 
-/// Native HTTP error data. Read these fields explicitly when needed.
-#[derive(Clone, Deserialize, Serialize, PartialEq, Eq)]
-pub struct ErrorEnvelope {
-    pub error: String,
-    pub message: String,
-}
-
-impl fmt::Debug for ErrorEnvelope {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ErrorEnvelope").finish_non_exhaustive()
-    }
-}
+/// Native HTTP error data: the core `service-http` envelope, `{error, message}`.
+pub use service_http::ErrorEnvelope;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct CreateTask {

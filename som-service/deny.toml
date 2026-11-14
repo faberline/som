@@ -16,6 +16,41 @@ crate = "cli-std"
 expression = "MIT"
 license-files = []
 
+[[licenses.clarify]]
+crate = "metrics-prometheus"
+expression = "MIT"
+license-files = []
+
+[[licenses.clarify]]
+crate = "server-http"
+expression = "MIT"
+license-files = []
+
+[[licenses.clarify]]
+crate = "server-lifecycle"
+expression = "MIT"
+license-files = []
+
+[[licenses.clarify]]
+crate = "server-tcp"
+expression = "MIT"
+license-files = []
+
+[[licenses.clarify]]
+crate = "service-http"
+expression = "MIT"
+license-files = []
+
+[[licenses.clarify]]
+crate = "service-observability"
+expression = "MIT"
+license-files = []
+
+[[licenses.clarify]]
+crate = "transport-h2c"
+expression = "MIT"
+license-files = []
+
 [bans]
 multiple-versions = "warn"
 wildcards = "allow"
