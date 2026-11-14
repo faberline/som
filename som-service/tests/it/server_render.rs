@@ -4,8 +4,8 @@ use sha2::{Digest, Sha256};
 use som_service::{Error, assemble_json, assemble_server, compile_prompt, compile_prompt_v2};
 
 const PROMPT_V2: &str = include_str!("fixtures/defer-four.prompt.json");
-const V1_PROMPT: &str = include_str!("../contract/prompt.json");
-const SERVER_CARGO: &str = include_str!("../templates/server_Cargo.toml.txt");
+const V1_PROMPT: &str = include_str!("../../contract/prompt.json");
+const SERVER_CARGO: &str = include_str!("../../templates/server_Cargo.toml.txt");
 const GOLDEN: &str = include_str!("fixtures/defer-four.server.rs");
 
 fn value(text: &str) -> Value {
