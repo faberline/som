@@ -3,6 +3,7 @@ name = "som-service"
 version = "0.1.0"
 edition = "2024"
 default-run = "som-service"
+publish = false
 
 [dependencies]
 axum = "=0.8.9"

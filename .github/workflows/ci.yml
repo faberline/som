@@ -69,6 +69,22 @@ jobs:
       - name: "test: som-service"
         run: cargo test --manifest-path som-service/Cargo.toml --locked
 
+  test-audit:
+    name: "test: som-service, dependency audit"
+    needs: [lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
+        with:
+          tool: cargo-deny@0.18.3
+      - name: "audit: cargo deny"
+        working-directory: som-service
+        run: cargo deny --locked check
+
   test-som-rs:
     name: "test: som-rs"
     needs: [lint]
@@ -140,7 +156,7 @@ jobs:
   gate:
     name: gate
     if: always()
-    needs: [lint, test-som-service, test-som-rs, test-scripts]
+    needs: [lint, test-som-service, test-audit, test-som-rs, test-scripts]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
