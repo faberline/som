@@ -48,8 +48,8 @@ Classes, tested in this order: `embedded` (an include macro in `som-rs/src/` or 
 | ↳ `som-core/data/date-service-v4/train.jsonl` | 1.1 MB | `som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json:577` | qa-only | yes, `som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json:577` |
 | `som-core/data/flow-m3-r10` | 3.9 MB | `som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json:214` (4 hits), `som-core/tests/test_flow_m3_actual_trace.py:19` (2 hits), `som-core/tests/test_flow_m3_target.py:20` (2 hits) and 2 more | qa-only | yes, `som-rs/evidence/m3-2026-10-11-progress.json:7` |
 | ↳ `som-core/data/flow-m3-r10/dev.jsonl` | 3.9 MB | `som-core/tests/test_flow_m3_actual_trace.py:19` (2 hits), `som-core/tests/test_flow_m3_target.py:20` (2 hits), `som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json:582` | qa-only | yes, `som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json:582` |
-| `som-core/data/flow-m3-r9` | 31.3 MB | CI test: `som-rs/src/flow_codec.rs:359` (cfg(test), not ignored); also named by evidence and a QA test | ci-test | n/a |
-| ↳ `som-core/data/flow-m3-r9/train.jsonl` | 31.3 MB | CI test: `som-rs/src/flow_codec.rs:359` (test at line 356, not ignored) | ci-test | n/a |
+| `som-core/data/flow-m3-r9` | 13 KB | CI test: `som-rs/src/flow_codec.rs:359` (cfg(test), not ignored); also named by evidence and a QA test | ci-test | n/a |
+| ↳ `som-core/data/flow-m3-r9/train.jsonl` | 13 KB | CI test: `som-rs/src/flow_codec.rs:359` (test at line 356, not ignored) | ci-test | n/a |
 | `som-core/data/flow-v7` | 0.4 MB | `som-core/scripts/freeze_flow_cases.py:13` | qa-only | no |
 | `som-core/data/flow-v7-r10` | 0.9 MB | embedded: `som-rs/src/flow_model.rs:105`, `:212` (include_bytes!), `som-rs/src/flow_codec.rs:328` (include_str!, test module) | embedded | n/a |
 | `som-core/data/flow-v7-r2` | 0.4 MB | nothing outside the folder | unnamed | n/a |

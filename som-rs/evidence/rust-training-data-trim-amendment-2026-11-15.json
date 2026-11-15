@@ -1,0 +1,22 @@
+{
+  "version": "som.training-data-trim-amendment.v1",
+  "amendment": 1,
+  "date": "2026-11-15",
+  "issue": "https://github.com/faberline/som/issues/227",
+  "authority": "owner decision aw#456, option A, 2026-11-15",
+  "scope": "this amendment and som-core/data/flow-m3-r9/train.jsonl only",
+  "amends": "som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json (that file is unchanged)",
+  "path": "som-core/data/flow-m3-r9/train.jsonl",
+  "old": {
+    "bytes": 32833985,
+    "lines": 2400,
+    "sha256": "73c3864270c3fb8e9887ce1b99571f37c9489459e3fe187ac5cd0cdf890fae0d"
+  },
+  "new": {
+    "bytes": 13301,
+    "lines": 1,
+    "sha256": "6200f4164804eca205f72e99be95df711940fe0d6e74e60037754d5a7891f645"
+  },
+  "method": "head -n 1 of the old file, byte for byte",
+  "history": "the old content stays in git history"
+}
