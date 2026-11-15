@@ -15,3 +15,4 @@ mod readme_supported_path;
 mod server_render;
 mod threat_model_doc;
 mod toolchain_pin;
+mod train_trim;
