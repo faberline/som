@@ -316,6 +316,18 @@ fn build_native(root: &Path, snapshot: &Path, target: &Path) -> PathBuf {
         &native,
         &target.join("native"),
         &[
+            "metadata",
+            "--offline",
+            "--format-version",
+            "1",
+            "--manifest-path",
+            "Cargo.toml",
+        ],
+    );
+    run_cargo(
+        &native,
+        &target.join("native"),
+        &[
             "build",
             "--locked",
             "--offline",
