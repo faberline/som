@@ -2,7 +2,7 @@
   "source": {
     "repository": "faberline/defer",
     "revision": "5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0",
-    "worktree": "/Users/chrischeng/faberlines/defer",
+    "worktree": "../defer",
     "source_files": {
       "crates/defer-dispatch/src/dispatcher.rs": "f443ca5d2e81fa8d041e7e13d0bd66acf0f5fb27afdd52fdc08c2be84c52e4b9",
       "crates/defer-queue/src/server.rs": "0e99cc539a9acd41a70cf57d54883b2101be71c827b0e3087e095a9ab58cdccb",
