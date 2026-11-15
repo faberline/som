@@ -1,3 +1,4 @@
+mod acceptance_client;
 mod aw_toml;
 mod client_transport;
 mod client_v2_build;
