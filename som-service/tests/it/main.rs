@@ -6,6 +6,7 @@ mod cnl_ownership;
 mod cnl_v2;
 mod codegen;
 mod compiler;
+mod entrypoints;
 mod openapi_subset;
 mod properties;
 mod readme_cnl_split;
