@@ -5,28 +5,20 @@ Expected responses come from the frozen DFR-07 case and native source contract.
 The native fixture uses Defer commit `5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0`.
 Its Core dependency remains `029e765efaac4080bb9e8283005a9c6792953f54`.
 
-The runner copies the pinned source into a new evidence directory.
-It does not change or fetch the Defer repository.
-All Cargo commands run offline with at most two build jobs.
-Pass local caches that already contain each locked dependency.
-The native and generated-client caches can be different.
+The checks are Rust tests in `som-service/tests/it/`:
+`acceptance_native.rs` (native Defer router, 35 cases and 10 path edge cases) and
+`acceptance_client.rs` (the generated client against a capture server, 70 cases of its own
+plus the 35 native cases).
 
-Run this after the service compiler generates the contract fixture:
+Run the offline generated-client tests with `cargo test --locked` from `som-service/`.
+
+Run the native Defer test (it is `#[ignore]`) with this block, exactly:
 
 ```sh
-python3 som-service/acceptance/run.py \
-  --generated-dir /absolute/path/to/generated/defer_status_client \
-  --defer-repo <defer-repo> \
-  --output /private/tmp/dfr07-client-acceptance \
-  --cargo /opt/homebrew/Cellar/rust/1.96.1/bin/cargo \
-  --native-cargo-home /private/tmp/sift-pr29-cargo.giYPjY \
-  --client-cargo-home /private/tmp/faberline-nlp-cargo.bSa7KN
+SOM_DEFER_REPO=<defer-repo> cargo test --locked -- --ignored acceptance_native
 ```
 
-Use a new empty output directory for each run.
-Optional `--native-target-dir` and `--client-target-dir` can reuse local build caches.
-The runner verifies the complete generated source and lockfile before and after the build.
-It records the resolved native dependencies, source hashes, binary hashes and commands.
+The native Defer test reads the pinned Defer revision with `git archive`, never changes or fetches the Defer repository, and builds offline; `CARGO_HOME` must hold the locked native dependencies.
 
 The native server uses Defer's real router and committed Raft commands.
 A fixed clock creates Scheduled, Leased, Succeeded, DeadLettered and Canceled states.
@@ -43,7 +35,6 @@ Empty, dot and dot-dot path values must fail before a request is sent.
 This is the client transport limit stated in the contract.
 The separate raw-HTTP checks preserve the native router's different behavior.
 
-A passing `report.json` reports 35 native HTTP cases, 10 native path edge cases,
-105 generated-client cases and 48 captured requests.
-This report covers the generated client only.
+The Rust tests check 35 native HTTP cases, 10 native path edge cases, 105 generated-client cases and 48 captured requests.
+This check covers the generated client only.
 Compiler syntax, DSL, HTTP/CLI and unchanged old-compiler checks have separate reports.

@@ -63,8 +63,8 @@ def main():
     generated=output/"entrypoints/generated"
     run("generated-fetch",[cargo,"fetch","--locked","--manifest-path",generated/"Cargo.toml"])
     run("service-tests",[cargo,"test","--locked","--offline","--all-targets","--manifest-path",manifest])
-    run("native-client",[sys.executable,SERVICE/"acceptance/run.py","--generated-dir",generated,"--defer-repo",args.defer_repo,"--output",output/"native-client",
-        "--cargo",cargo,"--native-cargo-home",args.native_cargo_home,"--client-cargo-home",args.cargo_home])
+    native_env=dict(env,CARGO_HOME=str(args.native_cargo_home),SOM_DEFER_REPO=str(args.defer_repo))
+    run("native-client",[cargo,"test","--locked","--offline","--manifest-path",manifest,"--","--ignored","acceptance_native"],native_env)
     metadata=json.loads(subprocess.check_output([str(cargo),"metadata","--locked","--offline","--format-version","1","--manifest-path",str(manifest)],env=env))
     dependency=next(p for p in metadata["packages"] if p["name"]=="faberline-nlp-cnl")
     assert dependency["source"].endswith("#"+NLP_REV)
@@ -91,11 +91,9 @@ def main():
     check_preserved()
     legacy_result=json.loads((legacy/"acceptance.json").read_text())
     assert legacy_result["passed"] and legacy_result["comparison"]["expected_records"]==1930
-    native_result=json.loads((output/"native-client/report.json").read_text())
-    assert native_result["status"]=="passed" and native_result["generated_client_cases"]==105
     result={"status":"passed","nlp_revision":NLP_REV,"legacy_nlp_revision":"8ddb1f6df55eec0764ca50772b2c038441361727",
-        "preserved_files":len(preserved),"legacy_records":1930,"generated_client_cases":105,"assets":identity["assets"],
-        "entrypoints":"entrypoint-isolation/report.json","native_client":"native-client/report.json","legacy":"legacy/acceptance.json",
+        "preserved_files":len(preserved),"legacy_records":1930,"assets":identity["assets"],
+        "entrypoints":"entrypoint-isolation/report.json","native_client":"native-client.log","legacy":"legacy/acceptance.json",
         "commands_sha256":digest(output/"commands.json")}
     (output/"receipt.json").write_text(json.dumps(result,indent=2)+"\n")
     print(json.dumps(result,indent=2))
