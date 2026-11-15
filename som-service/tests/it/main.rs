@@ -1,4 +1,5 @@
 mod acceptance_client;
+mod acceptance_docs;
 mod acceptance_native;
 mod aw_toml;
 mod client_transport;

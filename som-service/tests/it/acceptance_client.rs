@@ -1,8 +1,8 @@
-//! The generated-client part of acceptance/run.py, ported to Rust (issue #239).
+//! The generated-client acceptance checks (issue #239).
 //!
 //! 70 cases run against the real generated client of `contract/task-status.cnl`,
 //! through the probe in `acceptance/probe/main.rs`, with a capture server built
-//! on `std::net::TcpListener`. The native Defer cases stay in run.py (issue #240).
+//! on `std::net::TcpListener`. The native Defer cases are in acceptance_native.rs (issue #240).
 use std::{
     collections::HashMap,
     fmt::Write as _,
@@ -68,7 +68,7 @@ fn percent_encode(text: &str) -> String {
     out
 }
 
-/// The cases in run.py order, with the scripted response of each request case.
+/// The cases in oracle order, with the scripted response of each request case.
 struct Plan {
     cases: Vec<Value>,
     responses: HashMap<String, Value>,
@@ -575,7 +575,7 @@ fn acceptance_client_case_counts() {
         48,
         "requests that reach the capture server"
     );
-    // 70 here + the 35 native cases of run.py = 105.
+    // 70 here + the 35 native cases of acceptance_native.rs = 105.
 }
 
 #[test]
