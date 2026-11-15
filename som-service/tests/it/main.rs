@@ -1,3 +1,4 @@
+mod acceptance_client;
 mod acceptance_native;
 mod aw_toml;
 mod client_transport;
@@ -17,3 +18,4 @@ mod readme_supported_path;
 mod server_render;
 mod threat_model_doc;
 mod toolchain_pin;
+mod train_trim;
