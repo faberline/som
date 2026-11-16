@@ -1,0 +1,9 @@
+[package]
+name = "quickstart_app"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+server = { package = "defer_client_server", path = "../server" }
+tokio = { version = "=1.53.1", features = ["macros", "rt-multi-thread", "net"] }
