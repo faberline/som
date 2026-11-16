@@ -77,6 +77,20 @@ pub struct QueueSnapshot {
     pub terminal_count: u64,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct QueueListResponse {
+    pub queues: Vec<QueueSnapshot>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub next_page_token: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct TaskListResponse {
+    pub tasks: Vec<TaskStatusResponse>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub next_cursor: Option<String>,
+}
+
 #[derive(Clone, Debug)]
 pub struct ServerError {
     pub status: u16,

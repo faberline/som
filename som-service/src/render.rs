@@ -7,7 +7,7 @@ pub fn render_v2(package: &str, dsl: &Value) -> BTreeMap<String, String> {
     let operations = dsl["operations"].as_array().expect("validated DSL");
     let readme = readme_head(package, operations)
         + "\nUse `cargo build --locked` for repeat builds.\n"
-        + "The client methods are named by the Defer operation id (`task_status`, `task_create`, `queue_put`, `task_cancel`); the aliases of the prompt do not rename them.\n";
+        + "The client methods are named by the Defer operation id (`task_status`, `task_create`, `queue_put`, `task_cancel`, `queue_list`, `queue_get`, `task_list`); the aliases of the prompt do not rename them.\n";
     let mut files: BTreeMap<String, String> = [
         (
             "Cargo.toml".to_owned(),
@@ -159,6 +159,7 @@ fn server_handler(operation: &Value) -> String {
             );
             lines.push(format!("    let ({first}, {second}) = __path;"));
         }
+        [] => {}
         _ => panic!("validated DSL"),
     }
     let mut arguments: Vec<&str> = inputs

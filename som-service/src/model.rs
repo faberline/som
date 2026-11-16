@@ -258,7 +258,7 @@ impl Entry {
         format!("/{}", parts.join("/"))
     }
 }
-static CATALOG: [Entry; 4] = [
+static CATALOG: [Entry; 7] = [
     Entry {
         name: "task_status",
         method: "GET",
@@ -307,6 +307,35 @@ static CATALOG: [Entry; 4] = [
         body: None,
         response: "none",
         authorization: "queue-write",
+    },
+    Entry {
+        name: "queue_list",
+        method: "GET",
+        path: &[Seg::Lit("v1"), Seg::Lit("queues")],
+        body: None,
+        response: "QueueListResponse",
+        authorization: "queue-read",
+    },
+    Entry {
+        name: "queue_get",
+        method: "GET",
+        path: &[Seg::Lit("v1"), Seg::Lit("queues"), Seg::Param("queue")],
+        body: None,
+        response: "QueueSnapshot",
+        authorization: "queue-read",
+    },
+    Entry {
+        name: "task_list",
+        method: "GET",
+        path: &[
+            Seg::Lit("v1"),
+            Seg::Lit("queues"),
+            Seg::Param("queue"),
+            Seg::Lit("tasks"),
+        ],
+        body: None,
+        response: "TaskListResponse",
+        authorization: "queue-read",
     },
 ];
 fn entry(name: &str) -> Option<&'static Entry> {
