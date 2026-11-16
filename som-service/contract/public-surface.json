@@ -1,0 +1,22 @@
+{
+  "version": "som.public-surface.v1",
+  "cli": ["serve", "compile", "generate", "assemble", "identity"],
+  "routes": [
+    {"method": "GET", "path": "/health", "smoke_status": 200, "openapi": true},
+    {"method": "GET", "path": "/healthz", "smoke_status": 200, "openapi": false},
+    {"method": "GET", "path": "/readyz", "smoke_status": 200, "openapi": false},
+    {"method": "GET", "path": "/metrics", "smoke_status": 200, "openapi": false},
+    {"method": "GET", "path": "/openapi.json", "smoke_status": 200, "openapi": false},
+    {"method": "GET", "path": "/docs", "smoke_status": 200, "openapi": false},
+    {"method": "POST", "path": "/compile", "smoke_status": 400, "openapi": true},
+    {"method": "POST", "path": "/assemble", "smoke_status": 400, "openapi": true}
+  ],
+  "schema_ids": {
+    "formats": ["som.cnl.service.v1", "som.prompt-json.service.v1", "som.prompt-json.service.v2"],
+    "prompt_versions": ["som.prompt.service.v1", "som.prompt.service.v2"],
+    "dsl_versions": ["som.dsl.service.v1", "som.dsl.service.v2"],
+    "targets": ["rust-service-client.v1"],
+    "bundle": "som.bundle.service.v1",
+    "family": "som.service-compiler.v1"
+  }
+}
