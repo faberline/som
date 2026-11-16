@@ -1,0 +1,95 @@
+//! Quickstart app: serves the generated Defer server with an in-memory handler.
+use server::{
+    ControlState, CreateTask, Handler, QueueListResponse, QueuePolicy, QueueSnapshot, ServerError,
+    TaskListResponse, TaskStatus, TaskStatusResponse,
+};
+use std::{collections::BTreeMap, sync::{Arc, Mutex}};
+
+#[derive(Default)]
+struct Store {
+    queues: BTreeMap<String, QueuePolicy>,
+    tasks: BTreeMap<(String, String), TaskStatus>,
+}
+
+#[derive(Default)]
+struct Memory(Mutex<Store>);
+
+fn not_found(what: &str) -> ServerError {
+    ServerError::new(404, "not_found", what)
+}
+
+fn snapshot(store: &Store, queue: &str, policy: &QueuePolicy) -> QueueSnapshot {
+    let count = store.tasks.keys().filter(|(q, _)| q == queue).count() as u64;
+    QueueSnapshot {
+        queue: queue.to_owned(),
+        control_state: ControlState::Running,
+        policy: policy.clone(),
+        task_count: count,
+        scheduled_count: count,
+        in_flight_count: 0,
+        terminal_count: 0,
+    }
+}
+
+impl Handler for Memory {
+    async fn read_task_status(&self, queue: String, task_id: String) -> Result<TaskStatusResponse, ServerError> {
+        let store = self.0.lock().unwrap();
+        match store.tasks.get(&(queue, task_id.clone())) {
+            Some(status) => Ok(TaskStatusResponse { task_id, status: status.clone() }),
+            None => Err(not_found("no such task")),
+        }
+    }
+    async fn create_task(&self, queue: String, task: CreateTask) -> Result<(), ServerError> {
+        let mut store = self.0.lock().unwrap();
+        if !store.queues.contains_key(&queue) {
+            return Err(not_found("no such queue"));
+        }
+        store.tasks.insert((queue, task.task_id), TaskStatus::Scheduled);
+        Ok(())
+    }
+    async fn put_queue(&self, queue: String, policy: QueuePolicy) -> Result<QueueSnapshot, ServerError> {
+        let mut store = self.0.lock().unwrap();
+        store.queues.insert(queue.clone(), policy.clone());
+        Ok(snapshot(&store, &queue, &policy))
+    }
+    async fn cancel_task(&self, queue: String, task_id: String) -> Result<(), ServerError> {
+        let mut store = self.0.lock().unwrap();
+        match store.tasks.remove(&(queue, task_id)) {
+            Some(_) => Ok(()),
+            None => Err(not_found("no such task")),
+        }
+    }
+    async fn list_queues(&self) -> Result<QueueListResponse, ServerError> {
+        let store = self.0.lock().unwrap();
+        let queues = store.queues.iter().map(|(q, p)| snapshot(&store, q, p)).collect();
+        Ok(QueueListResponse { queues, next_page_token: None })
+    }
+    async fn get_queue(&self, queue: String) -> Result<QueueSnapshot, ServerError> {
+        let store = self.0.lock().unwrap();
+        match store.queues.get(&queue) {
+            Some(policy) => Ok(snapshot(&store, &queue, policy)),
+            None => Err(not_found("no such queue")),
+        }
+    }
+    async fn list_tasks(&self, queue: String) -> Result<TaskListResponse, ServerError> {
+        let store = self.0.lock().unwrap();
+        if !store.queues.contains_key(&queue) {
+            return Err(not_found("no such queue"));
+        }
+        let tasks = store
+            .tasks
+            .iter()
+            .filter(|((q, _), _)| *q == queue)
+            .map(|((_, id), status)| TaskStatusResponse { task_id: id.clone(), status: status.clone() })
+            .collect();
+        Ok(TaskListResponse { tasks, next_cursor: None })
+    }
+}
+
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
+    let port = std::env::args().nth(1).unwrap_or_else(|| "8080".to_owned());
+    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{port}")).await?;
+    eprintln!("quickstart app listening on {}", listener.local_addr()?);
+    server::serve(listener, Arc::new(Memory::default())).await
+}

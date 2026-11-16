@@ -13,6 +13,7 @@ mod entrypoints;
 mod no_machine_paths;
 mod openapi_subset;
 mod properties;
+mod quickstart_doc;
 mod readme_cnl_split;
 mod readme_links;
 mod readme_mainline;

@@ -35,6 +35,9 @@ cargo run --locked --manifest-path som-service/Cargo.toml -- assemble /private/t
 
 The assemble response maps four relative paths to file contents:
 `Cargo.toml`, `Cargo.lock`, `src/lib.rs` and `README.md`.
+
+For the full walk from an empty checkout to one request of each kind, see [QUICKSTART.md](QUICKSTART.md).
+
 The generated library exposes:
 
 ```rust
