@@ -12,6 +12,7 @@ mod compiler;
 mod entrypoints;
 mod no_machine_paths;
 mod openapi_subset;
+mod operations_doc;
 mod properties;
 mod quickstart_doc;
 mod readme_cnl_split;
