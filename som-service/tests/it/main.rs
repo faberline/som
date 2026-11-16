@@ -17,6 +17,7 @@ mod readme_cnl_split;
 mod readme_links;
 mod readme_mainline;
 mod readme_supported_path;
+mod server_http;
 mod server_render;
 mod threat_model_doc;
 mod toolchain_pin;
