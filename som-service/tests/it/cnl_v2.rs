@@ -149,3 +149,40 @@ fn v3_header_is_unsupported() {
     let source = CNL_V2.replace("version 2.", "version 3.");
     refused(compile_cnl(&source), 422, "UNSUPPORTED_VERSION");
 }
+
+const CNL_V7: &str = include_str!("fixtures/defer-seven.cnl");
+const PROMPT_V7: &str = include_str!("fixtures/defer-seven.prompt.json");
+const DSL_V7: &str = include_str!("fixtures/defer-seven.dsl.json");
+
+#[test]
+fn seven_operations_lower_to_dsl() {
+    let compiled = ok(compile_cnl(CNL_V7));
+    assert_eq!(compiled.prompt, value(PROMPT_V7));
+    assert_eq!(compiled.bundle["dsl"], value(DSL_V7));
+    assert_eq!(compiled.bundle, ok(compile_prompt_v2(&value(PROMPT_V7))));
+    let operations = compiled.bundle["dsl"]["operations"]
+        .as_array()
+        .expect("operations array");
+    assert_eq!(operations.len(), 7);
+    assert_eq!(operations[4]["inputs"], json!([]));
+}
+
+#[test]
+fn unknown_operation_is_still_rejected() {
+    let source = CNL_V7.replace("to task_list.", "to task_purge.");
+    let error = refused(compile_cnl(&source), 422, "UNSUPPORTED_OPERATION");
+    assert_eq!(error.body["diagnostics"][0]["line"], 20);
+}
+
+#[test]
+fn list_operation_with_an_unneeded_input_is_refused() {
+    let source = CNL_V7.replace(
+        "Bind operation list_queues to queue_list.\n",
+        "Bind operation list_queues to queue_list.\nAccept queue as string for queue.\n",
+    );
+    let error = refused(compile_cnl(&source), 400, "INVALID_SCHEMA");
+    assert_eq!(
+        error.body["diagnostics"][0]["prompt_pointer"],
+        "/operations/4/inputs"
+    );
+}

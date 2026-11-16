@@ -1,7 +1,9 @@
 //! Server emission from the same checked v2 bundle as the client (#161).
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use som_service::{Error, assemble_json, assemble_server, compile_prompt, compile_prompt_v2};
+use som_service::{
+    Error, assemble, assemble_json, assemble_server, compile_prompt, compile_prompt_v2,
+};
 
 const PROMPT_V2: &str = include_str!("fixtures/defer-four.prompt.json");
 const V1_PROMPT: &str = include_str!("../../contract/prompt.json");
@@ -177,4 +179,58 @@ fn server_uses_core_error_envelope() {
     );
     assert!(!lib.contains("pub struct ErrorEnvelope"), "{lib}");
     assert!(!lib.contains("{{"), "placeholder left in src/lib.rs");
+}
+
+const PROMPT_V7: &str = include_str!("fixtures/defer-seven.prompt.json");
+const GOLDEN_V7: &str = include_str!("fixtures/defer-seven.server.rs");
+
+#[test]
+fn seven_operations_render_client_and_server() {
+    let bundle = ok(compile_prompt_v2(&value(PROMPT_V7)));
+
+    let client = ok(assemble(&bundle));
+    let client_lib = &client["src/client.rs"];
+    for name in [
+        "task_status",
+        "task_create",
+        "queue_put",
+        "task_cancel",
+        "queue_list",
+        "queue_get",
+        "task_list",
+    ] {
+        assert!(
+            client_lib.contains(&format!("pub fn {name}(")),
+            "missing client method {name}"
+        );
+    }
+    let manifest: Value = serde_json::from_str(&client[".openapi-codegen.json"]).unwrap();
+    assert_eq!(
+        manifest["operations"],
+        json!([
+            "task_status",
+            "task_create",
+            "queue_put",
+            "task_cancel",
+            "queue_list",
+            "queue_get",
+            "task_list"
+        ])
+    );
+
+    let files = ok(assemble_server(&bundle));
+    let lib = &files["src/lib.rs"];
+    assert!(!lib.contains("{{"), "placeholder left in src/lib.rs");
+    assert_eq!(lib.matches(".route(").count(), 7, "{lib}");
+
+    let parts: Vec<&str> = GOLDEN_V7.split("\n//---\n").collect();
+    assert_eq!(parts.len(), 3, "golden must have three parts");
+    let mut at = 0;
+    for part in parts {
+        let part = part.trim_end();
+        let found = lib[at..]
+            .find(part)
+            .unwrap_or_else(|| panic!("golden part missing or out of order:\n{part}"));
+        at += found + part.len();
+    }
 }
