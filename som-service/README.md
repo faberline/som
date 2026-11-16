@@ -100,7 +100,7 @@ and the old 1,930-record SOM comparison. No expected result is regenerated.
 The native harness uses a controlled clock and committed Raft commands.
 It does not dispatch real target requests. It exercises the same public router,
 authorization code and state transitions as the pinned Defer source.
-See [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), and
+See [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [STABILITY.md](STABILITY.md), and
 [acceptance/README.md](acceptance/README.md) for the exact checks and boundaries.
 
 The native Defer test and the generated-client tests are Rust tests. Run them from `som-service/` with `cargo test --locked`, and the native Defer test with `SOM_DEFER_REPO=<defer-repo> cargo test --locked -- --ignored acceptance_native`.
