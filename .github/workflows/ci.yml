@@ -59,7 +59,7 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           workspaces: som-service
-      - name: Prefetch generated client dependencies
+      - name: Prefetch generated client and server dependencies
         run: |
           dir="$RUNNER_TEMP/som-client-prefetch"
           mkdir -p "$dir/src"
@@ -73,6 +73,11 @@ jobs:
           sed 's/{{PACKAGE}}/som_client_v2_prefetch/g' som-service/templates/client_v2_Cargo.lock.txt > "$v2/Cargo.lock"
           : > "$v2/src/lib.rs"
           cargo fetch --locked --manifest-path "$v2/Cargo.toml"
+          srv="$RUNNER_TEMP/som-server-prefetch"
+          mkdir -p "$srv/src"
+          sed 's/{{PACKAGE}}/som_server_prefetch/g' som-service/templates/server_Cargo.toml.txt > "$srv/Cargo.toml"
+          : > "$srv/src/lib.rs"
+          cargo fetch --manifest-path "$srv/Cargo.toml"
       - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
         with:
           tool: cargo-llvm-cov@0.9.1
