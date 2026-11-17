@@ -4,8 +4,19 @@ target = 100
 
 [[standards.core_reuse.exception]]
 check = "CR5"
-reason = "som-service and the frozen som-rs build binaries without core cli-std; som-service takes core crates when #172 and #173 land, som-rs stays frozen (#180)"
+reason = "som-service builds binaries without core cli-std; it takes core crates when #172 and #173 land. The old compilers are read only in the archive faberline/som-archive (#262)"
 
 [[standards.ci.exception]]
 check = "CI4"
 reason = "lint runs in Kubernetes Jobs through ci-stage.yml; its two commands are in .github/ci/jobs.yaml (aw docs/standards/ci-on-gke.md, 'How it fits the other standards')"
+
+[hygiene]
+baseline = []
+
+[[hygiene.root]]
+path = ".claude"
+reason = "Project settings of Claude Code (.claude/settings.json)."
+
+[[hygiene.root]]
+path = "som-service"
+reason = "The Rust main line. The workspace is in this folder; there is no root Cargo.toml."

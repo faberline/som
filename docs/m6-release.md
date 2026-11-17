@@ -1,5 +1,7 @@
 # M6 compiler release
 
+Paths that start with `som-archive/` are in a checkout of [faberline/som-archive](https://github.com/faberline/som-archive). Run the commands from the directory that holds that checkout.
+
 This is the operator plan for [issue #131](https://github.com/faberline/som/issues/131).
 The release is pending.
 The production default, tag, and GitHub release each need separate user approval in the conversation.
@@ -9,7 +11,7 @@ An input-upload approval does not approve any of these actions.
 
 [Issue #130](https://github.com/faberline/som/issues/130) passed independent acceptance.
 [PR #148](https://github.com/faberline/som/pull/148) merged it to `main` at `b0913e81bb5098f490aac70fb25b4611fd1d8499`.
-See the [acceptance receipt](../som-rs/evidence/react-output-acceptance-2026-10-29-issue130.json) and [independent review](../som-rs/evidence/react-output-acceptance-independent-review-2026-10-29-issue130.json).
+See the [acceptance receipt](https://github.com/faberline/som-archive/blob/main/som-rs/evidence/react-output-acceptance-2026-10-29-issue130.json) and [independent review](https://github.com/faberline/som-archive/blob/main/som-rs/evidence/react-output-acceptance-independent-review-2026-10-29-issue130.json).
 
 | Role | Source commit | Binary SHA-256 |
 |---|---|---|
@@ -77,7 +79,7 @@ The workflow saves `m6-release-summary` and encrypted `m6-release-evidence` arti
 The summary must show all five scenarios passed.
 An independent reviewer must read the raw journals and default-check results before release approval is requested.
 The corrected rehearsal passed independent raw-evidence review.
-See [run 40766965664](https://github.com/faberline/som/actions/runs/40766965664), the [rehearsal receipt](../som-rs/evidence/react-output-release-rehearsal-2026-10-29-issue131.json), and the [independent review](../som-rs/evidence/react-output-release-independent-review-2026-10-29-issue131.json).
+See [run 40766965664](https://github.com/faberline/som/actions/runs/40766965664), the [rehearsal receipt](https://github.com/faberline/som-archive/blob/main/som-rs/evidence/react-output-release-rehearsal-2026-10-29-issue131.json), and the [independent review](https://github.com/faberline/som-archive/blob/main/som-rs/evidence/react-output-release-independent-review-2026-10-29-issue131.json).
 Its tested controller source is `f76d8af5f49c7848b9fe5609d4975c679640b553`.
 All 441 [tooling checks](https://github.com/faberline/som/actions/runs/40766965597) passed.
 Each of the five scenarios first resumed a stopped previous compiler.
@@ -153,7 +155,7 @@ After a verified resume, bind the switch approval to the fresh receipt that the 
 ```sh
 SOM_RELEASE_ROOT=<repo>
 SOM_RELEASE_DATA="$SOM_RELEASE_ROOT/.local/rust-compiler-goal/acceptance/react-131-release-001"
-SOM_RELEASE_TOOLS="$SOM_RELEASE_ROOT/som-rs/scripts/rust_output_release"
+SOM_RELEASE_TOOLS="$SOM_RELEASE_ROOT/som-archive/som-rs/scripts/rust_output_release"
 SOM_RELEASE_PYTHON=/opt/homebrew/opt/python@3.12/bin/python3.12
 
 "$SOM_RELEASE_PYTHON" "$SOM_RELEASE_TOOLS/resume_default.py" --prerequisites "$SOM_RELEASE_DATA/prerequisites.json" --root "$SOM_RELEASE_ROOT" --port 8765 --execute --output "$SOM_RELEASE_DATA/resume-001" --approval "$SOM_RELEASE_DATA/resume-approval.json"

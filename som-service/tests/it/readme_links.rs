@@ -54,7 +54,7 @@ fn readme_history_section_is_short() {
         (3..=6).contains(&lines),
         "history section has {lines} non-empty lines, expected 3 to 6"
     );
-    for needle in ["som-rs/README.md", "som-service/README.md", "historical"] {
+    for needle in ["som-archive", "som-service/README.md", "historical"] {
         assert!(
             section.contains(needle),
             "history section is missing {needle:?}"
