@@ -36,9 +36,9 @@ fn acceptance_readme_keeps_case_counts() {
 }
 
 #[test]
-fn replay_does_not_call_run_py() {
+fn replay_script_is_gone() {
     assert!(
-        !read("scripts/replay.py").contains("run.py"),
-        "scripts/replay.py must not call run.py"
+        !service_path("scripts/replay.py").exists(),
+        "scripts/replay.py was deleted with the old areas (som#265)"
     );
 }

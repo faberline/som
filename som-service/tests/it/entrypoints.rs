@@ -1,8 +1,8 @@
 //! Rust port of the checks in `som-service/scripts/entrypoints.py`.
 //!
 //! Each test names the `entrypoints.py` check it ports. The legacy-binary
-//! block is not ported: it needs the sealed legacy binary and the frozen
-//! `som-rs` replay assets, so it stays in `entrypoints.py`.
+//! block is not ported: it needs the sealed legacy binary and the replay
+//! assets that now live only in `faberline/som-archive`, so it stays in `entrypoints.py`.
 
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};

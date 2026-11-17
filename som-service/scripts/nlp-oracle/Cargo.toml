@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 publish = false
 
-# baseline: the historical nlp revision that som-rs still pins; candidate: the cnl crate in this repository.
+# baseline: the historical nlp revision that som-rs (now in faberline/som-archive) still pins; candidate: the cnl crate in this repository.
 [dependencies]
 baseline = { package = "faberline-nlp-cnl", git = "https://github.com/faberline/nlp.git", rev = "8ddb1f6df55eec0764ca50772b2c038441361727" }
 candidate = { package = "faberline-nlp-cnl", path = "../../cnl" }

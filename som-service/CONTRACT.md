@@ -1,7 +1,7 @@
 # Defer task status service contract v1
 
 This slice compiles one Defer GET operation into a Rust library.
-The old som-rs compiler, formats, health response, locks and assets stay unchanged.
+The old som-rs compiler (kept read only in faberline/som-archive), formats, health response, locks and assets stay unchanged.
 The service compiler has a separate Cargo root, binary and asset identity.
 
 ## Language and typed input
