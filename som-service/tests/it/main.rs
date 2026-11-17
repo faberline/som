@@ -26,4 +26,3 @@ mod server_transport;
 mod stability;
 mod threat_model_doc;
 mod toolchain_pin;
-mod train_trim;

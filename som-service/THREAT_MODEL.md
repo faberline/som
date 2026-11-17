@@ -4,8 +4,8 @@
 
 The `som-service` command line and its local HTTP service (`serve`, which binds
 `127.0.0.1` only, `src/main.rs`), and the Rust client and server that it
-generates. The frozen `som-rs` compiler and the old `som` service are out of
-scope.
+generates. The frozen `som-rs` compiler (in `faberline/som-archive`)
+and the old `som` service are out of scope.
 
 ## Assets
 

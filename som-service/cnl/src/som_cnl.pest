@@ -1,4 +1,4 @@
-// English SOM CNL v1. Syntax follows som-rs/contracts/compiler-v1/grammar.ebnf.
+// English SOM CNL v1. Syntax follows som-archive/som-rs/contracts/compiler-v1/grammar.ebnf (repository faberline/som-archive).
 // This grammar leaves prompt semantics, planning and code generation to SOM.
 // Accept a final blank line at EOF. Leave the error position unchanged for trailing content.
 document = { SOI ~ blank* ~ header ~ (plain | queried | related | composed | workflow) ~ end_request ~
