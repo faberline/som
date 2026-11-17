@@ -129,7 +129,7 @@ Every v1–v4 acceptance case, with no sampling, runs these gates:
 
 ## 9. After approval
 
-1. Write and freeze `som-rs/contracts/react-output-v1/`, with an independent review and a sealed receipt.
+1. Write and freeze `som-archive/som-rs/contracts/react-output-v1/`, with an independent review and a sealed receipt.
 2. Split the work into `agy:todo` issues:
    - target selection and profile;
    - bundle, catalog and renderer;

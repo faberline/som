@@ -51,7 +51,11 @@ fn readme_lists_milestones_in_order() {
     ] {
         assert!(text.contains(version), "README is missing {version:?}");
     }
-    for needle in ["frozen", "som-rs"] {
+    for needle in [
+        "faberline/som-archive",
+        "read only",
+        "47e8b3f573882c4726fdb26bca23d2bf138f7820",
+    ] {
         assert!(text.contains(needle), "README is missing {needle:?}");
     }
 }

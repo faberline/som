@@ -4,9 +4,9 @@ som has one supported path: `som-service` (Rust). Read `README.md` first.
 
 ## Frozen paths
 
-- `som-rs/` is not in this repository. It is in the archive `faberline/som-archive`
-  (source commit `47e8b3f573882c4726fdb26bca23d2bf138f7820`). It is read only
-  there. Nobody restores it here or edits it, and nobody moves its nlp pin.
+- `som-rs/`, `som-core/` and `som-code-python/` are not in this repository. They are in the archive `faberline/som-archive`
+  (source commit `47e8b3f573882c4726fdb26bca23d2bf138f7820`). They are read only
+  there. Nobody restores them here or edits them, and nobody moves the nlp pin of the old compiler.
 
 ## CNL syntax
 
@@ -24,4 +24,4 @@ Run from `som-service/` (there is no root `Cargo.toml`):
 - `cargo clippy --workspace --all-targets --locked -- -D warnings`
 - `cargo test --locked`
 
-CI runs the `som-rs` gates. Do not weaken or delete a test to make it pass.
+CI runs the gates of `.github/workflows/ci.yml`. Do not weaken or delete a test to make it pass.

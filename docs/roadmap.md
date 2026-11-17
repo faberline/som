@@ -9,7 +9,7 @@ It is a proposal. A person decides each track's scope and approves its contract.
 
 ## How a track runs
 
-Every track follows the path the Rust target took ([Rust output roadmap](../som-rs/RUST_OUTPUT_ROADMAP.md)):
+Every track follows the path the Rust target took ([Rust output roadmap](https://github.com/faberline/som-archive/blob/main/som-rs/RUST_OUTPUT_ROADMAP.md)):
 
 1. Scope. Decide which requests the track covers and which stay refused.
 2. Contract. Freeze the product layout, toolchain, dependency pins, behavior suite, and acceptance plan. A person approves it.
@@ -52,7 +52,7 @@ The track sections below keep their original numbering. The order of work is the
 - Reuses the existing CNL, DSL bundle, and behavior suites. Only the output target is new.
 - Chosen: Node.js 26.5.0, Hono, `pg` with hand-written SQL, hand-written validation, `node:test`, npm, tsc 5.9.3 and prettier.
 - First phase: the Rust phase 1 scope (prompt v1–v5 with PostgreSQL), then capabilities and flows.
-- Contract: [typescript-output-v1](../som-rs/contracts/typescript-output-v1/CONTRACT.md), frozen on 2026-10-21 after approval; amendment 001 sealed the npm lockfile, the vendored cache and the formatter hash ([#73](https://github.com/faberline/som/issues/73)). The draft and the options considered are in [typescript-output-v1-draft.md](typescript-output-v1-draft.md).
+- Contract: [typescript-output-v1](https://github.com/faberline/som-archive/blob/main/som-rs/contracts/typescript-output-v1/CONTRACT.md), frozen on 2026-10-21 after approval; amendment 001 sealed the npm lockfile, the vendored cache and the formatter hash ([#73](https://github.com/faberline/som/issues/73)). The draft and the options considered are in [typescript-output-v1-draft.md](typescript-output-v1-draft.md).
 - Phase 1 issues: target selection and profile ([#74](https://github.com/faberline/som/issues/74)), bundle, catalog and renderer ([#75](https://github.com/faberline/som/issues/75)), host, product gates and parity ([#76](https://github.com/faberline/som/issues/76)), then the acceptance run. Its tooling: candidate formatter option ([#97](https://github.com/faberline/som/issues/97)), HTTP target and scope checks ([#98](https://github.com/faberline/som/issues/98)), HTTP bundle and assemble-refusal checks ([#99](https://github.com/faberline/som/issues/99)), Python against the baseline ([#103](https://github.com/faberline/som/issues/103)), Rust against the baseline ([#104](https://github.com/faberline/som/issues/104)), RT diagnostics and the CLI `--target typescript` case ([#105](https://github.com/faberline/som/issues/105)).
 - Issue: [#65](https://github.com/faberline/som/issues/65).
 
