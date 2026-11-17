@@ -8,8 +8,8 @@ jobs:
       cd som-service
       cargo fmt --all -- --check
       cargo clippy --workspace --all-targets --locked -- -D warnings
-    resources: { cpu: "1500m", memory: 5Gi }
-    timeout: 15m
+    resources: { cpu: "1300m", memory: 4Gi }
+    timeout: 20m
 
   - name: coverage
     stage: test
@@ -29,13 +29,14 @@ jobs:
       cargo fetch --manifest-path "$prefetch/server/Cargo.toml"
       cargo llvm-cov --manifest-path som-service/Cargo.toml --locked --json --summary-only --output-path som-service/target/coverage.json
       bash .github/ci/coverage-check.sh som-service/target/coverage.json aw.toml
-    resources: { cpu: "1500m", memory: 5Gi }
-    timeout: 30m
+      bash som-service/scripts/quickstart.sh
+    resources: { cpu: "1300m", memory: 4Gi }
+    timeout: 45m
 
   - name: audit
     stage: test
     command: |
       cd som-service
       cargo deny --locked check
-    resources: { cpu: "1500m", memory: 5Gi }
+    resources: { cpu: "1300m", memory: 4Gi }
     timeout: 10m

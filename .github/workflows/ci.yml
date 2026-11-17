@@ -5,10 +5,6 @@
 # Known exception: som-rs and som-rs/som-targets are not in lint. Their source is
 # sealed by hashes in contracts/compiler-v1/ and scripts/; fmt and clippy fixes
 # there need a user-approved amendment (issue #180). They are still tested.
-#
-# lint and test-gke run as Kubernetes Jobs through faberline/aw ci-stage.yml
-# (manifest .github/ci/jobs.yaml). test-hosted stays on a GitHub-hosted runner:
-# its guards need GITHUB_ACTIONS=true (som-rs is frozen, see #249).
 name: ci
 
 on:
@@ -31,7 +27,7 @@ jobs:
     uses: faberline/aw/.github/workflows/ci-stage.yml@main
     with:
       stage: lint
-      timeout-minutes: 35
+      timeout-minutes: 40
 
   test-gke:
     name: test
@@ -40,13 +36,13 @@ jobs:
     uses: faberline/aw/.github/workflows/ci-stage.yml@main
     with:
       stage: test
-      timeout-minutes: 50
+      timeout-minutes: 65
 
   test-hosted:
-    name: "test: som-rs, python and node scripts"
+    name: "test: som-rs, python and node scripts, performance gate"
     needs: [lint]
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 60
     env:
       RUSTUP_TOOLCHAIN: 1.96.1
       CARGO_BUILD_JOBS: 2
@@ -63,6 +59,7 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           workspaces: |
+            som-service
             som-rs
             som-rs/som-targets
       - name: Fetch locked public crates
@@ -99,6 +96,9 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/release-venv"
           "$RUNNER_TEMP/release-venv/bin/python" -m pip install 'jsonschema==4.25.1' 'psycopg[binary]==3.2.10' 'referencing==0.36.2' 'alembic==1.16.5' 'SQLAlchemy==2.0.44'
           "$RUNNER_TEMP/release-venv/bin/python" -m unittest discover -s som-rs/scripts/rust_output_release -p 'test_*.py' -v
+      - name: "perf gate: som-service"
+        working-directory: som-service
+        run: SOM_PERF_GATE=1 cargo test --release --locked --test it perf_gate -- --test-threads=1
       - name: "coverage ratchet: base line (COV5)"
         if: github.event_name == 'pull_request'
         env:
