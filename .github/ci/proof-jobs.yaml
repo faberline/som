@@ -2,7 +2,7 @@
 # ci-on-gke-proof.yml runs it by hand. Format: docs/standards/ci-on-gke.md
 # in faberline/aw.
 version: 1
-image: ghcr.io/faberline/ci-rust:1.99.1
+image: ghcr.io/faberline/ci-rust:1.96.1
 jobs:
   - name: source
     stage: test
