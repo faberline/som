@@ -36,11 +36,11 @@ The caller supplies each business choice. The compiler does not guess missing fa
 The new production path does not load models or start Python.
 Python remains the output language and an independent test tool.
 Rust output with axum and sqlx is planned in [milestone 9](https://github.com/faberline/som/milestone/9).
-Read [the Rust output roadmap](som-rs/RUST_OUTPUT_ROADMAP.md).
+Read the Rust output roadmap, `som-rs/RUST_OUTPUT_ROADMAP.md`, in the archive [faberline/som-archive](https://github.com/faberline/som-archive). The archive plan is [docs/archive-plan.md](docs/archive-plan.md).
 
 The fresh complete gates passed 127 public products and 544 historical jobs.
-Read [the guide](som-rs/RUST_GUIDE.md), [the status](som-rs/RUST_STATUS.md),
-[the acceptance report](som-rs/RUST_REPORT.md), and [the roadmap](som-rs/RUST_ROADMAP.md).
+Read the guide, the status, the acceptance report and the roadmap in the archive:
+`som-rs/RUST_GUIDE.md`, `som-rs/RUST_STATUS.md`, `som-rs/RUST_REPORT.md` and `som-rs/RUST_ROADMAP.md`. The repository rules are in [CLAUDE.md](CLAUDE.md).
 
 ## CNL ownership
 
@@ -54,7 +54,7 @@ A CNL syntax change is a som issue.
 
 This section is a historical snapshot of the previous model roadmap and the retained M2
 service. It does not instruct new training and is not maintained.
-The frozen Python output is described in [som-rs/README.md](som-rs/README.md).
+The frozen Python output is described in `som-rs/README.md`, which is in the archive [faberline/som-archive](https://github.com/faberline/som-archive).
 The live path is `som-service`: read [som-service/README.md](som-service/README.md).
 
 ## License
