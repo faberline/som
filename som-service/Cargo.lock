@@ -352,22 +352,7 @@ checksum = "1c133bc6a41be0d194c306b5506d15e6feeea7b1d6604bd3f8310dfb2ca96486"
 [[package]]
 name = "cli-std"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.0#c96dc41142c49f2f406e35388336bc740d43391b"
-dependencies = [
- "anyhow",
- "flate2",
- "semver",
- "serde",
- "serde_json",
- "sha2",
- "tar",
- "thiserror",
-]
-
-[[package]]
-name = "cli-std"
-version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "anyhow",
  "flate2",
@@ -1137,7 +1122,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 [[package]]
 name = "metrics-prometheus"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 
 [[package]]
 name = "mime"
@@ -1230,10 +1215,10 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 [[package]]
 name = "openapi-codegen"
 version = "0.5.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.0#c96dc41142c49f2f406e35388336bc740d43391b"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "anyhow",
- "cli-std 0.1.0 (git+https://github.com/faberline/core?tag=v0.5.0)",
+ "cli-std",
  "serde",
  "serde_json",
  "sha2",
@@ -1884,7 +1869,7 @@ dependencies = [
 [[package]]
 name = "server-http"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "axum",
  "rustls",
@@ -1900,7 +1885,7 @@ dependencies = [
 [[package]]
 name = "server-lifecycle"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "thiserror",
  "tokio",
@@ -1910,7 +1895,7 @@ dependencies = [
 [[package]]
 name = "server-tcp"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "server-lifecycle",
  "socket2",
@@ -1922,7 +1907,7 @@ dependencies = [
 [[package]]
 name = "service-http"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "anyhow",
  "axum",
@@ -1948,7 +1933,7 @@ dependencies = [
 [[package]]
 name = "service-observability"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "anyhow",
  "http",
@@ -2509,11 +2494,11 @@ dependencies = [
 [[package]]
 name = "transport-h2c"
 version = "0.1.0"
-source = "git+https://github.com/faberline/core?tag=v0.5.1-rc.1#1ae305300422e636a105e2357d9954f1dd551972"
+source = "git+https://github.com/faberline/core?tag=v0.5.1#d31cb479bf58080c59a9d772e9dab25176da3e90"
 dependencies = [
  "axum",
  "bytes",
- "cli-std 0.1.0 (git+https://github.com/faberline/core?tag=v0.5.1-rc.1)",
+ "cli-std",
  "h2",
  "http",
  "hyper",
