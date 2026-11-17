@@ -1,4 +1,0 @@
-{
-  "template": "def parent_payload() -> dict[str, object]:\n    \"\"\"Parent payload.\"\"\"\n    return {\n{{#fields}}{{required_entry}}{{/fields}}    }\n",
-  "imports": []
-}

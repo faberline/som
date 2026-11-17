@@ -45,7 +45,6 @@ node_modules/
 *.swp
 .DS_Store
 
-# Python build output (uv sync installs som-core in place).
 *.egg
 *.egg-info/
 dist/
