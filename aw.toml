@@ -8,4 +8,4 @@ reason = "som-service and the frozen som-rs build binaries without core cli-std;
 
 [[standards.ci.exception]]
 check = "CI4"
-reason = "lint runs in Kubernetes Jobs through ci-stage.yml; its two commands are in .github/ci/jobs.yaml (aw docs/standards/ci-on-gke.md, How it fits the other standards)"
+reason = "lint runs in Kubernetes Jobs through ci-stage.yml; its two commands are in .github/ci/jobs.yaml (aw docs/standards/ci-on-gke.md, 'How it fits the other standards')"
