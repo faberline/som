@@ -4,12 +4,9 @@ som has one supported path: `som-service` (Rust). Read `README.md` first.
 
 ## Frozen paths
 
-- `som-rs/` is frozen. Do not edit it, and do not add syntax to
-  `som-rs/contracts/compiler-v1/` (including `grammar.ebnf`).
-- `som-rs` keeps its sealed nlp pin (`faberline-nlp-cnl` in `som-rs/Cargo.toml`)
-  until the owner approves a re-pin in issue #180. Do not move that pin.
-- `som-rs/evidence/` is recorded evidence. Do not regenerate or edit it to make a
-  check pass.
+- `som-rs/` is not in this repository. It is in the archive `faberline/som-archive`
+  (source commit `47e8b3f573882c4726fdb26bca23d2bf138f7820`). It is read only
+  there. Nobody restores it here or edits it, and nobody moves its nlp pin.
 
 ## CNL syntax
 
