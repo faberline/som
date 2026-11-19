@@ -24,5 +24,6 @@ mod server_http;
 mod server_render;
 mod server_transport;
 mod stability;
+mod standards_catalog;
 mod threat_model_doc;
 mod toolchain_pin;
