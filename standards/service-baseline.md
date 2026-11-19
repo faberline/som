@@ -41,9 +41,9 @@ Every row of the Decisions table names its proof test. Each generated API has on
 
 ## Core mapping
 
-Checked at core tag v0.5.1 (commit d31cb479bf58080c59a9d772e9dab25176da3e90), the tag that som-service pins.
+Checked at core tag v0.5.2 (commit 461794b2a95b9e911b62e70baa2ec1342dcb0f86), the tag that som-service pins.
 
-| Decision | Core crate and item | File at tag v0.5.1 | Status |
+| Decision | Core crate and item | File at tag v0.5.2 | Status |
 |---|---|---|---|
 | D25 | `service-auth`: `auth_middleware`, `Verifier`, `bearer_token`; `AuthConfig::resolve` with mode `off` or `required` | `crates/service-auth/src/application/http/middleware.rs`, `crates/service-auth/src/application/http/verifier.rs`, `crates/service-auth/src/app/static_token_auth.rs` | partial |
 | D26 | none in core; the store trait is local code | none | gap |

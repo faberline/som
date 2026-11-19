@@ -170,14 +170,14 @@ fn server_keeps_aliases_and_argument_names() {
 fn core_pins_match_manifest() {
     const MANIFEST: &str = include_str!("../../Cargo.toml");
     for line in [
-        "openapi-codegen = { git = \"https://github.com/faberline/core\", tag = \"v0.5.1\" }",
-        "server-lifecycle = { git = \"https://github.com/faberline/core\", tag = \"v0.5.1\" }",
-        "service-http = { git = \"https://github.com/faberline/core\", tag = \"v0.5.1\" }",
+        "openapi-codegen = { git = \"https://github.com/faberline/core\", tag = \"v0.5.2\" }",
+        "server-lifecycle = { git = \"https://github.com/faberline/core\", tag = \"v0.5.2\" }",
+        "service-http = { git = \"https://github.com/faberline/core\", tag = \"v0.5.2\" }",
     ] {
         assert!(MANIFEST.contains(line), "missing `{line}` in Cargo.toml");
     }
     assert!(
-        SERVER_CARGO.contains("tag = \"v0.5.1\" }"),
+        SERVER_CARGO.contains("tag = \"v0.5.2\" }"),
         "{SERVER_CARGO}"
     );
 }
@@ -185,7 +185,7 @@ fn core_pins_match_manifest() {
 #[test]
 fn server_uses_core_error_envelope() {
     assert!(SERVER_CARGO.contains(
-        "service-http = { git = \"https://github.com/faberline/core\", tag = \"v0.5.1\" }"
+        "service-http = { git = \"https://github.com/faberline/core\", tag = \"v0.5.2\" }"
     ));
     let files = ok(assemble_server(&ok(compile_prompt_v2(&value(PROMPT_V2)))));
     let lib = &files["src/lib.rs"];
