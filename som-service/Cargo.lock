@@ -2033,9 +2033,11 @@ name = "som-reference-order"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "proptest",
  "serde_json",
  "time",
  "tokio",
+ "tower",
  "tracing",
  "uuid",
 ]
