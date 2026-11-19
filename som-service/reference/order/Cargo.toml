@@ -1,0 +1,21 @@
+[package]
+name = "som-reference-order"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+axum = "=0.8.9"
+serde_json = "=1.0.151"
+time = { version = "=0.3.55", features = ["formatting", "parsing"] }
+tracing = "=0.1.44"
+uuid = { version = "=1.29.3", features = ["v7"] }
+
+[dev-dependencies]
+tokio = { version = "=1.53.3", features = ["macros", "rt-multi-thread"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "deny"
