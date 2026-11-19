@@ -5,33 +5,72 @@ use axum::Router;
 use axum::body::Bytes;
 use axum::extract::rejection::{BytesRejection, QueryRejection};
 use axum::extract::{DefaultBodyLimit, Path, Query, State};
-use axum::http::{StatusCode, header};
+use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use serde_json::{Value, json};
 
+use crate::application::idempotency::{Clock, IdempotencyKeys, SystemClock};
 use crate::application::orders::{
     create_order, delete_order, get_order, list_orders, replace_order,
 };
 use crate::application::pagination::{DEFAULT_LIMIT, MAX_LIMIT, decode_cursor};
 use crate::application::store::OrderStore;
-use crate::domain::order::{parse_input, to_json};
+use crate::domain::order::{Order, parse_input, to_json};
 use crate::interfaces::error::{ApiError, ErrorCode};
+use crate::interfaces::etag::{check_if_match, etag_of};
 
 pub const COLLECTION_PATH: &str = "/v1/orders";
 pub const ITEM_PATH: &str = "/v1/orders/{id}";
 pub const BODY_LIMIT_BYTES: usize = 1024 * 1024;
 
+#[derive(Clone)]
+struct AppState {
+    store: Arc<dyn OrderStore>,
+    keys: Arc<IdempotencyKeys>,
+}
+
 pub fn router(store: Arc<dyn OrderStore>) -> Router {
+    router_with_clock(store, Arc::new(SystemClock))
+}
+
+pub fn router_with_clock(store: Arc<dyn OrderStore>, clock: Arc<dyn Clock>) -> Router {
+    let state = AppState {
+        store,
+        keys: Arc::new(IdempotencyKeys::new(clock)),
+    };
     Router::new()
         .route(COLLECTION_PATH, post(create).get(list))
         .route(ITEM_PATH, get(read).put(replace).delete(remove))
         .layer(DefaultBodyLimit::max(BODY_LIMIT_BYTES))
-        .with_state(store)
+        .with_state(state)
 }
 
 fn invalid(message: impl Into<String>) -> ApiError {
     ApiError::new(ErrorCode::InvalidRequest, message)
+}
+
+fn idempotency_key(headers: &HeaderMap) -> Result<Option<&str>, ApiError> {
+    match headers.get("idempotency-key") {
+        None => Ok(None),
+        Some(value) => match value.to_str() {
+            Ok(text) if !text.is_empty() => Ok(Some(text)),
+            _ => Err(invalid("Idempotency-Key must be a non-empty text.")),
+        },
+    }
+}
+
+fn resource_response(status: StatusCode, order: &Order, location: Option<String>) -> Response {
+    let etag = etag_of(order);
+    match location {
+        Some(location) => (
+            status,
+            [(header::ETAG, etag), (header::LOCATION, location)],
+            Json(to_json(order)),
+        )
+            .into_response(),
+        None => (status, [(header::ETAG, etag)], Json(to_json(order))).into_response(),
+    }
 }
 
 fn read_body(body: Result<Bytes, BytesRejection>) -> Result<Value, ApiError> {
@@ -46,30 +85,45 @@ fn read_body(body: Result<Bytes, BytesRejection>) -> Result<Value, ApiError> {
 }
 
 async fn create(
-    State(store): State<Arc<dyn OrderStore>>,
+    State(state): State<AppState>,
+    headers: HeaderMap,
     body: Result<Bytes, BytesRejection>,
 ) -> Result<Response, ApiError> {
     let input = parse_input(&read_body(body)?)?;
-    let order = create_order(store.as_ref(), input)?;
+    // The typed input, not the raw JSON: key order and unknown fields do not change it.
+    let fingerprint = format!("{input:?}");
+    let order = match idempotency_key(&headers)? {
+        None => create_order(state.store.as_ref(), input)?,
+        Some(key) => state
+            .keys
+            .create_once(key, &fingerprint, || {
+                create_order(state.store.as_ref(), input)
+            })?
+            .ok_or_else(|| {
+                ApiError::new(
+                    ErrorCode::Conflict,
+                    "The Idempotency-Key was used with a different body.",
+                )
+            })?,
+    };
     let location = format!("{COLLECTION_PATH}/{}", order.id);
-    Ok((
+    Ok(resource_response(
         StatusCode::CREATED,
-        [(header::LOCATION, location)],
-        Json(to_json(&order)),
-    )
-        .into_response())
+        &order,
+        Some(location),
+    ))
 }
 
 async fn read(
-    State(store): State<Arc<dyn OrderStore>>,
+    State(AppState { store, .. }): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Response, ApiError> {
     let order = get_order(store.as_ref(), &id)?;
-    Ok((StatusCode::OK, Json(to_json(&order))).into_response())
+    Ok(resource_response(StatusCode::OK, &order, None))
 }
 
 async fn list(
-    State(store): State<Arc<dyn OrderStore>>,
+    State(AppState { store, .. }): State<AppState>,
     query: Result<Query<Vec<(String, String)>>, QueryRejection>,
 ) -> Result<Response, ApiError> {
     let Query(pairs) = query.map_err(|_| invalid("The query string is not valid."))?;
@@ -114,22 +168,28 @@ async fn list(
     Ok((StatusCode::OK, Json(body)).into_response())
 }
 
-/// No If-Match yet: reference/order 3 (#283) adds it (decision 11).
+/// Decision 11: needs If-Match. The check and the write are two store calls, so a write between them is not caught; a store with a conditional write closes that gap.
 async fn replace(
-    State(store): State<Arc<dyn OrderStore>>,
+    State(AppState { store, .. }): State<AppState>,
     Path(id): Path<String>,
+    headers: HeaderMap,
     body: Result<Bytes, BytesRejection>,
 ) -> Result<Response, ApiError> {
     let input = parse_input(&read_body(body)?)?;
+    let current = get_order(store.as_ref(), &id)?;
+    check_if_match(&headers, &current)?;
     let order = replace_order(store.as_ref(), &id, input)?;
-    Ok((StatusCode::OK, Json(to_json(&order))).into_response())
+    Ok(resource_response(StatusCode::OK, &order, None))
 }
 
-/// No If-Match yet: reference/order 3 (#283) adds it (decision 11).
+/// Decision 11: needs If-Match. The check and the delete are two store calls, so a write between them is not caught; a store with a conditional write closes that gap.
 async fn remove(
-    State(store): State<Arc<dyn OrderStore>>,
+    State(AppState { store, .. }): State<AppState>,
     Path(id): Path<String>,
+    headers: HeaderMap,
 ) -> Result<Response, ApiError> {
+    let current = get_order(store.as_ref(), &id)?;
+    check_if_match(&headers, &current)?;
     delete_order(store.as_ref(), &id)?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }

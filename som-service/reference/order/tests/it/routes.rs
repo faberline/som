@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use serde_json::json;
 use som_reference_order::interfaces::routes::{BODY_LIMIT_BYTES, COLLECTION_PATH, ITEM_PATH};
 
-use crate::common::{app, body_json, call, call_raw, seed, valid_body};
+use crate::common::{app, body_json, call, call_raw, etag_of, seed, send, valid_body};
 
 const RESOURCE_KEYS: [&str; 8] = [
     "id",
@@ -107,7 +107,15 @@ async fn replace_returns_200_with_full_resource_and_no_patch_route() {
         "status": "paid",
         "note": "hi"
     });
-    let (status, _, body) = call(&app, "PUT", "/v1/orders/a", Some(replacement)).await;
+    let etag = etag_of(&app, "a").await;
+    let (status, _, body) = send(
+        &app,
+        "PUT",
+        "/v1/orders/a",
+        &[("if-match", &etag)],
+        Some(replacement.to_string().into_bytes()),
+    )
+    .await;
     assert_eq!(status, StatusCode::OK);
     let value = body_json(&body);
     assert_eq!(value["customer_id"], "c2");
@@ -142,7 +150,9 @@ async fn delete_returns_204_and_second_delete_returns_404() {
     let (app, store) = app();
     seed(&store, "a", "2026-01-01T00:00:00Z");
 
-    let (status, _, body) = call(&app, "DELETE", "/v1/orders/a", None).await;
+    let etag = etag_of(&app, "a").await;
+    let (status, _, body) =
+        send(&app, "DELETE", "/v1/orders/a", &[("if-match", &etag)], None).await;
     assert_eq!(status, StatusCode::NO_CONTENT);
     assert!(body.is_empty());
 
