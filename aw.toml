@@ -20,3 +20,7 @@ reason = "Project settings of Claude Code (.claude/settings.json)."
 [[hygiene.root]]
 path = "som-service"
 reason = "The Rust main line. The workspace is in this folder; there is no root Cargo.toml."
+
+[[hygiene.root]]
+path = "standards"
+reason = "The standard catalog som.std.v1: one document for each standard (issue #277)."
