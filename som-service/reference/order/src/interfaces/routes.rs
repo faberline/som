@@ -20,6 +20,7 @@ use crate::domain::order::{Order, parse_input, to_json};
 use crate::interfaces::auth::{StaticTokenVerifier, require_auth};
 use crate::interfaces::error::{ApiError, ErrorCode};
 use crate::interfaces::etag::{check_if_match, etag_of};
+use crate::interfaces::limits::{Limits, admission_layer, request_timeout};
 use crate::interfaces::metrics::{OperationMetrics, record_operation};
 use crate::interfaces::probes::probe_router;
 use crate::interfaces::request_id::request_id_layer;
@@ -27,6 +28,7 @@ use server_lifecycle::LifecycleController;
 
 pub const COLLECTION_PATH: &str = "/v1/orders";
 pub const ITEM_PATH: &str = "/v1/orders/{id}";
+/// Decisions 10 and 31: the body limit. One source; core body_limit_layer is not used because DefaultBodyLimit already gives 413 payload_too_large through read_body.
 pub const BODY_LIMIT_BYTES: usize = 1024 * 1024;
 
 #[derive(Clone)]
@@ -54,7 +56,20 @@ pub fn router_with_metrics(
     metrics: Arc<OperationMetrics>,
 ) -> Router {
     // Outermost: every response, also 404 and 401, gets the id.
-    data_router(store, clock, verifier, metrics).layer(axum::middleware::from_fn(request_id_layer))
+    data_router(store, clock, verifier, metrics, Limits::standard())
+        .layer(axum::middleware::from_fn(request_id_layer))
+}
+
+/// The order routes with the given limits (decisions 30 and 31), and the request id layer.
+pub fn router_with_limits(
+    store: Arc<dyn OrderStore>,
+    clock: Arc<dyn Clock>,
+    verifier: Arc<StaticTokenVerifier>,
+    metrics: Arc<OperationMetrics>,
+    limits: Limits,
+) -> Router {
+    data_router(store, clock, verifier, metrics, limits)
+        .layer(axum::middleware::from_fn(request_id_layer))
 }
 
 /// The order routes and their layers, without the request id layer.
@@ -63,21 +78,35 @@ fn data_router(
     clock: Arc<dyn Clock>,
     verifier: Arc<StaticTokenVerifier>,
     metrics: Arc<OperationMetrics>,
+    limits: Limits,
 ) -> Router {
     let state = AppState {
         store,
         keys: Arc::new(IdempotencyKeys::new(clock)),
     };
-    Router::new()
+    let mut router = Router::new()
         .route(COLLECTION_PATH, post(create).get(list))
         .route(ITEM_PATH, get(read).put(replace).delete(remove))
-        .route_layer(axum::middleware::from_fn_with_state(verifier, require_auth))
-        // Outside auth, so a 401 counts as an error call.
+        .route_layer(axum::middleware::from_fn_with_state(verifier, require_auth));
+    // Outside auth, so a 429 is checked before the token; the metrics layer below counts it.
+    if let Some(controller) = limits.admission {
+        router = router.route_layer(axum::middleware::from_fn_with_state(
+            admission_layer(controller),
+            service_http::admission_middleware,
+        ));
+    }
+    router
+        // Outside auth and admission, so a 401 and a 429 count as error calls.
         .route_layer(axum::middleware::from_fn_with_state(
             metrics,
             record_operation,
         ))
         .layer(DefaultBodyLimit::max(BODY_LIMIT_BYTES))
+        // Decision 30: the timeout of the data routes, outside the body limit.
+        .layer(axum::middleware::from_fn_with_state(
+            limits.timeout,
+            request_timeout,
+        ))
         .with_state(state)
 }
 
@@ -89,7 +118,7 @@ pub fn router_with_probes(
     metrics: Arc<OperationMetrics>,
     lifecycle: LifecycleController,
 ) -> Router {
-    data_router(store, clock, verifier, metrics)
+    data_router(store, clock, verifier, metrics, Limits::standard())
         .merge(probe_router(lifecycle))
         .layer(axum::middleware::from_fn(request_id_layer))
 }
