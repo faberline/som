@@ -203,7 +203,10 @@ fn readme_how_to_change_has_the_five_changes() {
     }
     assert!(found_section, "README has no `## How to change` heading");
     let titles: Vec<&str> = sections.iter().map(|(t, _)| t.as_str()).collect();
-    assert_eq!(titles, TITLES, "the `### ` headings under `## How to change`, in order");
+    assert_eq!(
+        titles, TITLES,
+        "the `### ` headings under `## How to change`, in order"
+    );
 
     for (title, body) in &sections {
         let files: Vec<&String> = body.iter().filter(|l| l.starts_with("Files:")).collect();
@@ -221,8 +224,8 @@ fn readme_how_to_change_has_the_five_changes() {
         );
         for p in paths {
             assert!(
-                p.starts_with("src/") || p.starts_with("tests/it/"),
-                "section `{title}`: path `{p}` is not under src/ or tests/it/"
+                p.starts_with("src/"),
+                "section `{title}`: path `{p}` is not under src/"
             );
             assert!(
                 crate_dir.join(p).is_file(),
