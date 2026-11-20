@@ -2120,13 +2120,16 @@ name = "som-reference-order"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "metrics-prometheus",
  "proptest",
  "serde_json",
  "service-auth",
+ "service-observability",
  "time",
  "tokio",
  "tower",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 

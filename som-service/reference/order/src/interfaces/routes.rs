@@ -20,6 +20,8 @@ use crate::domain::order::{Order, parse_input, to_json};
 use crate::interfaces::auth::{StaticTokenVerifier, require_auth};
 use crate::interfaces::error::{ApiError, ErrorCode};
 use crate::interfaces::etag::{check_if_match, etag_of};
+use crate::interfaces::metrics::{OperationMetrics, record_operation};
+use crate::interfaces::request_id::request_id_layer;
 
 pub const COLLECTION_PATH: &str = "/v1/orders";
 pub const ITEM_PATH: &str = "/v1/orders/{id}";
@@ -40,6 +42,15 @@ pub fn router_with_clock(
     clock: Arc<dyn Clock>,
     verifier: Arc<StaticTokenVerifier>,
 ) -> Router {
+    router_with_metrics(store, clock, verifier, Arc::new(OperationMetrics::new()))
+}
+
+pub fn router_with_metrics(
+    store: Arc<dyn OrderStore>,
+    clock: Arc<dyn Clock>,
+    verifier: Arc<StaticTokenVerifier>,
+    metrics: Arc<OperationMetrics>,
+) -> Router {
     let state = AppState {
         store,
         keys: Arc::new(IdempotencyKeys::new(clock)),
@@ -48,7 +59,14 @@ pub fn router_with_clock(
         .route(COLLECTION_PATH, post(create).get(list))
         .route(ITEM_PATH, get(read).put(replace).delete(remove))
         .route_layer(axum::middleware::from_fn_with_state(verifier, require_auth))
+        // Outside auth, so a 401 counts as an error call.
+        .route_layer(axum::middleware::from_fn_with_state(
+            metrics,
+            record_operation,
+        ))
         .layer(DefaultBodyLimit::max(BODY_LIMIT_BYTES))
+        // Outermost: every response, also 404 and 401, gets the id.
+        .layer(axum::middleware::from_fn(request_id_layer))
         .with_state(state)
 }
 

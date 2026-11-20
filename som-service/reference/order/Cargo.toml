@@ -6,7 +6,9 @@ publish = false
 
 [dependencies]
 axum = "=0.8.9"
+metrics-prometheus = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
 service-auth = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
+service-observability = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
 serde_json = "=1.0.151"
 time = { version = "=0.3.55", features = ["formatting", "parsing"] }
 tracing = "=0.1.44"
@@ -14,6 +16,7 @@ uuid = { version = "=1.29.3", features = ["v7"] }
 
 [dev-dependencies]
 proptest = "=1.7.0"
+tracing-subscriber = "=0.3.23"
 tokio = { version = "=1.53.3", features = ["macros", "rt-multi-thread"] }
 tower = { version = "=0.5.3", features = ["util"] }
 
