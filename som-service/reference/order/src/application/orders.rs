@@ -1,5 +1,5 @@
 use crate::application::pagination::encode_cursor;
-use crate::application::store::{OrderStore, StoreError};
+use crate::application::store::{ListQuery, OrderStore, StoreError};
 use crate::domain::order::{Order, OrderInput, new_id, now_rfc3339};
 
 pub struct Page {
@@ -30,8 +30,12 @@ pub fn delete_order(store: &dyn OrderStore, id: &str) -> Result<(), StoreError> 
 
 /// Asks for one item more than `limit`: its presence says that another page
 /// follows, and the cursor is the last item that is kept.
-pub fn list_orders(store: &dyn OrderStore, after: Option<(&str, &str)>, limit: usize) -> Page {
-    let mut items = store.list_page(after, limit + 1);
+pub fn list_orders(store: &dyn OrderStore, query: &ListQuery<'_>) -> Page {
+    let limit = query.limit;
+    let mut items = store.list_page(&ListQuery {
+        limit: limit + 1,
+        ..*query
+    });
     let next_cursor = if items.len() > limit {
         items.truncate(limit);
         items

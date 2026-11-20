@@ -168,6 +168,115 @@ fn readme_rows_equal_the_catalog() {
     assert_eq!(total, 37, "the catalog has 37 decision rows");
 }
 
+/// Issue #296: the README has a `## How to change` section with the five changes, in
+/// order; each has one `Files:` line that names 1 to 3 existing files of the crate.
+#[test]
+fn readme_how_to_change_has_the_five_changes() {
+    const TITLES: [&str; 5] = [
+        "Add a field with a constraint",
+        "Add a filter to the list",
+        "Replace the in-memory store",
+        "Add POST /v1/orders/{id}/cancel",
+        "Change hard delete to soft delete",
+    ];
+    let readme = read_readme();
+    let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+
+    // The `### ` sections under `## How to change`, up to the next `## ` heading.
+    let mut inside = false;
+    let mut found_section = false;
+    let mut sections: Vec<(String, Vec<String>)> = Vec::new();
+    for line in readme.lines() {
+        if let Some(h) = line.strip_prefix("## ") {
+            inside = h.trim() == "How to change";
+            found_section |= inside;
+            continue;
+        }
+        if !inside {
+            continue;
+        }
+        if let Some(t) = line.strip_prefix("### ") {
+            sections.push((t.trim().to_string(), Vec::new()));
+        } else if let Some((_, body)) = sections.last_mut() {
+            body.push(line.to_string());
+        }
+    }
+    assert!(found_section, "README has no `## How to change` heading");
+    let titles: Vec<&str> = sections.iter().map(|(t, _)| t.as_str()).collect();
+    assert_eq!(
+        titles, TITLES,
+        "the `### ` headings under `## How to change`, in order"
+    );
+
+    for (title, body) in &sections {
+        let files: Vec<&String> = body.iter().filter(|l| l.starts_with("Files:")).collect();
+        assert_eq!(
+            files.len(),
+            1,
+            "section `{title}`: expected one `Files:` line, found {}",
+            files.len()
+        );
+        if let Err(e) = check_files_line(title, files[0], crate_dir) {
+            panic!("{e}");
+        }
+    }
+}
+
+/// Checks one `Files:` line of a `## How to change` section: 1 to 3 backticked paths,
+/// each under `src/`. A path is a file of the crate, or, when the line also has the
+/// word `new` outside backticks, a `.rs` file whose parent directory exists (issue #296).
+fn check_files_line(title: &str, line: &str, crate_dir: &Path) -> Result<(), String> {
+    let paths: Vec<&str> = line.split('`').skip(1).step_by(2).collect();
+    if !(1..=3).contains(&paths.len()) {
+        return Err(format!(
+            "section `{title}`: `Files:` lists {} paths, expected 1 to 3",
+            paths.len()
+        ));
+    }
+    let outside: String = line.split('`').step_by(2).collect::<Vec<_>>().join(" ");
+    let new_marked = outside
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .any(|w| w == "new");
+    for p in paths {
+        if !p.starts_with("src/") {
+            return Err(format!("section `{title}`: path `{p}` is not under src/"));
+        }
+        let full = crate_dir.join(p);
+        if full.is_file() {
+            continue;
+        }
+        let parent_exists = full.parent().is_some_and(|d| d.is_dir());
+        if new_marked && p.ends_with(".rs") && parent_exists {
+            continue;
+        }
+        return Err(format!(
+            "section `{title}`: `{p}` is not a file of the crate (a new file needs `(new)` and an existing parent directory)"
+        ));
+    }
+    Ok(())
+}
+
+#[test]
+fn readme_how_to_change_new_file_needs_the_word_new() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    assert!(
+        check_files_line("t", "Files: `src/infrastructure/vec_store.rs`", dir).is_err(),
+        "a missing file without `(new)` is refused"
+    );
+    assert!(
+        check_files_line("t", "Files: `src/infrastructure/vec_store.rs` (new)", dir).is_ok(),
+        "a new .rs file marked `(new)` in an existing directory is allowed"
+    );
+    assert!(
+        check_files_line("t", "Files: `src/infrastructure/nope/x.rs` (new)", dir).is_err(),
+        "a new file whose parent directory does not exist is refused"
+    );
+    assert!(
+        check_files_line("t", "Files: `tests/it/store.rs`", dir).is_err(),
+        "a path outside src/ is refused"
+    );
+}
+
 /// A `## Decisions` table with one row per number in `rows`, all naming `test` in `file`.
 fn table(rows: std::ops::RangeInclusive<u32>, test: &str, file: &str) -> String {
     let mut s = String::from("## Decisions\n\n| # | Decision | File | Test |\n|---|---|---|---|\n");

@@ -15,7 +15,7 @@ use crate::application::orders::{
     create_order, delete_order, get_order, list_orders, replace_order,
 };
 use crate::application::pagination::{DEFAULT_LIMIT, MAX_LIMIT, decode_cursor};
-use crate::application::store::OrderStore;
+use crate::application::store::{ListQuery, OrderStore};
 use crate::domain::order::{Order, parse_input, to_json};
 use crate::interfaces::auth::{StaticTokenVerifier, require_auth};
 use crate::interfaces::error::{ApiError, ErrorCode};
@@ -231,13 +231,13 @@ async fn list(
         Some(text) => Some(decode_cursor(text).ok_or_else(|| invalid("The cursor is not valid."))?),
     };
 
-    let page = list_orders(
-        store.as_ref(),
-        after
+    let query = ListQuery {
+        after: after
             .as_ref()
             .map(|(created_at, id)| (created_at.as_str(), id.as_str())),
         limit,
-    );
+    };
+    let page = list_orders(store.as_ref(), &query);
     let body = json!({
         "items": page.items.iter().map(to_json).collect::<Vec<Value>>(),
         "next_cursor": page.next_cursor,
