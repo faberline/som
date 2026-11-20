@@ -6,6 +6,7 @@ publish = false
 
 [dependencies]
 axum = "=0.8.9"
+service-auth = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
 serde_json = "=1.0.151"
 time = { version = "=0.3.55", features = ["formatting", "parsing"] }
 tracing = "=0.1.44"

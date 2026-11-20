@@ -1,3 +1,4 @@
+mod auth;
 mod common;
 mod domain;
 mod errors;
