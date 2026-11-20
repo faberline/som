@@ -17,6 +17,7 @@ use crate::application::orders::{
 use crate::application::pagination::{DEFAULT_LIMIT, MAX_LIMIT, decode_cursor};
 use crate::application::store::OrderStore;
 use crate::domain::order::{Order, parse_input, to_json};
+use crate::interfaces::auth::{StaticTokenVerifier, require_auth};
 use crate::interfaces::error::{ApiError, ErrorCode};
 use crate::interfaces::etag::{check_if_match, etag_of};
 
@@ -30,11 +31,15 @@ struct AppState {
     keys: Arc<IdempotencyKeys>,
 }
 
-pub fn router(store: Arc<dyn OrderStore>) -> Router {
-    router_with_clock(store, Arc::new(SystemClock))
+pub fn router(store: Arc<dyn OrderStore>, verifier: Arc<StaticTokenVerifier>) -> Router {
+    router_with_clock(store, Arc::new(SystemClock), verifier)
 }
 
-pub fn router_with_clock(store: Arc<dyn OrderStore>, clock: Arc<dyn Clock>) -> Router {
+pub fn router_with_clock(
+    store: Arc<dyn OrderStore>,
+    clock: Arc<dyn Clock>,
+    verifier: Arc<StaticTokenVerifier>,
+) -> Router {
     let state = AppState {
         store,
         keys: Arc::new(IdempotencyKeys::new(clock)),
@@ -42,6 +47,7 @@ pub fn router_with_clock(store: Arc<dyn OrderStore>, clock: Arc<dyn Clock>) -> R
     Router::new()
         .route(COLLECTION_PATH, post(create).get(list))
         .route(ITEM_PATH, get(read).put(replace).delete(remove))
+        .route_layer(axum::middleware::from_fn_with_state(verifier, require_auth))
         .layer(DefaultBodyLimit::max(BODY_LIMIT_BYTES))
         .with_state(state)
 }

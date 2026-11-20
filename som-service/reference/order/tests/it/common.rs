@@ -9,12 +9,21 @@ use som_reference_order::application::idempotency::Clock;
 use som_reference_order::application::store::OrderStore;
 use som_reference_order::domain::order::{Order, parse_input};
 use som_reference_order::infrastructure::memory_store::MemoryStore;
+use som_reference_order::interfaces::auth::{AuthMode, StaticTokenVerifier};
 use som_reference_order::interfaces::routes::{router, router_with_clock};
 use tower::ServiceExt;
 
+/// Open mode, set explicitly: the existing tests do not send a token.
+pub fn open_verifier() -> Arc<StaticTokenVerifier> {
+    Arc::new(StaticTokenVerifier::new(
+        AuthMode::Off,
+        std::collections::HashMap::new(),
+    ))
+}
+
 pub fn app() -> (Router, Arc<MemoryStore>) {
     let store = Arc::new(MemoryStore::new());
-    (router(store.clone()), store)
+    (router(store.clone(), open_verifier()), store)
 }
 
 /// A clock that the test moves by hand.
@@ -28,7 +37,10 @@ impl Clock for TestClock {
 
 pub fn app_with_clock(clock: Arc<TestClock>) -> (Router, Arc<MemoryStore>) {
     let store = Arc::new(MemoryStore::new());
-    (router_with_clock(store.clone(), clock), store)
+    (
+        router_with_clock(store.clone(), clock, open_verifier()),
+        store,
+    )
 }
 
 pub async fn call(
