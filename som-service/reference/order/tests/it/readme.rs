@@ -216,23 +216,65 @@ fn readme_how_to_change_has_the_five_changes() {
             "section `{title}`: expected one `Files:` line, found {}",
             files.len()
         );
-        let paths: Vec<&str> = files[0].split('`').skip(1).step_by(2).collect();
-        assert!(
-            (1..=3).contains(&paths.len()),
-            "section `{title}`: `Files:` lists {} paths, expected 1 to 3",
-            paths.len()
-        );
-        for p in paths {
-            assert!(
-                p.starts_with("src/"),
-                "section `{title}`: path `{p}` is not under src/"
-            );
-            assert!(
-                crate_dir.join(p).is_file(),
-                "section `{title}`: `{p}` is not a file of the crate"
-            );
+        if let Err(e) = check_files_line(title, files[0], crate_dir) {
+            panic!("{e}");
         }
     }
+}
+
+/// Checks one `Files:` line of a `## How to change` section: 1 to 3 backticked paths,
+/// each under `src/`. A path is a file of the crate, or, when the line also has the
+/// word `new` outside backticks, a `.rs` file whose parent directory exists (issue #296).
+fn check_files_line(title: &str, line: &str, crate_dir: &Path) -> Result<(), String> {
+    let paths: Vec<&str> = line.split('`').skip(1).step_by(2).collect();
+    if !(1..=3).contains(&paths.len()) {
+        return Err(format!(
+            "section `{title}`: `Files:` lists {} paths, expected 1 to 3",
+            paths.len()
+        ));
+    }
+    let outside: String = line.split('`').step_by(2).collect::<Vec<_>>().join(" ");
+    let new_marked = outside
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .any(|w| w == "new");
+    for p in paths {
+        if !p.starts_with("src/") {
+            return Err(format!("section `{title}`: path `{p}` is not under src/"));
+        }
+        let full = crate_dir.join(p);
+        if full.is_file() {
+            continue;
+        }
+        let parent_exists = full.parent().is_some_and(|d| d.is_dir());
+        if new_marked && p.ends_with(".rs") && parent_exists {
+            continue;
+        }
+        return Err(format!(
+            "section `{title}`: `{p}` is not a file of the crate (a new file needs `(new)` and an existing parent directory)"
+        ));
+    }
+    Ok(())
+}
+
+#[test]
+fn readme_how_to_change_new_file_needs_the_word_new() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    assert!(
+        check_files_line("t", "Files: `src/infrastructure/vec_store.rs`", dir).is_err(),
+        "a missing file without `(new)` is refused"
+    );
+    assert!(
+        check_files_line("t", "Files: `src/infrastructure/vec_store.rs` (new)", dir).is_ok(),
+        "a new .rs file marked `(new)` in an existing directory is allowed"
+    );
+    assert!(
+        check_files_line("t", "Files: `src/infrastructure/nope/x.rs` (new)", dir).is_err(),
+        "a new file whose parent directory does not exist is refused"
+    );
+    assert!(
+        check_files_line("t", "Files: `tests/it/store.rs`", dir).is_err(),
+        "a path outside src/ is refused"
+    );
 }
 
 /// A `## Decisions` table with one row per number in `rows`, all naming `test` in `file`.
