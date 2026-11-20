@@ -168,6 +168,70 @@ fn readme_rows_equal_the_catalog() {
     assert_eq!(total, 37, "the catalog has 37 decision rows");
 }
 
+/// Issue #296: the README has a `## How to change` section with the five changes, in
+/// order; each has one `Files:` line that names 1 to 3 existing files of the crate.
+#[test]
+fn readme_how_to_change_has_the_five_changes() {
+    const TITLES: [&str; 5] = [
+        "Add a field with a constraint",
+        "Add a filter to the list",
+        "Replace the in-memory store",
+        "Add POST /v1/orders/{id}/cancel",
+        "Change hard delete to soft delete",
+    ];
+    let readme = read_readme();
+    let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+
+    // The `### ` sections under `## How to change`, up to the next `## ` heading.
+    let mut inside = false;
+    let mut found_section = false;
+    let mut sections: Vec<(String, Vec<String>)> = Vec::new();
+    for line in readme.lines() {
+        if let Some(h) = line.strip_prefix("## ") {
+            inside = h.trim() == "How to change";
+            found_section |= inside;
+            continue;
+        }
+        if !inside {
+            continue;
+        }
+        if let Some(t) = line.strip_prefix("### ") {
+            sections.push((t.trim().to_string(), Vec::new()));
+        } else if let Some((_, body)) = sections.last_mut() {
+            body.push(line.to_string());
+        }
+    }
+    assert!(found_section, "README has no `## How to change` heading");
+    let titles: Vec<&str> = sections.iter().map(|(t, _)| t.as_str()).collect();
+    assert_eq!(titles, TITLES, "the `### ` headings under `## How to change`, in order");
+
+    for (title, body) in &sections {
+        let files: Vec<&String> = body.iter().filter(|l| l.starts_with("Files:")).collect();
+        assert_eq!(
+            files.len(),
+            1,
+            "section `{title}`: expected one `Files:` line, found {}",
+            files.len()
+        );
+        let paths: Vec<&str> = files[0].split('`').skip(1).step_by(2).collect();
+        assert!(
+            (1..=3).contains(&paths.len()),
+            "section `{title}`: `Files:` lists {} paths, expected 1 to 3",
+            paths.len()
+        );
+        for p in paths {
+            assert!(
+                p.starts_with("src/") || p.starts_with("tests/it/"),
+                "section `{title}`: path `{p}` is not under src/ or tests/it/"
+            );
+            assert!(
+                crate_dir.join(p).is_file(),
+                "section `{title}`: `{p}` is not a file of the crate"
+            );
+        }
+    }
+}
+
 /// A `## Decisions` table with one row per number in `rows`, all naming `test` in `file`.
 fn table(rows: std::ops::RangeInclusive<u32>, test: &str, file: &str) -> String {
     let mut s = String::from("## Decisions\n\n| # | Decision | File | Test |\n|---|---|---|---|\n");
