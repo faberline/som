@@ -2,7 +2,7 @@ use std::cmp::Reverse;
 use std::collections::BTreeMap;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 
-use crate::application::store::{OrderStore, StoreError};
+use crate::application::store::{ListQuery, OrderStore, StoreError};
 use crate::domain::order::Order;
 
 #[derive(Debug, Default)]
@@ -30,17 +30,17 @@ impl OrderStore for MemoryStore {
         self.lock().get(id).cloned().ok_or(StoreError::NotFound)
     }
 
-    fn list_page(&self, after: Option<(&str, &str)>, limit: usize) -> Vec<Order> {
+    fn list_page(&self, query: &ListQuery<'_>) -> Vec<Order> {
         let mut all: Vec<Order> = self.lock().values().cloned().collect();
         all.sort_by(|a, b| (Reverse(&a.created_at), &a.id).cmp(&(Reverse(&b.created_at), &b.id)));
         all.into_iter()
             .skip_while(|order| {
-                after.is_some_and(|(created_at, id)| {
+                query.after.is_some_and(|(created_at, id)| {
                     (Reverse(order.created_at.as_str()), order.id.as_str())
                         <= (Reverse(created_at), id)
                 })
             })
-            .take(limit)
+            .take(query.limit)
             .collect()
     }
 

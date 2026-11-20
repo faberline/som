@@ -6,6 +6,7 @@ use som_reference_order::application::orders::list_orders;
 use som_reference_order::application::pagination::{
     DEFAULT_LIMIT, MAX_LIMIT, decode_cursor, encode_cursor,
 };
+use som_reference_order::application::store::ListQuery;
 use som_reference_order::infrastructure::memory_store::MemoryStore;
 
 use crate::common::{app, body_json, call, seed};
@@ -254,8 +255,9 @@ fn list_orders_full_last_page_has_no_cursor() {
     seed(&store, "b", DAYS[1]);
     seed(&store, "c", DAYS[2]);
 
-    assert!(list_orders(&store, None, 3).next_cursor.is_none());
-    assert!(list_orders(&store, None, 2).next_cursor.is_some());
+    let query = |limit| ListQuery { after: None, limit };
+    assert!(list_orders(&store, &query(3)).next_cursor.is_none());
+    assert!(list_orders(&store, &query(2)).next_cursor.is_some());
 }
 
 proptest! {
@@ -282,8 +284,10 @@ proptest! {
             assert!(pages <= 100, "the walk does not end");
             let page = list_orders(
                 &store,
-                after.as_ref().map(|(created_at, id)| (created_at.as_str(), id.as_str())),
-                limit,
+                &ListQuery {
+                    after: after.as_ref().map(|(created_at, id)| (created_at.as_str(), id.as_str())),
+                    limit,
+                },
             );
             if page.next_cursor.is_some() {
                 assert_eq!(page.items.len(), limit, "a full page has limit items");

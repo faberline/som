@@ -1,5 +1,5 @@
 use serde_json::json;
-use som_reference_order::application::store::{OrderStore, StoreError};
+use som_reference_order::application::store::{ListQuery, OrderStore, StoreError};
 use som_reference_order::domain::order::{Order, OrderInput, Status, parse_input};
 use som_reference_order::infrastructure::memory_store::MemoryStore;
 
@@ -52,11 +52,12 @@ fn list_page_orders_by_created_at_desc_then_id_and_resumes_after_cursor() {
         .expect("create a");
 
     let ids = |orders: Vec<Order>| orders.into_iter().map(|o| o.id).collect::<Vec<_>>();
-    assert_eq!(ids(store.list_page(None, 10)), ["a", "b", "c"]);
-    assert_eq!(ids(store.list_page(None, 2)), ["a", "b"]);
+    let page = |after, limit| store.list_page(&ListQuery { after, limit });
+    assert_eq!(ids(page(None, 10)), ["a", "b", "c"]);
+    assert_eq!(ids(page(None, 2)), ["a", "b"]);
     assert_eq!(
-        ids(store.list_page(Some(("2026-01-03T00:00:00Z", "a")), 10)),
+        ids(page(Some(("2026-01-03T00:00:00Z", "a")), 10)),
         ["b", "c"]
     );
-    assert!(store.list_page(None, 0).is_empty());
+    assert!(page(None, 0).is_empty());
 }
