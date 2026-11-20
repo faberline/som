@@ -9,6 +9,8 @@ mod metrics;
 mod pagination;
 mod preconditions;
 mod probes;
+mod quality;
+mod readme;
 mod request_id;
 mod routes;
 mod store;
