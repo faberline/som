@@ -7,6 +7,7 @@ mod layers;
 mod metrics;
 mod pagination;
 mod preconditions;
+mod probes;
 mod request_id;
 mod routes;
 mod store;

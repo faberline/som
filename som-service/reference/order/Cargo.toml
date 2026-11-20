@@ -7,7 +7,9 @@ publish = false
 [dependencies]
 axum = "=0.8.9"
 metrics-prometheus = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
+server-lifecycle = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
 service-auth = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
+service-http = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
 service-observability = { git = "https://github.com/faberline/core", tag = "v0.5.2" }
 serde_json = "=1.0.151"
 time = { version = "=0.3.55", features = ["formatting", "parsing"] }
