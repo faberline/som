@@ -85,3 +85,30 @@ The 37 decisions of the standard catalog (`standards/`), each with the test that
 | 35 | Quality: `fmt`, `clippy` with no warning, no `unwrap`, no `unsafe`. | tests/it/quality.rs | `fmt_clippy_clean_no_unwrap_no_unsafe` |
 | 36 | Tests: for each operation one success test and one test for each error. Pagination has a property test: a walk of all pages gives all items, with no repeat and no gap. | tests/it/quality.rs | `each_operation_has_success_and_error_tests_and_pagination_property_test` |
 | 37 | Docs: a README that says how to run it, with one `curl` example for each operation. | tests/it/readme.rs | `readme_has_run_steps_and_one_curl_per_operation` |
+
+## How to change
+
+### Add a field with a constraint
+Add the field to `Order` and to `OrderInput`, read and check it in `parse_input`, copy it in `create` and `replace`, and return it in `to_json`.
+Files: `src/domain/order.rs`
+Decisions: 7, 8, 9
+
+### Add a filter to the list
+Add the key to `ListQuery`, read it in `list` with `400` for an unknown value, and keep only the matching items in `list_page`.
+Files: `src/application/store.rs`, `src/infrastructure/memory_store.rs`, `src/interfaces/routes.rs`
+Decisions: 14, 20
+
+### Replace the in-memory store
+Write a second type that implements `OrderStore`, and build the router with it; the handlers do not change.
+Files: `src/infrastructure/vec_store.rs`, `src/infrastructure/mod.rs` (new: vec_store.rs)
+Decisions: none
+
+### Add POST /v1/orders/{id}/cancel
+Add the route and a handler that checks `If-Match` as `replace` does, then sets the existing `canceled` status and `updated_at`.
+Files: `src/application/orders.rs`, `src/domain/order.rs`, `src/interfaces/routes.rs`
+Decisions: 1, 11
+
+### Change hard delete to soft delete
+Set `deleted_at` on the item in `delete` and keep it in the store; `get`, `replace` and `list_page` then treat the item as absent.
+Files: `src/domain/order.rs`, `src/infrastructure/memory_store.rs`
+Decisions: 6
