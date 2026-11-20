@@ -21,7 +21,9 @@ use crate::interfaces::auth::{StaticTokenVerifier, require_auth};
 use crate::interfaces::error::{ApiError, ErrorCode};
 use crate::interfaces::etag::{check_if_match, etag_of};
 use crate::interfaces::metrics::{OperationMetrics, record_operation};
+use crate::interfaces::probes::probe_router;
 use crate::interfaces::request_id::request_id_layer;
+use server_lifecycle::LifecycleController;
 
 pub const COLLECTION_PATH: &str = "/v1/orders";
 pub const ITEM_PATH: &str = "/v1/orders/{id}";
@@ -51,6 +53,17 @@ pub fn router_with_metrics(
     verifier: Arc<StaticTokenVerifier>,
     metrics: Arc<OperationMetrics>,
 ) -> Router {
+    // Outermost: every response, also 404 and 401, gets the id.
+    data_router(store, clock, verifier, metrics).layer(axum::middleware::from_fn(request_id_layer))
+}
+
+/// The order routes and their layers, without the request id layer.
+fn data_router(
+    store: Arc<dyn OrderStore>,
+    clock: Arc<dyn Clock>,
+    verifier: Arc<StaticTokenVerifier>,
+    metrics: Arc<OperationMetrics>,
+) -> Router {
     let state = AppState {
         store,
         keys: Arc::new(IdempotencyKeys::new(clock)),
@@ -65,9 +78,20 @@ pub fn router_with_metrics(
             record_operation,
         ))
         .layer(DefaultBodyLimit::max(BODY_LIMIT_BYTES))
-        // Outermost: every response, also 404 and 401, gets the id.
-        .layer(axum::middleware::from_fn(request_id_layer))
         .with_state(state)
+}
+
+/// The order routes plus the probes (`/healthz`, `/readyz`, `/openapi.json`). The probes need no token and no metrics count, but they get the request id.
+pub fn router_with_probes(
+    store: Arc<dyn OrderStore>,
+    clock: Arc<dyn Clock>,
+    verifier: Arc<StaticTokenVerifier>,
+    metrics: Arc<OperationMetrics>,
+    lifecycle: LifecycleController,
+) -> Router {
+    data_router(store, clock, verifier, metrics)
+        .merge(probe_router(lifecycle))
+        .layer(axum::middleware::from_fn(request_id_layer))
 }
 
 fn invalid(message: impl Into<String>) -> ApiError {
