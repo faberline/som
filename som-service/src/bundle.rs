@@ -1,4 +1,4 @@
-use crate::{Error, model, render};
+use crate::{Error, model, render, resource};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
@@ -30,6 +30,14 @@ pub fn source_manifest() -> Value {
             "contract/task-status.cnl",
             include_bytes!("../contract/task-status.cnl"),
         ),
+        (
+            "contract/order.resource.prompt.json",
+            include_bytes!("../contract/order.resource.prompt.json"),
+        ),
+        (
+            "contract/customer.resource.prompt.json",
+            include_bytes!("../contract/customer.resource.prompt.json"),
+        ),
         ("src/lib.rs", include_bytes!("lib.rs")),
         ("src/codegen.rs", include_bytes!("codegen.rs")),
         ("src/model.rs", include_bytes!("model.rs")),
@@ -38,6 +46,7 @@ pub fn source_manifest() -> Value {
         ("src/strict_json.rs", include_bytes!("strict_json.rs")),
         ("src/bundle.rs", include_bytes!("bundle.rs")),
         ("src/render.rs", include_bytes!("render.rs")),
+        ("src/resource.rs", include_bytes!("resource.rs")),
         ("src/server.rs", include_bytes!("server.rs")),
         ("src/main.rs", include_bytes!("main.rs")),
         (
@@ -89,6 +98,14 @@ pub fn compile(value: &Value) -> Result<Value, Error> {
     let prompt = model::validate(value)?;
     let mut bundle =
         json!({"version":VERSION,"assets":identity(),"prompt":prompt,"dsl":model::plan(&prompt)});
+    let digest = hash(&canonical(&bundle));
+    bundle["digest"] = json!(digest);
+    Ok(bundle)
+}
+/// A resource bundle (`som.bundle.resource.v1`) records the catalog version.
+pub fn compile_v3(value: &Value) -> Result<Value, Error> {
+    let prompt = resource::validate_v3(value)?;
+    let mut bundle = json!({"version":resource::BUNDLE_VERSION_RESOURCE,"assets":identity(),"catalog":resource::CATALOG,"prompt":prompt.0,"dsl":resource::plan_v3(&prompt)});
     let digest = hash(&canonical(&bundle));
     bundle["digest"] = json!(digest);
     Ok(bundle)

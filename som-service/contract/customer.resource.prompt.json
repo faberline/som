@@ -1,0 +1,19 @@
+{
+  "version": "som.prompt.service.v3",
+  "package": "customers_service",
+  "target": "rust-resource-service.v1",
+  "resources": [
+    {
+      "name": "Customer",
+      "fields": [
+        {"name": "name", "type": "string", "required": true, "min": 1, "max": 100},
+        {"name": "email", "type": "string", "required": true, "min": 3, "max": 254},
+        {"name": "country", "type": "string", "required": true, "upper_letters": 3},
+        {"name": "tier", "type": "enum", "required": true, "values": ["standard", "silver", "gold"]},
+        {"name": "loyalty_points", "type": "integer", "required": true, "min": 0},
+        {"name": "note", "type": "string", "required": false, "max": 500}
+      ],
+      "standards": ["CRUD", "standard pagination"]
+    }
+  ]
+}

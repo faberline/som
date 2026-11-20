@@ -39,10 +39,14 @@ enum Command {
 /// duplicate keys are still caught by the server.
 fn compile_payload(text: &str) -> String {
     if text.trim_start().starts_with('{') {
-        format!(
-            "{{\"format\":\"{}\",\"prompt\":{text}}}",
+        let v3 = serde_json::from_str::<Value>(text)
+            .is_ok_and(|value| value["version"] == som_service::resource::PROMPT_VERSION_V3);
+        let format = if v3 {
+            som_service::resource::JSON_FORMAT_V3
+        } else {
             som_service::model::JSON_FORMAT_V2
-        )
+        };
+        format!("{{\"format\":\"{format}\",\"prompt\":{text}}}")
     } else {
         json!({"format":som_service::model::CNL_FORMAT,"source":text}).to_string()
     }
@@ -143,6 +147,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::compile_payload;
+    #[test]
+    fn json_file_with_prompt_v3_is_sent_as_prompt_json_v3() {
+        assert_eq!(
+            compile_payload("{\"version\":\"som.prompt.service.v3\"}"),
+            "{\"format\":\"som.prompt-json.service.v3\",\"prompt\":{\"version\":\"som.prompt.service.v3\"}}"
+        );
+    }
     #[test]
     fn json_file_is_sent_as_prompt_json_v2_and_other_text_as_cnl() {
         assert_eq!(

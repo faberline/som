@@ -1,0 +1,18 @@
+{
+  "version": "som.prompt.service.v3",
+  "package": "orders_service",
+  "target": "rust-resource-service.v1",
+  "resources": [
+    {
+      "name": "Order",
+      "fields": [
+        {"name": "customer_id", "type": "string", "required": true, "min": 1},
+        {"name": "total_cents", "type": "integer", "required": true, "min": 0},
+        {"name": "currency", "type": "string", "required": true, "upper_letters": 3},
+        {"name": "status", "type": "enum", "required": true, "values": ["pending", "paid", "shipped", "canceled"]},
+        {"name": "note", "type": "string", "required": false, "max": 500}
+      ],
+      "standards": ["CRUD", "standard pagination"]
+    }
+  ]
+}
