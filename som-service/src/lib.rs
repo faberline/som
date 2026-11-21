@@ -7,6 +7,7 @@ pub mod openapi;
 pub mod render;
 pub mod resource;
 mod resource_cnl;
+mod resource_emit;
 pub mod server;
 mod strict_json;
 
@@ -65,6 +66,9 @@ pub fn assemble(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
 }
 pub fn assemble_server(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
     bundle::assemble_server(bundle)
+}
+pub fn assemble_resource(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
+    bundle::assemble_resource(bundle)
 }
 pub fn health() -> Value {
     json!({"status":"ok","compiler":"som-service.v1",
@@ -167,9 +171,10 @@ pub fn assemble_json(source: &str) -> Result<Value, Error> {
     let files = match emit {
         "client" => assemble(&doc.value["bundle"]),
         "server" => assemble_server(&doc.value["bundle"]),
+        "resource" => assemble_resource(&doc.value["bundle"]),
         _ => Err(Error::new(
             "INVALID_SCHEMA",
-            "Expected emit to be client or server.",
+            "Expected emit to be client, server or resource.",
             "/emit",
         )),
     }
