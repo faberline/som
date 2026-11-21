@@ -1,13 +1,11 @@
-use serde_json::json;
 use som_reference_order::application::store::{ListQuery, OrderStore, StoreError};
-use som_reference_order::domain::order::{Order, OrderInput, Status, parse_input};
+use som_reference_order::domain::order::{Order, OrderInput, parse_input};
 use som_reference_order::infrastructure::memory_store::MemoryStore;
 
+use crate::fixture::{change, changed_total, valid_body};
+
 fn input() -> OrderInput {
-    parse_input(
-        &json!({"customer_id": "c1", "total_cents": 100, "currency": "USD", "status": "pending"}),
-    )
-    .expect("valid body parses")
+    parse_input(&valid_body()).expect("valid body parses")
 }
 
 fn order(id: &str, created_at: &str) -> Order {
@@ -24,10 +22,9 @@ fn store_trait_has_in_memory_implementation() {
     assert_eq!(store.get("zzz"), Err(StoreError::NotFound));
 
     let mut changed = created.clone();
-    changed.total_cents = 250;
-    changed.status = Status::Paid;
+    change(&mut changed);
     let replaced = store.replace(changed.clone()).expect("replace");
-    assert_eq!(replaced.total_cents, 250);
+    assert_eq!(changed_total(&replaced), 250);
     assert_eq!(store.get("a").expect("get after replace"), changed);
     let mut unknown = order("nope", "2026-01-01T00:00:00Z");
     unknown.id = "nope".to_owned();

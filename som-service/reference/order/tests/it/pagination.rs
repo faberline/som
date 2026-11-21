@@ -10,6 +10,7 @@ use som_reference_order::application::store::ListQuery;
 use som_reference_order::infrastructure::memory_store::MemoryStore;
 
 use crate::common::{app, body_json, call, seed};
+use crate::fixture::check_list_item;
 
 const DAYS: [&str; 5] = [
     "2026-01-01T00:00:00Z",
@@ -41,13 +42,7 @@ async fn list_returns_200_with_standard_pagination() {
     let items = value["items"].as_array().expect("items is an array");
     assert_eq!(items.len(), 3);
     for item in items {
-        assert!(item["id"].is_string());
-        assert!(item["customer_id"].is_string());
-        assert!(item["total_cents"].is_i64());
-        assert!(item["currency"].is_string());
-        assert!(item["status"].is_string());
-        assert!(item["created_at"].is_string());
-        assert!(item["updated_at"].is_string());
+        check_list_item(item);
     }
     assert!(value["next_cursor"].is_null());
 

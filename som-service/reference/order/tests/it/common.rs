@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{HeaderMap, Request, StatusCode};
-use serde_json::{Value, json};
+use serde_json::Value;
 use som_reference_order::application::idempotency::Clock;
 use som_reference_order::application::store::OrderStore;
 use som_reference_order::domain::order::{Order, parse_input};
@@ -111,9 +111,7 @@ pub fn body_json(bytes: &[u8]) -> Value {
     serde_json::from_slice(bytes).expect("body is JSON")
 }
 
-pub fn valid_body() -> Value {
-    json!({"customer_id": "c1", "total_cents": 100, "currency": "USD", "status": "pending"})
-}
+pub use crate::fixture::valid_body;
 
 pub fn seed(store: &MemoryStore, id: &str, created_at: &str) {
     let input = parse_input(&valid_body()).expect("valid body parses");

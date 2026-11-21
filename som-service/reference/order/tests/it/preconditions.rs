@@ -1,13 +1,8 @@
 use axum::http::StatusCode;
-use serde_json::{Value, json};
+use serde_json::json;
 
 use crate::common::{app, body_json, call, etag_of, seed, send, valid_body};
-
-fn with_note(note: &str) -> Value {
-    let mut body = valid_body();
-    body["note"] = json!(note);
-    body
-}
+use crate::fixture::{text_of, with_text};
 
 #[tokio::test]
 async fn etag_is_returned_and_if_match_mismatch_412_missing_428() {
@@ -50,7 +45,7 @@ async fn etag_is_returned_and_if_match_mismatch_412_missing_428() {
         "PUT",
         "/v1/orders/a",
         &[("if-match", &old)],
-        Some(with_note("x").to_string().into_bytes()),
+        Some(with_text("x").to_string().into_bytes()),
     )
     .await;
     assert_eq!(status, StatusCode::OK);
@@ -63,12 +58,12 @@ async fn etag_is_returned_and_if_match_mismatch_412_missing_428() {
         "PUT",
         "/v1/orders/a",
         &[("if-match", &old)],
-        Some(with_note("y").to_string().into_bytes()),
+        Some(with_text("y").to_string().into_bytes()),
     )
     .await;
     assert_eq!(status, StatusCode::PRECONDITION_FAILED);
     let (_, _, body) = call(&app, "GET", "/v1/orders/a", None).await;
-    assert_eq!(body_json(&body)["note"], "x");
+    assert_eq!(text_of(&body_json(&body)), "x");
 
     let (status, _, body) = call(&app, "DELETE", "/v1/orders/a", None).await;
     assert_eq!(status, StatusCode::PRECONDITION_REQUIRED);

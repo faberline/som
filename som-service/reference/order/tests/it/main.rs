@@ -2,6 +2,7 @@ mod auth;
 mod common;
 mod domain;
 mod errors;
+mod fixture;
 mod idempotency;
 mod layers;
 mod limits;

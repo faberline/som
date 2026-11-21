@@ -15,6 +15,7 @@ const CUSTOMER: &str = include_str!("../../contract/customer.resource.prompt.jso
 const DEFER_FOUR: &str = include_str!("fixtures/defer-four.prompt.json");
 const ORDER_CURSOR: &str = include_str!("fixtures/order.cursor.rs");
 const LOCK_TEMPLATE: &str = include_str!("../../templates/resource/Cargo.lock.txt");
+const REFERENCE_FIXTURE_TEST: &str = include_str!("../../reference/order/tests/it/fixture.rs");
 const REFERENCE_DOMAIN_TEST: &str = include_str!("../../reference/order/tests/it/domain.rs");
 const REFERENCE_STORE_TEST: &str = include_str!("../../reference/order/tests/it/store.rs");
 
@@ -579,7 +580,11 @@ fn resource_emit_order_builds_clippy_and_passes_reference_tests() {
     let mut tests = BTreeMap::new();
     tests.insert(
         "tests/it/main.rs".to_owned(),
-        "mod domain;\nmod pagination;\nmod store;\n".to_owned(),
+        "#[allow(dead_code)]\nmod fixture;\nmod domain;\nmod pagination;\nmod store;\n".to_owned(),
+    );
+    tests.insert(
+        "tests/it/fixture.rs".to_owned(),
+        REFERENCE_FIXTURE_TEST.replace("som_reference_order", "orders_service"),
     );
     tests.insert(
         "tests/it/domain.rs".to_owned(),
@@ -853,10 +858,14 @@ fn resource_emit_order_passes_the_reference_http_tests() {
     let root = scratch_root();
     let order = root.join("order");
     write_files(&order, &emit(&value(ORDER)));
-    let reference: [(&str, &str); 13] = [
+    let reference: [(&str, &str); 14] = [
         (
             "common.rs",
             include_str!("../../reference/order/tests/it/common.rs"),
+        ),
+        (
+            "fixture.rs",
+            include_str!("../../reference/order/tests/it/fixture.rs"),
         ),
         (
             "domain.rs",
