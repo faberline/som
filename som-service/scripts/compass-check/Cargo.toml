@@ -1,0 +1,13 @@
+[package]
+name = "som-service-compass-check"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Exploration of #311. Not a gate, not a dependency of som-service or of a generated crate.
+[dependencies]
+compass = { git = "https://github.com/faberline/core.git", tag = "v0.5.2" }
+som-service = { path = "../.." }
+serde_json = "=1.0.151"
+
+[workspace]
