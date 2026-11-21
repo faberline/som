@@ -81,7 +81,7 @@ fn string<'a>(object: &'a Map<String, Value>, key: &str, parent: &str) -> Result
         )
     })
 }
-fn identifier(name: &str, pointer: &str) -> Result<(), Error> {
+pub(crate) fn identifier(name: &str, pointer: &str) -> Result<(), Error> {
     const RESERVED: &[&str] = &[
         "as", "break", "const", "continue", "crate", "else", "enum", "extern", "false", "fn",
         "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref",

@@ -36,12 +36,17 @@ impl Error {
             }]}),
         )
     }
+    pub fn with_allowed_form(mut self, form: &str) -> Self {
+        self.body["diagnostics"][0]["allowed_form"] = json!(form);
+        self
+    }
     pub fn from_body(body: Value) -> Self {
         let status = match body["code"].as_str().unwrap_or("") {
             "UNSUPPORTED_VERSION"
             | "UNSUPPORTED_CONTRACT"
             | "UNSUPPORTED_OPERATION"
-            | "UNSUPPORTED_TARGET" => 422,
+            | "UNSUPPORTED_TARGET"
+            | "UNKNOWN_STANDARD" => 422,
             "REQUEST_TOO_LARGE" => 413,
             _ => 400,
         };

@@ -20,6 +20,7 @@ mod readme_cnl_split;
 mod readme_links;
 mod readme_mainline;
 mod readme_supported_path;
+mod resource_v3;
 mod server_http;
 mod server_render;
 mod server_transport;
