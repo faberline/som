@@ -353,3 +353,237 @@ fn second_resource_with_the_same_name_is_refused_after_the_first_is_complete() {
     let error = refused(compile_cnl(&source), 400, "INVALID_VALUE");
     at(&error, 12, "Order", &source);
 }
+
+#[test]
+fn spaces_and_tabs_separate_words_in_any_run() {
+    let source = bad("Package orders_service.", "Package \t  orders_service.");
+    assert_eq!(ok(compile_cnl(&source)).prompt, value(ORDER_PROMPT));
+}
+
+#[test]
+fn a_period_after_a_space_ends_the_sentence() {
+    let source = bad("Resource Order.", "Resource Order .");
+    let compiled = ok(compile_cnl(&source));
+    assert_eq!(compiled.prompt["resources"][0]["name"], "Order");
+}
+
+#[test]
+fn a_line_with_only_a_period_is_an_unknown_sentence() {
+    let source = bad("Resource Order.", ".\nResource Order.");
+    let error = refused(compile_cnl(&source), 400, "CNL_SYNTAX");
+    at(&error, 4, ".", &source);
+}
+
+#[test]
+fn package_takes_exactly_one_name() {
+    let missing = bad("Package orders_service.", "Package.");
+    let error = refused(compile_cnl(&missing), 400, "CNL_SYNTAX");
+    at(&error, 2, "Package.", &missing);
+
+    let extra = bad("Package orders_service.", "Package a b.");
+    let error = refused(compile_cnl(&extra), 400, "CNL_SYNTAX");
+    at(&error, 2, "b", &extra);
+}
+
+#[test]
+fn target_takes_one_profile_and_needs_its_period() {
+    let extra = bad(
+        "Target rust-resource-service.v1.",
+        "Target rust-resource-service.v1 extra.",
+    );
+    let error = refused(compile_cnl(&extra), 400, "CNL_SYNTAX");
+    at(&error, 3, "extra", &extra);
+
+    let unended = bad(
+        "Target rust-resource-service.v1.",
+        "Target rust-resource-service.v1",
+    );
+    let error = refused(compile_cnl(&unended), 400, "CNL_SYNTAX");
+    at(&error, 3, "Target rust-resource-service.v1", &unended);
+    assert_eq!(
+        error.body["diagnostics"][0]["allowed_form"],
+        "Target PROFILE."
+    );
+}
+
+#[test]
+fn target_before_package_is_refused() {
+    let source = bad(
+        "Package orders_service.\nTarget rust-resource-service.v1.",
+        "Target rust-resource-service.v1.\nPackage orders_service.",
+    );
+    let error = refused(compile_cnl(&source), 400, "CNL_SYNTAX");
+    at(&error, 2, "Target", &source);
+    assert_eq!(
+        error.body["diagnostics"][0]["allowed_form"],
+        "Package NAME."
+    );
+}
+
+#[test]
+fn resource_line_needs_its_period() {
+    let source = bad("Resource Order.", "Resource Order");
+    let error = refused(compile_cnl(&source), 400, "CNL_SYNTAX");
+    at(&error, 4, "Resource Order", &source);
+    assert_eq!(
+        error.body["diagnostics"][0]["allowed_form"],
+        "Resource NAME."
+    );
+}
+
+#[test]
+fn unknown_start_without_period_names_the_header_form() {
+    let source = bad("Resource Order.", "Rename Order");
+    let error = refused(compile_cnl(&source), 400, "CNL_SYNTAX");
+    at(&error, 4, "Rename Order", &source);
+    assert_eq!(
+        error.body["diagnostics"][0]["allowed_form"],
+        "Service resource version 1."
+    );
+}
+
+#[test]
+fn field_and_apply_lines_need_their_period() {
+    let field = bad(
+        "Field note of Order is string optional max 500.",
+        "Field note of Order is string optional max 500",
+    );
+    let error = refused(compile_cnl(&field), 400, "CNL_SYNTAX");
+    at(
+        &error,
+        9,
+        "Field note of Order is string optional max 500",
+        &field,
+    );
+    assert_eq!(
+        error.body["diagnostics"][0]["allowed_form"],
+        "Field NAME of RESOURCE is TYPE required|optional [CONSTRAINTS]."
+    );
+
+    let apply = bad("Apply CRUD to Order.", "Apply CRUD to Order");
+    let error = refused(compile_cnl(&apply), 400, "CNL_SYNTAX");
+    at(&error, 10, "Apply CRUD to Order", &apply);
+    assert_eq!(
+        error.body["diagnostics"][0]["allowed_form"],
+        "Apply STANDARD to RESOURCE."
+    );
+}
+
+#[test]
+fn header_words_are_fixed_and_complete() {
+    let wrong = bad("Service resource version 1.", "Service Resource version 1.");
+    let error = refused(compile_cnl(&wrong), 400, "CNL_SYNTAX");
+    at(&error, 1, "Resource", &wrong);
+
+    let short = bad("Service resource version 1.", "Service resource.");
+    let error = refused(compile_cnl(&short), 400, "CNL_SYNTAX");
+    at(&error, 1, "Service resource.", &short);
+
+    let extra = bad(
+        "Service resource version 1.",
+        "Service resource version 1 extra.",
+    );
+    let error = refused(compile_cnl(&extra), 400, "CNL_SYNTAX");
+    at(&error, 1, "extra", &extra);
+}
+
+#[test]
+fn resource_line_without_a_name_is_a_syntax_error() {
+    let source = bad("Resource Order.", "Resource.");
+    let error = refused(compile_cnl(&source), 400, "CNL_SYNTAX");
+    at(&error, 4, "Resource.", &source);
+}
+
+#[test]
+fn field_sentence_must_have_all_its_fixed_words() {
+    let no_name = bad("Field note of Order is string optional max 500.", "Field.");
+    let error = refused(compile_cnl(&no_name), 400, "CNL_SYNTAX");
+    at(&error, 9, "Field.", &no_name);
+
+    let no_of = bad(
+        "Field note of Order is string optional max 500.",
+        "Field note Order is string optional max 500.",
+    );
+    let error = refused(compile_cnl(&no_of), 400, "CNL_SYNTAX");
+    at(&error, 9, "Order", &no_of);
+
+    let no_type = bad(
+        "Field note of Order is string optional max 500.",
+        "Field x of Order is.",
+    );
+    let error = refused(compile_cnl(&no_type), 400, "CNL_SYNTAX");
+    at(&error, 9, "Field x of Order is.", &no_type);
+
+    let no_flag = bad(
+        "Field note of Order is string optional max 500.",
+        "Field x of Order is string.",
+    );
+    let error = refused(compile_cnl(&no_flag), 400, "CNL_SYNTAX");
+    at(&error, 9, "Field x of Order is string.", &no_flag);
+}
+
+#[test]
+fn constraint_needs_a_number_and_a_whole_one() {
+    let no_number = bad(
+        "Field note of Order is string optional max 500.",
+        "Field note of Order is string optional max.",
+    );
+    let error = refused(compile_cnl(&no_number), 400, "CNL_SYNTAX");
+    at(&error, 9, "max", &no_number);
+
+    let decimal = bad(
+        "Field note of Order is string optional max 500.",
+        "Field note of Order is string optional max 1.5.",
+    );
+    let error = refused(compile_cnl(&decimal), 400, "CNL_SYNTAX");
+    at(&error, 9, "1.5", &decimal);
+
+    let negative_zero = bad(
+        "Field note of Order is string optional max 500.",
+        "Field note of Order is string optional max -0.",
+    );
+    let error = refused(compile_cnl(&negative_zero), 400, "CNL_SYNTAX");
+    at(&error, 9, "-0", &negative_zero);
+
+    let too_large = bad(
+        "Field note of Order is string optional max 500.",
+        "Field note of Order is string optional max 99999999999999999999.",
+    );
+    let error = refused(compile_cnl(&too_large), 400, "CNL_SYNTAX");
+    at(&error, 9, "99999999999999999999", &too_large);
+}
+
+#[test]
+fn constraint_repeated_in_the_same_sentence_is_refused() {
+    let source = bad(
+        "Field note of Order is string optional max 500.",
+        "Field note of Order is string optional max 5 max 6.",
+    );
+    let error = refused(compile_cnl(&source), 400, "CNL_SYNTAX");
+    at(&error, 9, "max", &source);
+}
+
+#[test]
+fn enum_values_need_at_least_one_word() {
+    let source = bad(
+        "Field status of Order is enum required values pending paid shipped canceled.",
+        "Field status of Order is enum required values.",
+    );
+    let error = refused(compile_cnl(&source), 400, "CNL_SYNTAX");
+    at(&error, 8, "values", &source);
+}
+
+#[test]
+fn apply_needs_a_standard_then_to_then_the_open_resource() {
+    let no_standard = bad("Apply CRUD to Order.", "Apply to Order.");
+    let error = refused(compile_cnl(&no_standard), 400, "CNL_SYNTAX");
+    at(&error, 10, "Apply to Order.", &no_standard);
+
+    let no_to = bad("Apply CRUD to Order.", "Apply CRUD Order.");
+    let error = refused(compile_cnl(&no_to), 400, "CNL_SYNTAX");
+    at(&error, 10, "Apply CRUD Order.", &no_to);
+
+    let other = bad("Apply CRUD to Order.", "Apply CRUD to Invoice.");
+    let error = refused(compile_cnl(&other), 400, "CNL_SYNTAX");
+    at(&error, 10, "Invoice", &other);
+}

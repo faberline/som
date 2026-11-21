@@ -28,7 +28,9 @@ pub(crate) fn is_resource_source(source: &str) -> bool {
         .find(|line| words_of(line).next().is_some())
         .is_some_and(|line| {
             let mut words = words_of(line);
-            words.next() == Some("Service") && words.next() == Some("resource")
+            // `resource.` too: a header with no version is still a resource source.
+            words.next() == Some("Service")
+                && matches!(words.next(), Some("resource" | "resource."))
         })
 }
 
@@ -45,12 +47,18 @@ fn content(raw: &str) -> &str {
 pub(crate) fn parse(source: &str) -> Result<(Value, Map), Error> {
     let sentences = lex(source)?;
     let mut map = Map::new();
-    let mut expect = Expect::Header;
     let mut package = Value::Null;
     let mut target = Value::Null;
     let mut resources: Vec<Draft> = Vec::new();
 
-    for sentence in &sentences {
+    // The first sentence is the header: `is_resource_source` ensures it starts
+    // with `Service resource`.
+    if let Some(header_sentence) = sentences.first() {
+        header(header_sentence, &mut map)?;
+    }
+    let mut expect = Expect::Package;
+
+    for sentence in sentences.iter().skip(1) {
         let first = &sentence.words[0];
         if !SENTENCE_STARTS.contains(&first.text) {
             return Err(syntax("Unknown sentence.", &first.span, expect.form()));
@@ -63,10 +71,6 @@ pub(crate) fn parse(source: &str) -> Result<(Value, Map), Error> {
             ));
         }
         match first.text {
-            "Service" => {
-                header(sentence, &mut map)?;
-                expect = Expect::Package;
-            }
             "Package" => {
                 let name = name_of(sentence, PACKAGE_FORM)?;
                 package = json!(name.text);
@@ -91,14 +95,9 @@ pub(crate) fn parse(source: &str) -> Result<(Value, Map), Error> {
                 });
                 expect = Expect::Body;
             }
+            // Only `Body` allows these, and `Body` is entered after a `Resource`.
             "Field" => {
-                let r = resources.len().checked_sub(1).ok_or_else(|| {
-                    syntax(
-                        "This sentence is not allowed here.",
-                        &first.span,
-                        RESOURCE_FORM,
-                    )
-                })?;
+                let r = resources.len() - 1;
                 let draft = &mut resources[r];
                 let j = draft.fields.len();
                 let field = field(
@@ -110,13 +109,7 @@ pub(crate) fn parse(source: &str) -> Result<(Value, Map), Error> {
                 draft.fields.push(field);
             }
             _ => {
-                let r = resources.len().checked_sub(1).ok_or_else(|| {
-                    syntax(
-                        "This sentence is not allowed here.",
-                        &first.span,
-                        RESOURCE_FORM,
-                    )
-                })?;
+                let r = resources.len() - 1;
                 let draft = &mut resources[r];
                 let (standard, span) = apply(sentence, &draft.name)?;
                 let k = draft.standards.len();
@@ -149,7 +142,6 @@ struct Draft {
 /// What the next sentence may be.
 #[derive(Clone, Copy)]
 enum Expect {
-    Header,
     Package,
     Target,
     Resource,
@@ -159,7 +151,6 @@ enum Expect {
 impl Expect {
     fn form(self) -> &'static str {
         match self {
-            Expect::Header => HEADER_FORM,
             Expect::Package => PACKAGE_FORM,
             Expect::Target => TARGET_FORM,
             Expect::Resource | Expect::Body => RESOURCE_FORM,
@@ -168,7 +159,6 @@ impl Expect {
 
     fn allows(self, first: &str) -> bool {
         match self {
-            Expect::Header => first == "Service",
             Expect::Package => first == "Package",
             Expect::Target => first == "Target",
             Expect::Resource => first == "Resource",
@@ -471,7 +461,7 @@ fn apply(sentence: &Sentence<'_>, open: &str) -> Result<(String, SourceSpan), Er
     let words = &sentence.words;
     if words.len() < 4 || words[words.len() - 2].text != "to" {
         return Err(syntax(
-            "This sentence is not allowed here.",
+            "Expected Apply STANDARD to RESOURCE.",
             &sentence.span,
             APPLY_FORM,
         ));
