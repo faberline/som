@@ -142,6 +142,12 @@ async fn timeout_layer_is_wired_into_the_data_routes() {
         .expect("the server task ends");
 }
 
+// The capacities are the defaults; only the window is long, so no token returns during the test (1 token each 144 s).
+fn default_limits_with_slow_refill() -> Limits {
+    Limits::from_lookup(|key| (key == "ORDER_ADMISSION_REFILL_SECS").then(|| "86400".to_owned()))
+        .expect("the defaults with a slow refill are valid")
+}
+
 #[tokio::test]
 async fn admission_defaults_apply() {
     // Constants (decision 31).
@@ -174,7 +180,7 @@ async fn admission_defaults_apply() {
     );
 
     // The 601st read of one key in a window gives 429 rate_limited with Retry-After.
-    let app = limited_app(Limits::from_lookup(|_| None).expect("defaults"));
+    let app = limited_app(default_limits_with_slow_refill());
     for _ in 0..600 {
         let (status, _, _) = call(&app, "GET", "/v1/orders", None).await;
         assert_eq!(status, StatusCode::OK);
@@ -192,7 +198,7 @@ async fn admission_defaults_apply() {
     assert_eq!(body_json(&body)["error"], "rate_limited");
 
     // The 121st write of one key gives 429; reads are a separate class and still answer.
-    let app = limited_app(Limits::from_lookup(|_| None).expect("defaults"));
+    let app = limited_app(default_limits_with_slow_refill());
     for _ in 0..120 {
         let (status, _, _) = call(&app, "POST", "/v1/orders", Some(valid_body())).await;
         assert_eq!(status, StatusCode::CREATED);
@@ -283,6 +289,18 @@ async fn admission_defaults_apply() {
         Limits::from_lookup(|key| (key == "ORDER_ADMISSION_REFILL_SECS").then(|| "0".to_owned()))
             .is_err()
     );
+}
+
+#[tokio::test]
+async fn admission_default_window_refills_during_the_test() {
+    let app = limited_app(default_limits_with_slow_refill());
+    for _ in 0..600 {
+        let (status, _, _) = call(&app, "GET", "/v1/orders", None).await;
+        assert_eq!(status, StatusCode::OK);
+    }
+    tokio::time::sleep(Duration::from_millis(1200)).await;
+    let (status, _, _) = call(&app, "GET", "/v1/orders", None).await;
+    assert_eq!(status, StatusCode::TOO_MANY_REQUESTS);
 }
 
 #[tokio::test]
