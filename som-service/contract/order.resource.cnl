@@ -1,0 +1,11 @@
+Service resource version 1.
+Package orders_service.
+Target rust-resource-service.v1.
+Resource Order.
+Field customer_id of Order is string required min 1.
+Field total_cents of Order is integer required min 0.
+Field currency of Order is string required upper_letters 3.
+Field status of Order is enum required values pending paid shipped canceled.
+Field note of Order is string optional max 500.
+Apply CRUD to Order.
+Apply standard pagination to Order.
