@@ -21,6 +21,7 @@ mod readme_links;
 mod readme_mainline;
 mod readme_supported_path;
 mod resource_cnl;
+mod resource_emit;
 mod resource_v3;
 mod server_http;
 mod server_render;

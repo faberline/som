@@ -48,6 +48,51 @@ pub fn source_manifest() -> Value {
         ("src/render.rs", include_bytes!("render.rs")),
         ("src/resource.rs", include_bytes!("resource.rs")),
         ("src/resource_cnl.rs", include_bytes!("resource_cnl.rs")),
+        ("src/resource_emit.rs", include_bytes!("resource_emit.rs")),
+        (
+            "templates/resource/Cargo.toml.txt",
+            include_bytes!("../templates/resource/Cargo.toml.txt"),
+        ),
+        (
+            "templates/resource/Cargo.lock.txt",
+            include_bytes!("../templates/resource/Cargo.lock.txt"),
+        ),
+        (
+            "reference/order/src/lib.rs",
+            include_bytes!("../reference/order/src/lib.rs"),
+        ),
+        (
+            "reference/order/src/application/mod.rs",
+            include_bytes!("../reference/order/src/application/mod.rs"),
+        ),
+        (
+            "reference/order/src/application/store.rs",
+            include_bytes!("../reference/order/src/application/store.rs"),
+        ),
+        (
+            "reference/order/src/application/pagination.rs",
+            include_bytes!("../reference/order/src/application/pagination.rs"),
+        ),
+        (
+            "reference/order/src/application/idempotency.rs",
+            include_bytes!("../reference/order/src/application/idempotency.rs"),
+        ),
+        (
+            "reference/order/src/application/orders.rs",
+            include_bytes!("../reference/order/src/application/orders.rs"),
+        ),
+        (
+            "reference/order/src/domain/mod.rs",
+            include_bytes!("../reference/order/src/domain/mod.rs"),
+        ),
+        (
+            "reference/order/src/infrastructure/mod.rs",
+            include_bytes!("../reference/order/src/infrastructure/mod.rs"),
+        ),
+        (
+            "reference/order/src/infrastructure/memory_store.rs",
+            include_bytes!("../reference/order/src/infrastructure/memory_store.rs"),
+        ),
         (
             "contract/order.resource.cnl",
             include_bytes!("../contract/order.resource.cnl"),
@@ -156,6 +201,72 @@ fn check_header(bundle: &Value) -> Result<(), Error> {
     }
     Ok(())
 }
+/// The checks of a resource bundle (`som.bundle.resource.v1`, #304) before it is rendered.
+fn check_resource(bundle: &Value) -> Result<(), Error> {
+    model::exact(
+        bundle,
+        &["version", "assets", "catalog", "prompt", "dsl", "digest"],
+        "",
+    )
+    .map_err(|_| {
+        Error::new(
+            "INVALID_BUNDLE",
+            "Expected a complete resource bundle.",
+            "/bundle",
+        )
+    })?;
+    if bundle["version"] != resource::BUNDLE_VERSION_RESOURCE {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "Unsupported resource bundle version.",
+            "/bundle/version",
+        ));
+    }
+    if bundle["assets"] != identity() {
+        return Err(Error::new(
+            "ASSET_HASH_MISMATCH",
+            "Bundle service assets do not match this compiler.",
+            "/bundle/assets",
+        ));
+    }
+    if bundle["catalog"] != resource::CATALOG {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "Unsupported resource bundle catalog.",
+            "/bundle/catalog",
+        ));
+    }
+    let prompt = resource::validate_v3(&bundle["prompt"]).map_err(|_| {
+        Error::new(
+            "INVALID_BUNDLE",
+            "The bundle prompt is not admitted.",
+            "/bundle/prompt",
+        )
+    })?;
+    if bundle["dsl"] != resource::plan_v3(&prompt) {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "The bundle DSL does not match its typed prompt.",
+            "/bundle/dsl",
+        ));
+    }
+    let content = json!({"version": bundle["version"], "assets": bundle["assets"], "catalog": bundle["catalog"], "prompt": bundle["prompt"], "dsl": bundle["dsl"]});
+    if bundle["digest"] != hash(&canonical(&content)) {
+        return Err(Error::new(
+            "INVALID_BUNDLE",
+            "The bundle digest is invalid.",
+            "/bundle/digest",
+        ));
+    }
+    Ok(())
+}
+
+/// The first half of a resource crate, rendered from a checked resource bundle (#304).
+pub fn assemble_resource(bundle: &Value) -> Result<BTreeMap<String, String>, Error> {
+    check_resource(bundle)?;
+    crate::resource_emit::render(&bundle["dsl"])
+}
+
 /// The checks of a v2 bundle (#163). Returns the package name of its prompt.
 fn check_v2(bundle: &Value) -> Result<String, Error> {
     let prompt = model::validate_v2(&bundle["prompt"]).map_err(|_| {
