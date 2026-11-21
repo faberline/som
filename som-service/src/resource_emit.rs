@@ -3,7 +3,7 @@
 //! `reference/order` with the names of the resource; the domain file, the store
 //! trait and the use cases follow from the plan.
 use crate::{Error, model};
-use serde_json::Value;
+use serde_json::{Map, Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 
 const CARGO_TOML: &str = include_str!("../templates/resource/Cargo.toml.txt");
@@ -17,7 +17,31 @@ const ORDERS: &str = include_str!("../reference/order/src/application/orders.rs"
 const DOMAIN_MOD: &str = include_str!("../reference/order/src/domain/mod.rs");
 const INFRASTRUCTURE_MOD: &str = include_str!("../reference/order/src/infrastructure/mod.rs");
 const MEMORY_STORE: &str = include_str!("../reference/order/src/infrastructure/memory_store.rs");
-const INTERFACES_STUB: &str = "// The interfaces layer is added by the next step of the emitter.\n";
+const INTERFACES_AUTH: &str = include_str!("../reference/order/src/interfaces/auth.rs");
+const INTERFACES_ERROR: &str = include_str!("../reference/order/src/interfaces/error.rs");
+const INTERFACES_ETAG: &str = include_str!("../reference/order/src/interfaces/etag.rs");
+const INTERFACES_LIMITS: &str = include_str!("../reference/order/src/interfaces/limits.rs");
+const INTERFACES_METRICS: &str = include_str!("../reference/order/src/interfaces/metrics.rs");
+const INTERFACES_MOD: &str = include_str!("../reference/order/src/interfaces/mod.rs");
+const INTERFACES_PROBES: &str = include_str!("../reference/order/src/interfaces/probes.rs");
+const INTERFACES_REQUEST_ID: &str = include_str!("../reference/order/src/interfaces/request_id.rs");
+const INTERFACES_ROUTES: &str = include_str!("../reference/order/src/interfaces/routes.rs");
+const INTERFACES_SERVER: &str = include_str!("../reference/order/src/interfaces/server.rs");
+const OPENAPI_TEMPLATE: &str = include_str!("../reference/order/openapi.json");
+
+/// The files of the interfaces layer: the name in the crate and its reference text.
+const INTERFACE_FILES: [(&str, &str); 10] = [
+    ("auth.rs", INTERFACES_AUTH),
+    ("error.rs", INTERFACES_ERROR),
+    ("etag.rs", INTERFACES_ETAG),
+    ("limits.rs", INTERFACES_LIMITS),
+    ("metrics.rs", INTERFACES_METRICS),
+    ("mod.rs", INTERFACES_MOD),
+    ("probes.rs", INTERFACES_PROBES),
+    ("request_id.rs", INTERFACES_REQUEST_ID),
+    ("routes.rs", INTERFACES_ROUTES),
+    ("server.rs", INTERFACES_SERVER),
+];
 
 /// Names that the generated files use as types. A resource or an enum cannot take them.
 const RESERVED_TYPES: [&str; 21] = [
@@ -52,6 +76,7 @@ pub(crate) fn render(dsl: &Value) -> Result<BTreeMap<String, String>, Error> {
     let name = text(resource, "name");
     let snake = text(resource, "snake");
     let plural = text(resource, "plural");
+    let path = text(resource, "path");
     let fields = fields_of(resource);
     let shared = |template: &str| substitute(template, name, snake, plural);
 
@@ -86,9 +111,18 @@ pub(crate) fn render(dsl: &Value) -> Result<BTreeMap<String, String>, Error> {
         "src/infrastructure/memory_store.rs".to_owned(),
         shared(MEMORY_STORE),
     );
+    for (file, template) in INTERFACE_FILES {
+        let text = shared(template);
+        let text = if file == "routes.rs" {
+            with_path(text, plural, path)
+        } else {
+            text
+        };
+        files.insert(format!("src/interfaces/{file}"), text);
+    }
     files.insert(
-        "src/interfaces/mod.rs".to_owned(),
-        INTERFACES_STUB.to_owned(),
+        "openapi.json".to_owned(),
+        openapi_file(name, snake, plural, path, fields),
     );
     Ok(files)
 }
@@ -172,6 +206,8 @@ fn check(dsl: &Value) -> Result<(), Error> {
         let clashes = RESERVED_TYPES.contains(&type_name.as_str())
             || type_name == name
             || type_name == format!("{name}Input")
+            || type_name == format!("{name}Page")
+            || type_name == "ErrorBody"
             || !enum_names.insert(type_name);
         if clashes {
             return Err(Error::new(
@@ -217,17 +253,27 @@ fn capitalize(part: &str) -> String {
 fn substitute(template: &str, name: &str, snake: &str, plural: &str) -> String {
     template
         .replace("orders", "{{PLURAL}}")
+        .replace("Orders", "{{PLURAL_PASCAL}}")
         .replace("Order", "{{RESOURCE}}")
         .replace("order", "{{SNAKE}}")
+        .replace("ORDER", "{{UPPER}}")
         .replace("{{PLURAL}}", plural)
+        .replace("{{PLURAL_PASCAL}}", &pascal(plural))
         .replace("{{RESOURCE}}", name)
         .replace("{{SNAKE}}", snake)
+        .replace("{{UPPER}}", &snake.to_ascii_uppercase())
+}
+
+/// The route text of the resource: the plural in the path of the plan
+/// (`/v1/order-items`), not the plural of the name (`/v1/order_items`).
+fn with_path(text: String, plural: &str, path: &str) -> String {
+    text.replace(&format!("/v1/{plural}"), path)
 }
 
 /// The lock of the crate: the template with the root package at its sorted place.
 fn lock_file(package: &str) -> String {
     let root = format!(
-        "[[package]]\nname = \"{package}\"\nversion = \"0.1.0\"\ndependencies = [\n \"proptest\",\n \"serde_json\",\n \"time\",\n \"uuid\",\n]"
+        "[[package]]\nname = \"{package}\"\nversion = \"0.1.0\"\ndependencies = [\n \"axum\",\n \"metrics-prometheus\",\n \"proptest\",\n \"serde_json\",\n \"server-lifecycle\",\n \"service-auth\",\n \"service-http\",\n \"service-observability\",\n \"time\",\n \"tokio\",\n \"tower\",\n \"tracing\",\n \"tracing-subscriber\",\n \"uuid\",\n]"
     );
     let mut blocks = LOCK_TEMPLATE.trim_end().split("\n\n");
     let header = blocks.next().unwrap_or("");
@@ -253,6 +299,129 @@ fn block_name(block: &str) -> &str {
         .unwrap_or("")
         .trim_start_matches("name = \"")
         .trim_end_matches('"')
+}
+
+/// The OpenAPI document of the resource: the reference document with the names,
+/// the path of the plan and the schemas of the fields. The output is pretty JSON
+/// with one final newline; a document that cannot be read gives an empty text.
+fn openapi_file(name: &str, snake: &str, plural: &str, path: &str, fields: &[Value]) -> String {
+    let text = with_path(
+        substitute(OPENAPI_TEMPLATE, name, snake, plural),
+        plural,
+        path,
+    );
+    let Ok(mut doc) = serde_json::from_str::<Value>(&text) else {
+        return String::new();
+    };
+    let Some(schemas) = doc
+        .get_mut("components")
+        .and_then(|components| components.get_mut("schemas"))
+        .and_then(Value::as_object_mut)
+    else {
+        return String::new();
+    };
+    schemas.remove("Status");
+    for field in fields.iter().filter(|field| kind_of(field) == "enum") {
+        schemas.insert(
+            pascal(name_of(field)),
+            json!({"type": "string", "enum": values_of(field)}),
+        );
+    }
+    let mut input_properties = Map::new();
+    let mut resource_properties = Map::new();
+    for field in fields {
+        input_properties.insert(name_of(field).to_owned(), input_property(field));
+        resource_properties.insert(name_of(field).to_owned(), type_property(field));
+    }
+    let required: Vec<String> = fields
+        .iter()
+        .filter(|field| is_required(field))
+        .map(|field| name_of(field).to_owned())
+        .collect();
+    let input = json!({
+        "type": "object",
+        "required": required,
+        "properties": input_properties,
+    });
+    let mut resource_required = vec!["id".to_owned()];
+    resource_required.extend(required);
+    resource_required.extend(["created_at".to_owned(), "updated_at".to_owned()]);
+    let mut properties = Map::new();
+    properties.insert("id".to_owned(), json!({"type": "string"}));
+    properties.extend(resource_properties);
+    properties.insert("created_at".to_owned(), json!({"type": "string"}));
+    properties.insert("updated_at".to_owned(), json!({"type": "string"}));
+    let resource = json!({
+        "type": "object",
+        "required": resource_required,
+        "properties": properties,
+    });
+    schemas.insert(format!("{name}Input"), input);
+    schemas.insert(name.to_owned(), resource);
+    match serde_json::to_string_pretty(&doc) {
+        Ok(pretty) => format!("{pretty}\n"),
+        Err(_) => String::new(),
+    }
+}
+
+/// The schema of an enum field: a reference to the enum, and `nullable` when optional.
+fn enum_property(field: &Value) -> Value {
+    let reference = json!({"$ref": format!("#/components/schemas/{}", pascal(name_of(field)))});
+    if is_required(field) {
+        reference
+    } else {
+        json!({"allOf": [reference], "nullable": true})
+    }
+}
+
+/// The schema of a field in the input: the type and the constraints of the plan.
+fn input_property(field: &Value) -> Value {
+    let mut property = match kind_of(field) {
+        "string" => {
+            let mut map = Map::new();
+            map.insert("type".to_owned(), json!("string"));
+            if let Some(count) = field["upper_letters"].as_i64() {
+                map.insert("pattern".to_owned(), json!(format!("^[A-Z]{{{count}}}$")));
+            } else {
+                if field["min"].as_i64().is_some_and(|min| min >= 1) {
+                    map.insert("minLength".to_owned(), json!(field["min"]));
+                }
+                if field["max"].as_i64().is_some() {
+                    map.insert("maxLength".to_owned(), json!(field["max"]));
+                }
+            }
+            Value::Object(map)
+        }
+        "integer" => {
+            let mut map = Map::new();
+            map.insert("type".to_owned(), json!("integer"));
+            if field["min"].as_i64().is_some() {
+                map.insert("minimum".to_owned(), json!(field["min"]));
+            }
+            if field["max"].as_i64().is_some() {
+                map.insert("maximum".to_owned(), json!(field["max"]));
+            }
+            Value::Object(map)
+        }
+        _ => return enum_property(field),
+    };
+    if !is_required(field) {
+        property["nullable"] = json!(true);
+    }
+    property
+}
+
+/// The schema of a field in the resource: its type only, `nullable` when optional.
+fn type_property(field: &Value) -> Value {
+    let mut property = match kind_of(field) {
+        "string" => json!({"type": "string"}),
+        "integer" => json!({"type": "integer"}),
+        _ => return enum_property(field),
+    };
+    if !is_required(field) {
+        property["nullable"] = json!(true);
+    }
+    property
 }
 
 fn count_word(n: i64) -> String {

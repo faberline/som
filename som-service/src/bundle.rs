@@ -94,6 +94,50 @@ pub fn source_manifest() -> Value {
             include_bytes!("../reference/order/src/infrastructure/memory_store.rs"),
         ),
         (
+            "reference/order/src/interfaces/auth.rs",
+            include_bytes!("../reference/order/src/interfaces/auth.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/error.rs",
+            include_bytes!("../reference/order/src/interfaces/error.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/etag.rs",
+            include_bytes!("../reference/order/src/interfaces/etag.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/limits.rs",
+            include_bytes!("../reference/order/src/interfaces/limits.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/metrics.rs",
+            include_bytes!("../reference/order/src/interfaces/metrics.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/mod.rs",
+            include_bytes!("../reference/order/src/interfaces/mod.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/probes.rs",
+            include_bytes!("../reference/order/src/interfaces/probes.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/request_id.rs",
+            include_bytes!("../reference/order/src/interfaces/request_id.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/routes.rs",
+            include_bytes!("../reference/order/src/interfaces/routes.rs"),
+        ),
+        (
+            "reference/order/src/interfaces/server.rs",
+            include_bytes!("../reference/order/src/interfaces/server.rs"),
+        ),
+        (
+            "reference/order/openapi.json",
+            include_bytes!("../reference/order/openapi.json"),
+        ),
+        (
             "contract/order.resource.cnl",
             include_bytes!("../contract/order.resource.cnl"),
         ),
