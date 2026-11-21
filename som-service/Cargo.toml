@@ -1,7 +1,7 @@
 [workspace]
 members = [".", "cnl", "reference/order"]
 default-members = [".", "cnl", "reference/order"]
-exclude = ["scripts/nlp-oracle"]
+exclude = ["scripts/nlp-oracle", "scripts/compass-check"]
 
 [package]
 name = "som-service"
