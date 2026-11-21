@@ -103,7 +103,7 @@ fn without_package(lock: &str, package: &str) -> String {
 }
 
 #[test]
-fn resource_emit_order_has_thirteen_files() {
+fn resource_emit_order_has_twenty_three_files() {
     let files = emit(&value(ORDER));
     let keys: Vec<&str> = files.keys().map(String::as_str).collect();
     assert_eq!(
@@ -111,6 +111,7 @@ fn resource_emit_order_has_thirteen_files() {
         [
             "Cargo.lock",
             "Cargo.toml",
+            "openapi.json",
             "src/application/idempotency.rs",
             "src/application/mod.rs",
             "src/application/orders.rs",
@@ -120,7 +121,16 @@ fn resource_emit_order_has_thirteen_files() {
             "src/domain/order.rs",
             "src/infrastructure/memory_store.rs",
             "src/infrastructure/mod.rs",
+            "src/interfaces/auth.rs",
+            "src/interfaces/error.rs",
+            "src/interfaces/etag.rs",
+            "src/interfaces/limits.rs",
+            "src/interfaces/metrics.rs",
             "src/interfaces/mod.rs",
+            "src/interfaces/probes.rs",
+            "src/interfaces/request_id.rs",
+            "src/interfaces/routes.rs",
+            "src/interfaces/server.rs",
             "src/lib.rs",
         ]
     );
@@ -323,7 +333,11 @@ fn resource_emit_lock_root_is_sorted() {
             names.windows(2).all(|pair| pair[0] <= pair[1]),
             "{package}: the lock is not sorted"
         );
-        assert_eq!(lock.matches("[[package]]").count(), 68, "{package}");
+        assert_eq!(
+            lock.matches("[[package]]").count(),
+            LOCK_TEMPLATE.matches("[[package]]").count() + 1,
+            "{package}"
+        );
         assert_eq!(
             names.iter().filter(|name| name.as_str() == package).count(),
             1,
@@ -632,4 +646,332 @@ fn resource_emit_customer_builds_and_passes_clippy() {
         ],
     );
     cargo(&customer, &target, &["build", "--locked", "--offline"]);
+}
+
+/// The `operationId` values of every operation of an OpenAPI document, sorted.
+fn operation_ids(doc: &Value) -> Vec<String> {
+    let mut ids = Vec::new();
+    for item in doc["paths"].as_object().expect("paths").values() {
+        for operation in item.as_object().expect("a path item").values() {
+            if let Some(id) = operation["operationId"].as_str() {
+                ids.push(id.to_owned());
+            }
+        }
+    }
+    ids.sort();
+    ids
+}
+
+#[test]
+fn resource_emit_interfaces_equal_the_reference_for_order() {
+    let files = emit(&value(ORDER));
+    let shared: [(&str, &str); 10] = [
+        (
+            "src/interfaces/auth.rs",
+            include_str!("../../reference/order/src/interfaces/auth.rs"),
+        ),
+        (
+            "src/interfaces/error.rs",
+            include_str!("../../reference/order/src/interfaces/error.rs"),
+        ),
+        (
+            "src/interfaces/etag.rs",
+            include_str!("../../reference/order/src/interfaces/etag.rs"),
+        ),
+        (
+            "src/interfaces/limits.rs",
+            include_str!("../../reference/order/src/interfaces/limits.rs"),
+        ),
+        (
+            "src/interfaces/metrics.rs",
+            include_str!("../../reference/order/src/interfaces/metrics.rs"),
+        ),
+        (
+            "src/interfaces/mod.rs",
+            include_str!("../../reference/order/src/interfaces/mod.rs"),
+        ),
+        (
+            "src/interfaces/probes.rs",
+            include_str!("../../reference/order/src/interfaces/probes.rs"),
+        ),
+        (
+            "src/interfaces/request_id.rs",
+            include_str!("../../reference/order/src/interfaces/request_id.rs"),
+        ),
+        (
+            "src/interfaces/routes.rs",
+            include_str!("../../reference/order/src/interfaces/routes.rs"),
+        ),
+        (
+            "src/interfaces/server.rs",
+            include_str!("../../reference/order/src/interfaces/server.rs"),
+        ),
+    ];
+    for (path, text) in shared {
+        assert_eq!(files[path], text, "{path} differs from the reference");
+    }
+
+    let customer = emit(&value(CUSTOMER));
+    let limits = &customer["src/interfaces/limits.rs"];
+    assert!(limits.contains("CUSTOMER"));
+    assert!(!limits.contains("ORDER"));
+    let routes = &customer["src/interfaces/routes.rs"];
+    assert!(routes.contains("pub const COLLECTION_PATH: &str = \"/v1/customers\";"));
+    assert!(routes.contains("CustomerStore"));
+    assert!(customer["src/interfaces/metrics.rs"].contains("customer_operation_requests_total"));
+}
+
+#[test]
+fn resource_emit_openapi_equals_the_reference_for_order() {
+    let files = emit(&value(ORDER));
+    let text = &files["openapi.json"];
+    let reference: Value = value(include_str!("../../reference/order/openapi.json"));
+    assert_eq!(value(text), reference);
+    assert!(text.ends_with("}\n"));
+    assert!(!text.ends_with("}\n\n"));
+}
+
+#[test]
+fn resource_emit_openapi_for_customer() {
+    let files = emit(&value(CUSTOMER));
+    let doc = value(&files["openapi.json"]);
+    assert_eq!(doc["info"]["title"], "Customer API");
+    let paths = doc["paths"].as_object().expect("paths");
+    assert!(paths.contains_key("/v1/customers"));
+    assert!(paths.contains_key("/v1/customers/{id}"));
+    assert_eq!(
+        operation_ids(&doc),
+        [
+            "createCustomer",
+            "deleteCustomer",
+            "getCustomer",
+            "listCustomers",
+            "replaceCustomer",
+        ]
+    );
+    let schemas = &doc["components"]["schemas"];
+    assert_eq!(
+        schemas["Tier"]["enum"],
+        json!(["standard", "silver", "gold"])
+    );
+    for key in ["CustomerInput", "Customer", "CustomerPage", "ErrorBody"] {
+        assert!(schemas.get(key).is_some(), "missing schema {key}");
+    }
+    assert!(schemas.get("Status").is_none());
+    let input = &schemas["CustomerInput"];
+    assert_eq!(input["properties"]["country"]["pattern"], "^[A-Z]{3}$");
+    assert_eq!(
+        input["properties"]["name"],
+        json!({"type": "string", "minLength": 1, "maxLength": 100})
+    );
+    assert_eq!(
+        input["required"],
+        json!(["name", "email", "country", "tier", "loyalty_points"])
+    );
+    assert_eq!(input["properties"]["note"]["nullable"], true);
+    let required = schemas["Customer"]["required"]
+        .as_array()
+        .expect("required");
+    assert_eq!(required.first(), Some(&json!("id")));
+    assert_eq!(required.last(), Some(&json!("updated_at")));
+}
+
+#[test]
+fn resource_emit_openapi_and_routes_use_the_dsl_path() {
+    let files = emit(&resource_prompt(
+        "order_items_service",
+        "OrderItem",
+        title_fields(),
+    ));
+    let routes = &files["src/interfaces/routes.rs"];
+    assert!(routes.contains("\"/v1/order-items\""));
+    assert!(!routes.contains("\"/v1/order_items\""));
+    let doc = value(&files["openapi.json"]);
+    assert!(doc["paths"].get("/v1/order-items").is_some());
+    assert!(doc["paths"].get("/v1/order_items").is_none());
+    assert!(operation_ids(&doc).contains(&"listOrderItems".to_owned()));
+
+    let files = emit(&resource_prompt(
+        "categories_service",
+        "Category",
+        title_fields(),
+    ));
+    let doc = value(&files["openapi.json"]);
+    assert!(doc["paths"].get("/v1/categories").is_some());
+    assert!(operation_ids(&doc).contains(&"listCategories".to_owned()));
+}
+
+#[test]
+fn resource_emit_openapi_optional_enum_uses_all_of() {
+    let fields = json!([{"name": "kind", "type": "enum", "required": false, "values": ["x", "y"]}]);
+    let files = emit(&resource_prompt("customers_service", "Customer", fields));
+    let doc = value(&files["openapi.json"]);
+    assert_eq!(
+        doc["components"]["schemas"]["CustomerInput"]["properties"]["kind"],
+        json!({"allOf": [{"$ref": "#/components/schemas/Kind"}], "nullable": true})
+    );
+}
+
+#[test]
+fn resource_emit_refuses_enum_names_of_the_openapi_file() {
+    let cases = [
+        (
+            resource_prompt(
+                "customers_service",
+                "Customer",
+                json!([{"name": "error_body", "type": "enum", "required": true, "values": ["a", "b"]}]),
+            ),
+            "/bundle/prompt/resources/0/fields/0/name",
+        ),
+        (
+            resource_prompt(
+                "orders_service",
+                "Order",
+                json!([{"name": "order_page", "type": "enum", "required": true, "values": ["a", "b"]}]),
+            ),
+            "/bundle/prompt/resources/0/fields/0/name",
+        ),
+    ];
+    for (prompt, pointer) in cases {
+        let bundle = bundle_of(&prompt);
+        refused_at(assemble_resource(&bundle), 400, "INVALID_VALUE", pointer);
+    }
+}
+
+#[test]
+fn resource_emit_cargo_toml_has_the_reference_dependencies() {
+    let files = emit(&value(ORDER));
+    let expected = include_str!("../../reference/order/Cargo.toml").replace(
+        "name = \"som-reference-order\"",
+        "name = \"orders_service\"",
+    );
+    assert_eq!(files["Cargo.toml"], expected);
+}
+
+#[test]
+fn resource_emit_order_passes_the_reference_http_tests() {
+    let root = scratch_root();
+    let order = root.join("order");
+    write_files(&order, &emit(&value(ORDER)));
+    let reference: [(&str, &str); 13] = [
+        (
+            "common.rs",
+            include_str!("../../reference/order/tests/it/common.rs"),
+        ),
+        (
+            "domain.rs",
+            include_str!("../../reference/order/tests/it/domain.rs"),
+        ),
+        (
+            "store.rs",
+            include_str!("../../reference/order/tests/it/store.rs"),
+        ),
+        (
+            "pagination.rs",
+            include_str!("../../reference/order/tests/it/pagination.rs"),
+        ),
+        (
+            "routes.rs",
+            include_str!("../../reference/order/tests/it/routes.rs"),
+        ),
+        (
+            "auth.rs",
+            include_str!("../../reference/order/tests/it/auth.rs"),
+        ),
+        (
+            "errors.rs",
+            include_str!("../../reference/order/tests/it/errors.rs"),
+        ),
+        (
+            "preconditions.rs",
+            include_str!("../../reference/order/tests/it/preconditions.rs"),
+        ),
+        (
+            "idempotency.rs",
+            include_str!("../../reference/order/tests/it/idempotency.rs"),
+        ),
+        (
+            "limits.rs",
+            include_str!("../../reference/order/tests/it/limits.rs"),
+        ),
+        (
+            "metrics.rs",
+            include_str!("../../reference/order/tests/it/metrics.rs"),
+        ),
+        (
+            "probes.rs",
+            include_str!("../../reference/order/tests/it/probes.rs"),
+        ),
+        (
+            "request_id.rs",
+            include_str!("../../reference/order/tests/it/request_id.rs"),
+        ),
+    ];
+    let mut tests = BTreeMap::new();
+    let mut main = String::new();
+    for (name, text) in reference {
+        tests.insert(
+            format!("tests/it/{name}"),
+            text.replace("som_reference_order", "orders_service"),
+        );
+        main.push_str(&format!("mod {};\n", name.trim_end_matches(".rs")));
+    }
+    tests.insert("tests/it/main.rs".to_owned(), main);
+    write_files(&order, &tests);
+
+    let target = target_dir(&root);
+    cargo(
+        &order,
+        &target,
+        &[
+            "clippy",
+            "--locked",
+            "--offline",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    );
+    let output = cargo(&order, &target, &["test", "--locked", "--offline"]);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(!stdout.contains("FAILED"), "{stdout}");
+    assert!(stdout.contains("0 failed"), "{stdout}");
+    for name in [
+        "routes::create_returns_201_location_and_full_resource",
+        "preconditions::etag_is_returned_and_if_match_mismatch_412_missing_428",
+        "routes::body_over_1_mib_returns_413",
+        "probes::openapi_json_is_served_and_equals_the_file",
+        "idempotency::idempotency_key_same_body_same_result_different_body_409_and_expires_after_24h",
+        "pagination::pagination_walk_gives_all_items_once",
+    ] {
+        let line = format!("test {name} ... ok");
+        assert!(
+            stdout.lines().any(|found| found == line),
+            "missing `{line}` in:\n{stdout}"
+        );
+    }
+}
+
+#[test]
+fn resource_emit_customer_builds_with_interfaces() {
+    let root = scratch_root();
+    let customer = root.join("customer");
+    write_files(&customer, &emit(&value(CUSTOMER)));
+    let target = target_dir(&root);
+    cargo(
+        &customer,
+        &target,
+        &[
+            "clippy",
+            "--locked",
+            "--offline",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    );
+    cargo(&customer, &target, &["build", "--locked", "--offline"]);
+    assert!(customer.join("openapi.json").is_file());
 }
