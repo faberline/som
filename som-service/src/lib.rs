@@ -6,6 +6,7 @@ pub mod model;
 pub mod openapi;
 pub mod render;
 pub mod resource;
+mod resource_cnl;
 pub mod server;
 mod strict_json;
 
@@ -30,8 +31,15 @@ pub fn compile_cnl(source: &str) -> Result<Compilation, Error> {
             "/source",
         ));
     }
-    let (prompt, source_map) = lower::parse(source)?;
-    let bundle = if prompt["version"] == model::PROMPT_VERSION_V2 {
+    let resource = resource_cnl::is_resource_source(source);
+    let (prompt, source_map) = if resource {
+        resource_cnl::parse(source)?
+    } else {
+        lower::parse(source)?
+    };
+    let bundle = if resource {
+        compile_prompt_v3(&prompt)
+    } else if prompt["version"] == model::PROMPT_VERSION_V2 {
         compile_prompt_v2(&prompt)
     } else {
         compile_prompt(&prompt)

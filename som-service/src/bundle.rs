@@ -47,6 +47,15 @@ pub fn source_manifest() -> Value {
         ("src/bundle.rs", include_bytes!("bundle.rs")),
         ("src/render.rs", include_bytes!("render.rs")),
         ("src/resource.rs", include_bytes!("resource.rs")),
+        ("src/resource_cnl.rs", include_bytes!("resource_cnl.rs")),
+        (
+            "contract/order.resource.cnl",
+            include_bytes!("../contract/order.resource.cnl"),
+        ),
+        (
+            "contract/customer.resource.cnl",
+            include_bytes!("../contract/customer.resource.cnl"),
+        ),
         ("src/server.rs", include_bytes!("server.rs")),
         ("src/main.rs", include_bytes!("main.rs")),
         (

@@ -1,0 +1,12 @@
+Service resource version 1.
+Package customers_service.
+Target rust-resource-service.v1.
+Resource Customer.
+Field name of Customer is string required min 1 max 100.
+Field email of Customer is string required min 3 max 254.
+Field country of Customer is string required upper_letters 3.
+Field tier of Customer is enum required values standard silver gold.
+Field loyalty_points of Customer is integer required min 0.
+Field note of Customer is string optional max 500.
+Apply CRUD to Customer.
+Apply standard pagination to Customer.
