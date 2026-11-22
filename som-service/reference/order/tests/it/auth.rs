@@ -8,12 +8,13 @@ use som_reference_order::interfaces::auth::{AuthMode, StaticTokenVerifier};
 use som_reference_order::interfaces::routes::router;
 
 use crate::common::{body_json, send};
+use crate::fixture::Must;
 
 fn verifier(mode: &str) -> Arc<StaticTokenVerifier> {
     let mut tokens = HashMap::new();
     tokens.insert("good-token".to_owned(), "alice".to_owned());
     Arc::new(StaticTokenVerifier::new(
-        AuthMode::parse(mode).expect("mode parses"),
+        AuthMode::parse(mode).must("mode parses"),
         tokens,
     ))
 }

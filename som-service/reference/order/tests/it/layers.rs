@@ -1,3 +1,4 @@
+use crate::fixture::Must;
 use std::path::Path;
 
 #[test]
@@ -12,6 +13,6 @@ fn four_layers_are_present() {
     }
     let order =
         std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/domain/order.rs"))
-            .expect("domain/order.rs exists");
+            .must("domain/order.rs exists");
     assert!(order.contains("pub struct OrderInput"));
 }

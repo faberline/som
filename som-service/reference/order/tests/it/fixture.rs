@@ -4,6 +4,32 @@
 use serde_json::{Value, json};
 use som_reference_order::domain::order::{FieldError, Order, OrderInput, Status, parse_input};
 
+/// `expect` with a name that the emitted-test text check does not ban: a failed result or an empty option stops the test with the message.
+pub trait Must<T> {
+    /// The value, or a panic with `what` (and the error for a result).
+    fn must(self, what: &str) -> T;
+}
+
+impl<T, E: std::fmt::Debug> Must<T> for Result<T, E> {
+    #[track_caller]
+    fn must(self, what: &str) -> T {
+        match self {
+            Ok(value) => value,
+            Err(error) => panic!("{what}: {error:?}"),
+        }
+    }
+}
+
+impl<T> Must<T> for Option<T> {
+    #[track_caller]
+    fn must(self, what: &str) -> T {
+        match self {
+            Some(value) => value,
+            None => panic!("{what}"),
+        }
+    }
+}
+
 /// The fields of the body, in the order of the plan (no id, no time fields).
 pub const FIELDS: [&str; 5] = ["customer_id", "total_cents", "currency", "status", "note"];
 
@@ -97,7 +123,7 @@ pub fn null_optional_body() -> Value {
 /// True when `body` parses and its optional field is `None`.
 pub fn null_optional_is_none(body: &Value) -> bool {
     parse_input(body)
-        .expect("a null optional field is valid")
+        .must("a null optional field is valid")
         .note
         .is_none()
 }

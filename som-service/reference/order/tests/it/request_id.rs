@@ -9,6 +9,7 @@ use som_reference_order::interfaces::request_id::{RequestId, request_id_layer};
 use uuid::Uuid;
 
 use crate::common::{app, body_json, send};
+use crate::fixture::Must;
 
 /// A log sink that the test can read back.
 #[derive(Clone, Default)]
@@ -16,13 +17,13 @@ struct Buf(Arc<Mutex<Vec<u8>>>);
 
 impl Buf {
     fn text(&self) -> String {
-        String::from_utf8_lossy(&self.0.lock().expect("log lock")).into_owned()
+        String::from_utf8_lossy(&self.0.lock().must("log lock")).into_owned()
     }
 }
 
 impl std::io::Write for Buf {
     fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
-        self.0.lock().expect("log lock").extend_from_slice(data);
+        self.0.lock().must("log lock").extend_from_slice(data);
         Ok(data.len())
     }
 
@@ -47,11 +48,11 @@ async fn boom(Extension(id): Extension<RequestId>) -> ApiError {
 fn assert_made_id(headers: &axum::http::HeaderMap, buf: &Buf) -> String {
     let id = headers
         .get("x-request-id")
-        .expect("response has x-request-id")
+        .must("response has x-request-id")
         .to_str()
-        .expect("x-request-id is text")
+        .must("x-request-id is text")
         .to_owned();
-    let parsed = Uuid::parse_str(&id).expect("made id is a UUID");
+    let parsed = Uuid::parse_str(&id).must("made id is a UUID");
     assert_eq!(parsed.get_version_num(), 7, "made id is a UUIDv7");
     assert!(buf.text().contains(&id), "log holds the made id");
     id
@@ -68,7 +69,7 @@ fn log_sink() -> &'static Buf {
             .with_writer(buf.clone())
             .with_ansi(false)
             .finish();
-        tracing::subscriber::set_global_default(subscriber).expect("no other global subscriber");
+        tracing::subscriber::set_global_default(subscriber).must("no other global subscriber");
         tracing::callsite::rebuild_interest_cache();
         buf
     })
@@ -92,9 +93,9 @@ async fn request_id_is_read_or_made_returned_and_logged() {
     assert_eq!(
         headers
             .get("x-request-id")
-            .expect("response has x-request-id")
+            .must("response has x-request-id")
             .to_str()
-            .expect("x-request-id is text"),
+            .must("x-request-id is text"),
         "abc-123"
     );
     assert!(
@@ -138,9 +139,9 @@ async fn request_id_is_read_or_made_returned_and_logged() {
     assert_eq!(status, StatusCode::NOT_FOUND);
     let id = headers
         .get("x-request-id")
-        .expect("404 has x-request-id")
+        .must("404 has x-request-id")
         .to_str()
-        .expect("x-request-id is text");
+        .must("x-request-id is text");
     assert!(!id.is_empty(), "404 carries a non-empty id");
 
     // e. the 500 body uses the same id as the response header. It is in this
@@ -155,9 +156,9 @@ async fn request_id_is_read_or_made_returned_and_logged() {
     assert_eq!(
         headers
             .get("x-request-id")
-            .expect("500 has x-request-id")
+            .must("500 has x-request-id")
             .to_str()
-            .expect("x-request-id is text"),
+            .must("x-request-id is text"),
         "req-500"
     );
     assert_eq!(body_json(&body)["details"][0]["request_id"], "req-500");

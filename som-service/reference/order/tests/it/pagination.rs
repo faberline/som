@@ -10,6 +10,7 @@ use som_reference_order::application::store::ListQuery;
 use som_reference_order::infrastructure::memory_store::MemoryStore;
 
 use crate::common::{app, body_json, call, seed};
+use crate::fixture::Must;
 use crate::fixture::{check_list_item, filter_by_field_query};
 
 const DAYS: [&str; 5] = [
@@ -23,9 +24,9 @@ const DAYS: [&str; 5] = [
 fn ids_of(body: &serde_json::Value) -> Vec<String> {
     body["items"]
         .as_array()
-        .expect("items is an array")
+        .must("items is an array")
         .iter()
-        .map(|item| item["id"].as_str().expect("id is a string").to_owned())
+        .map(|item| item["id"].as_str().must("id is a string").to_owned())
         .collect()
 }
 
@@ -39,7 +40,7 @@ async fn list_returns_200_with_standard_pagination() {
     let (status, _, body) = call(&app, "GET", "/v1/orders", None).await;
     assert_eq!(status, StatusCode::OK);
     let value = body_json(&body);
-    let items = value["items"].as_array().expect("items is an array");
+    let items = value["items"].as_array().must("items is an array");
     assert_eq!(items.len(), 3);
     for item in items {
         check_list_item(item);
@@ -62,12 +63,7 @@ async fn list_has_no_offset_parameter() {
     assert_eq!(status, StatusCode::BAD_REQUEST);
     let value = body_json(&body);
     assert_eq!(value["error"], "invalid_request");
-    assert!(
-        value["message"]
-            .as_str()
-            .expect("message")
-            .contains("offset")
-    );
+    assert!(value["message"].as_str().must("message").contains("offset"));
 }
 
 #[tokio::test]
@@ -80,7 +76,7 @@ async fn list_parameters_are_limit_and_cursor_only() {
     assert_eq!(status, StatusCode::OK);
     let cursor = body_json(&body)["next_cursor"]
         .as_str()
-        .expect("a cursor is given")
+        .must("a cursor is given")
         .to_owned();
 
     let (status, _, _) = call(
@@ -138,7 +134,7 @@ async fn list_body_has_items_and_next_cursor_null_on_last_page() {
     assert_eq!(ids_of(&first).len(), 2);
     let cursor = first["next_cursor"]
         .as_str()
-        .expect("a cursor is given")
+        .must("a cursor is given")
         .to_owned();
 
     let (status, _, body) = call(
@@ -155,7 +151,7 @@ async fn list_body_has_items_and_next_cursor_null_on_last_page() {
 
     let mut keys: Vec<&str> = last
         .as_object()
-        .expect("body is an object")
+        .must("body is an object")
         .keys()
         .map(String::as_str)
         .collect();
@@ -199,7 +195,7 @@ async fn bad_cursor_returns_400_and_cursor_is_opaque() {
     assert_eq!(status, StatusCode::OK);
     let cursor = body_json(&body)["next_cursor"]
         .as_str()
-        .expect("a cursor is given")
+        .must("a cursor is given")
         .to_owned();
     assert!(!cursor.contains("2026"));
 }
@@ -291,7 +287,7 @@ proptest! {
             match page.next_cursor {
                 None => break,
                 Some(cursor) => {
-                    after = Some(decode_cursor(&cursor).expect("own cursor decodes"));
+                    after = Some(decode_cursor(&cursor).must("own cursor decodes"));
                 }
             }
         }

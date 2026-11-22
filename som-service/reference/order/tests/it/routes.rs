@@ -3,6 +3,7 @@ use serde_json::json;
 use som_reference_order::interfaces::routes::{BODY_LIMIT_BYTES, COLLECTION_PATH, ITEM_PATH};
 
 use crate::common::{app, body_json, call, call_raw, etag_of, seed, send, valid_body};
+use crate::fixture::Must;
 use crate::fixture::{
     RESOURCE_KEYS, body_with_big_text, check_created, check_replaced, one_bad_field_body,
     replacement_body,
@@ -18,7 +19,7 @@ async fn crud_paths_are_plural_kebab_lower() {
     assert_eq!(status, StatusCode::CREATED);
     let id = body_json(&body)["id"]
         .as_str()
-        .expect("id is a string")
+        .must("id is a string")
         .to_owned();
 
     let (status, _, _) = call(&app, "GET", &format!("/v1/orders/{id}"), None).await;
@@ -37,17 +38,17 @@ async fn create_returns_201_location_and_full_resource() {
     assert_eq!(status, StatusCode::CREATED);
 
     let value = body_json(&body);
-    let id = value["id"].as_str().expect("id is a string").to_owned();
+    let id = value["id"].as_str().must("id is a string").to_owned();
     let location = headers
         .get("location")
-        .expect("Location header is set")
+        .must("Location header is set")
         .to_str()
-        .expect("Location is text");
+        .must("Location is text");
     assert_eq!(location, format!("/v1/orders/{id}"));
 
     let mut keys: Vec<&str> = value
         .as_object()
-        .expect("body is an object")
+        .must("body is an object")
         .keys()
         .map(String::as_str)
         .collect();

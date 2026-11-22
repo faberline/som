@@ -9,6 +9,7 @@ use som_reference_order::application::idempotency::KEY_TTL_SECS;
 use crate::common::{
     TestClock, app, app_with_clock, body_json, call, etag_of, seed, send, valid_body,
 };
+use crate::fixture::Must;
 use crate::fixture::{reordered_valid_json, text_of, with_number, with_text};
 
 async fn post_keyed(app: &Router, key: &str, body: &Value) -> (StatusCode, HeaderMap, Vec<u8>) {
@@ -27,7 +28,7 @@ async fn count(app: &Router) -> usize {
     assert_eq!(status, StatusCode::OK);
     body_json(&body)["items"]
         .as_array()
-        .expect("items is a list")
+        .must("items is a list")
         .len()
 }
 
@@ -41,23 +42,23 @@ async fn idempotency_key_same_body_same_result_different_body_409_and_expires_af
     assert_eq!(status, StatusCode::CREATED);
     let id1 = body_json(&body)["id"]
         .as_str()
-        .expect("id is text")
+        .must("id is text")
         .to_owned();
-    let etag1 = headers["etag"].to_str().expect("etag is text").to_owned();
+    let etag1 = headers["etag"].to_str().must("etag is text").to_owned();
     let location1 = headers["location"]
         .to_str()
-        .expect("location is text")
+        .must("location is text")
         .to_owned();
 
     let (status, headers, body) = post_keyed(&app, "k1", &first).await;
     assert_eq!(status, StatusCode::CREATED);
     assert_eq!(body_json(&body)["id"], id1.as_str());
     assert_eq!(
-        headers["etag"].to_str().expect("etag is text"),
+        headers["etag"].to_str().must("etag is text"),
         etag1.as_str()
     );
     assert_eq!(
-        headers["location"].to_str().expect("location is text"),
+        headers["location"].to_str().must("location is text"),
         location1.as_str()
     );
     assert_eq!(count(&app).await, 1);

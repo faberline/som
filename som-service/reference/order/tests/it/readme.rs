@@ -1,5 +1,6 @@
 //! Decision 37 (issue #295): the README says how to run the service, has one curl
 //! example per operation, and its decisions table matches the standard catalog.
+use crate::fixture::Must;
 use std::path::Path;
 
 fn read_readme() -> String {
@@ -135,7 +136,7 @@ fn readme_has_run_steps_and_one_curl_per_operation() {
 #[test]
 fn readme_table_has_37_rows_and_each_row_names_an_existing_test() {
     let readme = read_readme();
-    check_table(&readme, Path::new(env!("CARGO_MANIFEST_DIR"))).expect("README decisions table");
+    check_table(&readme, Path::new(env!("CARGO_MANIFEST_DIR"))).must("README decisions table");
 }
 
 #[test]

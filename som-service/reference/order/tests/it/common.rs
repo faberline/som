@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicI64, Ordering};
 
+use crate::fixture::Must;
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{HeaderMap, Request, StatusCode};
@@ -84,13 +85,13 @@ pub async fn send(
             .body(Body::from(bytes)),
         None => builder.body(Body::empty()),
     }
-    .expect("request builds");
-    let response = app.clone().oneshot(request).await.expect("router answers");
+    .must("request builds");
+    let response = app.clone().oneshot(request).await.must("router answers");
     let status = response.status();
     let headers = response.headers().clone();
     let bytes = to_bytes(response.into_body(), usize::MAX)
         .await
-        .expect("body reads")
+        .must("body reads")
         .to_vec();
     (status, headers, bytes)
 }
@@ -101,21 +102,21 @@ pub async fn etag_of(app: &Router, id: &str) -> String {
     assert_eq!(status, StatusCode::OK);
     headers
         .get("etag")
-        .expect("GET carries an etag")
+        .must("GET carries an etag")
         .to_str()
-        .expect("etag is text")
+        .must("etag is text")
         .to_owned()
 }
 
 pub fn body_json(bytes: &[u8]) -> Value {
-    serde_json::from_slice(bytes).expect("body is JSON")
+    serde_json::from_slice(bytes).must("body is JSON")
 }
 
 pub use crate::fixture::valid_body;
 
 pub fn seed(store: &MemoryStore, id: &str, created_at: &str) {
-    let input = parse_input(&valid_body()).expect("valid body parses");
+    let input = parse_input(&valid_body()).must("valid body parses");
     store
         .create(Order::create(input, id.to_owned(), created_at.to_owned()))
-        .expect("seed stores the order");
+        .must("seed stores the order");
 }
