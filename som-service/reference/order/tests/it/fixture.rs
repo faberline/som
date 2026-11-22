@@ -2,7 +2,7 @@
 //! struct of the reference tests. The other test files call these functions.
 
 use serde_json::{Value, json};
-use som_reference_order::domain::order::{FieldError, Order, OrderInput, Status};
+use som_reference_order::domain::order::{FieldError, Order, OrderInput, Status, parse_input};
 
 /// The fields of the body, in the order of the plan (no id, no time fields).
 pub const FIELDS: [&str; 5] = ["customer_id", "total_cents", "currency", "status", "note"];
@@ -72,18 +72,39 @@ pub fn wrong_type_body() -> Value {
     body
 }
 
-/// A valid body whose `total_cents` is a float.
-pub fn float_total_body() -> Value {
+/// A valid body whose integer field holds a float.
+pub fn float_in_integer_body() -> Value {
     let mut body = valid_body();
     body["total_cents"] = json!(1.5);
     body
 }
 
-/// A valid body whose optional `note` is null.
-pub fn null_note_body() -> Value {
+/// The one field error of `float_in_integer_body`.
+pub fn float_in_integer_errors() -> Vec<FieldError> {
+    vec![FieldError {
+        field: "total_cents".to_owned(),
+        message: "must be an integer".to_owned(),
+    }]
+}
+
+/// A valid body whose optional field is null.
+pub fn null_optional_body() -> Value {
     let mut body = valid_body();
     body["note"] = Value::Null;
     body
+}
+
+/// True when `body` parses and its optional field is `None`.
+pub fn null_optional_is_none(body: &Value) -> bool {
+    parse_input(body)
+        .expect("a null optional field is valid")
+        .note
+        .is_none()
+}
+
+/// A query string with a filter on a field value, which the list refuses.
+pub fn filter_by_field_query() -> &'static str {
+    "status=paid"
 }
 
 /// A valid body whose `note` has the largest allowed length.
@@ -172,14 +193,6 @@ pub fn change(order: &mut Order) {
 /// The total of an order that `change` was applied to.
 pub fn changed_total(order: &Order) -> i64 {
     order.total_cents
-}
-
-/// The one field error of `float_total_body`.
-pub fn float_total_errors() -> Vec<FieldError> {
-    vec![FieldError {
-        field: "total_cents".to_owned(),
-        message: "must be an integer".to_owned(),
-    }]
 }
 
 /// The two field errors that the error body test uses.

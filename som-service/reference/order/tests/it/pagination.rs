@@ -10,7 +10,7 @@ use som_reference_order::application::store::ListQuery;
 use som_reference_order::infrastructure::memory_store::MemoryStore;
 
 use crate::common::{app, body_json, call, seed};
-use crate::fixture::check_list_item;
+use crate::fixture::{check_list_item, filter_by_field_query};
 
 const DAYS: [&str; 5] = [
     "2026-01-01T00:00:00Z",
@@ -235,7 +235,7 @@ async fn list_has_no_sort_or_filter_parameter() {
     for query in [
         "sort=created_at",
         "sort=-created_at",
-        "status=paid",
+        filter_by_field_query(),
         "filter=x",
     ] {
         let (status, _, _) = call(&app, "GET", &format!("/v1/orders?{query}"), None).await;

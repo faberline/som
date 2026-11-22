@@ -86,8 +86,13 @@ fn reference_tests_name_no_order_field_outside_fixture() {
                 offenders.push(format!("{name} contains {word}"));
             }
         }
-        if text.contains(".total_cents") {
-            offenders.push(format!("{name} contains .total_cents"));
+        for access in [".total_cents", ".note"] {
+            if text.contains(access) {
+                offenders.push(format!("{name} contains {access}"));
+            }
+        }
+        if text.contains("status=") {
+            offenders.push(format!("{name} contains status="));
         }
     }
     assert!(

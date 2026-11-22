@@ -6,8 +6,8 @@ use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
 use crate::fixture::{
     INVALID_FIELDS, REQUIRED_FIELDS, WRONG_TYPE_FIELDS, at_the_max_length_body,
-    check_valid_defaults, check_valid_input, float_total_body, float_total_errors, invalid_body,
-    null_note_body, valid_body, wrong_type_body,
+    check_valid_defaults, check_valid_input, float_in_integer_body, float_in_integer_errors,
+    invalid_body, null_optional_body, null_optional_is_none, valid_body, wrong_type_body,
 };
 
 fn valid_input() -> OrderInput {
@@ -78,13 +78,15 @@ fn unknown_field_is_refused_and_bad_fields_give_422_with_one_entry_each() {
     let errors = parse_input(&body).expect_err("every bad field is refused");
     assert_eq!(field_names(&errors), INVALID_FIELDS);
 
-    let float_total = float_total_body();
-    let errors = parse_input(&float_total).expect_err("a float is refused");
-    assert_eq!(errors, float_total_errors());
+    let float_in_integer = float_in_integer_body();
+    let errors = parse_input(&float_in_integer).expect_err("a float is refused");
+    assert_eq!(errors, float_in_integer_errors());
 
-    let null_note = null_note_body();
-    let input = parse_input(&null_note).expect("null note is valid");
-    assert_eq!(input.note, None);
+    let null_optional = null_optional_body();
+    assert!(
+        null_optional_is_none(&null_optional),
+        "a null optional field is None"
+    );
 
     let long_note = at_the_max_length_body();
     assert!(parse_input(&long_note).is_ok(), "500 characters is valid");
