@@ -9,18 +9,7 @@ use som_reference_order::application::idempotency::KEY_TTL_SECS;
 use crate::common::{
     TestClock, app, app_with_clock, body_json, call, etag_of, seed, send, valid_body,
 };
-
-fn with_total(total: i64) -> Value {
-    let mut body = valid_body();
-    body["total_cents"] = json!(total);
-    body
-}
-
-fn with_note(note: &str) -> Value {
-    let mut body = valid_body();
-    body["note"] = json!(note);
-    body
-}
+use crate::fixture::{reordered_valid_json, text_of, with_number, with_text};
 
 async fn post_keyed(app: &Router, key: &str, body: &Value) -> (StatusCode, HeaderMap, Vec<u8>) {
     send(
@@ -73,19 +62,18 @@ async fn idempotency_key_same_body_same_result_different_body_409_and_expires_af
     );
     assert_eq!(count(&app).await, 1);
 
-    let reordered = r#"{"status":"pending","currency":"USD","total_cents":100,"customer_id":"c1"}"#;
     let (status, _, body) = send(
         &app,
         "POST",
         "/v1/orders",
         &[("idempotency-key", "k1")],
-        Some(reordered.as_bytes().to_vec()),
+        Some(reordered_valid_json().as_bytes().to_vec()),
     )
     .await;
     assert_eq!(status, StatusCode::CREATED);
     assert_eq!(body_json(&body)["id"], id1.as_str());
 
-    let (status, _, body) = post_keyed(&app, "k1", &with_total(999)).await;
+    let (status, _, body) = post_keyed(&app, "k1", &with_number(999)).await;
     assert_eq!(status, StatusCode::CONFLICT);
     assert_eq!(body_json(&body)["error"], "conflict");
     assert_eq!(count(&app).await, 1);
@@ -107,7 +95,7 @@ async fn idempotency_key_same_body_same_result_different_body_409_and_expires_af
     assert_ne!(body_json(&body)["id"], id1.as_str());
     assert_eq!(count(&app).await, 3);
 
-    let (status, _, body) = post_keyed(&app, "k1", &with_total(999)).await;
+    let (status, _, body) = post_keyed(&app, "k1", &with_number(999)).await;
     assert_eq!(status, StatusCode::CONFLICT);
     assert_eq!(body_json(&body)["error"], "conflict");
 }
@@ -154,7 +142,7 @@ async fn idempotency_key_is_not_used_on_put() {
         "PUT",
         "/v1/orders/a",
         &[("if-match", &etag), ("idempotency-key", "k")],
-        Some(with_note("one").to_string().into_bytes()),
+        Some(with_text("one").to_string().into_bytes()),
     )
     .await;
     assert_eq!(status, StatusCode::OK);
@@ -165,9 +153,9 @@ async fn idempotency_key_is_not_used_on_put() {
         "PUT",
         "/v1/orders/a",
         &[("if-match", &etag), ("idempotency-key", "k")],
-        Some(with_note("two").to_string().into_bytes()),
+        Some(with_text("two").to_string().into_bytes()),
     )
     .await;
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(body_json(&body)["note"], "two");
+    assert_eq!(text_of(&body_json(&body)), "two");
 }

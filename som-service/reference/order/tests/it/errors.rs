@@ -1,8 +1,9 @@
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use serde_json::{Value, json};
-use som_reference_order::domain::order::FieldError;
 use som_reference_order::interfaces::error::{ApiError, ErrorCode};
+
+use crate::fixture::validation_field_errors;
 
 async fn read(response: Response) -> (StatusCode, HeaderMap, Value) {
     let status = response.status();
@@ -35,16 +36,7 @@ async fn error_body_has_error_message_and_optional_details() {
     let (_, _, body) = read(with.into_response()).await;
     assert_eq!(body["details"], json!([{"a": 1}]));
 
-    let validation = ApiError::from(vec![
-        FieldError {
-            field: "customer_id".to_owned(),
-            message: "is required".to_owned(),
-        },
-        FieldError {
-            field: "currency".to_owned(),
-            message: "must be three upper-case letters".to_owned(),
-        },
-    ]);
+    let validation = ApiError::from(validation_field_errors());
     let (status, _, body) = read(validation.into_response()).await;
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(body["error"], "validation_failed");

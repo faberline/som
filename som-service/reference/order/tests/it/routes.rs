@@ -3,17 +3,10 @@ use serde_json::json;
 use som_reference_order::interfaces::routes::{BODY_LIMIT_BYTES, COLLECTION_PATH, ITEM_PATH};
 
 use crate::common::{app, body_json, call, call_raw, etag_of, seed, send, valid_body};
-
-const RESOURCE_KEYS: [&str; 8] = [
-    "id",
-    "customer_id",
-    "total_cents",
-    "currency",
-    "status",
-    "note",
-    "created_at",
-    "updated_at",
-];
+use crate::fixture::{
+    RESOURCE_KEYS, body_with_big_text, check_created, check_replaced, one_bad_field_body,
+    replacement_body,
+};
 
 #[tokio::test]
 async fn crud_paths_are_plural_kebab_lower() {
@@ -62,16 +55,9 @@ async fn create_returns_201_location_and_full_resource() {
     let mut expected = RESOURCE_KEYS.to_vec();
     expected.sort_unstable();
     assert_eq!(keys, expected);
-    assert!(value["note"].is_null());
-    assert_eq!(value["customer_id"], "c1");
+    check_created(&value);
 
-    let (status, _, body) = call(
-        &app,
-        "POST",
-        COLLECTION_PATH,
-        Some(json!({"customer_id": "", "total_cents": 1, "currency": "USD", "status": "pending"})),
-    )
-    .await;
+    let (status, _, body) = call(&app, "POST", COLLECTION_PATH, Some(one_bad_field_body())).await;
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(body_json(&body)["error"], "validation_failed");
 
@@ -100,13 +86,7 @@ async fn replace_returns_200_with_full_resource_and_no_patch_route() {
     let (app, store) = app();
     seed(&store, "a", "2026-01-01T00:00:00Z");
 
-    let replacement = json!({
-        "customer_id": "c2",
-        "total_cents": 250,
-        "currency": "EUR",
-        "status": "paid",
-        "note": "hi"
-    });
+    let replacement = replacement_body();
     let etag = etag_of(&app, "a").await;
     let (status, _, body) = send(
         &app,
@@ -118,9 +98,7 @@ async fn replace_returns_200_with_full_resource_and_no_patch_route() {
     .await;
     assert_eq!(status, StatusCode::OK);
     let value = body_json(&body);
-    assert_eq!(value["customer_id"], "c2");
-    assert_eq!(value["total_cents"], 250);
-    assert_eq!(value["note"], "hi");
+    check_replaced(&value);
     assert_eq!(value["id"], "a");
     assert_eq!(value["created_at"], "2026-01-01T00:00:00Z");
     assert_ne!(value["updated_at"], "2026-01-01T00:00:00Z");
@@ -135,13 +113,7 @@ async fn replace_returns_200_with_full_resource_and_no_patch_route() {
     let (status, _, _) = call(&app, "PUT", "/v1/orders/a", Some(json!({}))).await;
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
 
-    let (status, _, _) = call(
-        &app,
-        "PATCH",
-        "/v1/orders/a",
-        Some(json!({"status": "paid"})),
-    )
-    .await;
+    let (status, _, _) = call(&app, "PATCH", "/v1/orders/a", Some(valid_body())).await;
     assert_eq!(status, StatusCode::METHOD_NOT_ALLOWED);
 }
 
@@ -168,13 +140,7 @@ async fn body_over_1_mib_returns_413() {
     let (app, store) = app();
     seed(&store, "a", "2026-01-01T00:00:00Z");
 
-    let big = json!({
-        "customer_id": "c1",
-        "total_cents": 1,
-        "currency": "USD",
-        "status": "pending",
-        "note": "a".repeat(BODY_LIMIT_BYTES)
-    });
+    let big = body_with_big_text(BODY_LIMIT_BYTES);
 
     let (status, _, body) = call(&app, "POST", COLLECTION_PATH, Some(big.clone())).await;
     assert_eq!(status, StatusCode::PAYLOAD_TOO_LARGE);
@@ -184,13 +150,7 @@ async fn body_over_1_mib_returns_413() {
     assert_eq!(status, StatusCode::PAYLOAD_TOO_LARGE);
     assert_eq!(body_json(&body)["error"], "payload_too_large");
 
-    let small_but_long = json!({
-        "customer_id": "c1",
-        "total_cents": 1,
-        "currency": "USD",
-        "status": "pending",
-        "note": "a".repeat(3000)
-    });
+    let small_but_long = body_with_big_text(3000);
     let (status, _, _) = call(&app, "POST", COLLECTION_PATH, Some(small_but_long)).await;
     assert_ne!(status, StatusCode::PAYLOAD_TOO_LARGE);
 }
