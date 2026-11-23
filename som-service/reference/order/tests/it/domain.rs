@@ -4,6 +4,7 @@ use som_reference_order::domain::order::{
 };
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
+use crate::fixture::Must;
 use crate::fixture::{
     INVALID_FIELDS, REQUIRED_FIELDS, WRONG_TYPE_FIELDS, at_the_max_length_body,
     check_valid_defaults, check_valid_input, float_in_integer_body, float_in_integer_errors,
@@ -11,7 +12,7 @@ use crate::fixture::{
 };
 
 fn valid_input() -> OrderInput {
-    parse_input(&valid_body()).expect("valid body parses")
+    parse_input(&valid_body()).must("valid body parses")
 }
 
 fn field_names(errors: &[FieldError]) -> Vec<&str> {
@@ -21,7 +22,7 @@ fn field_names(errors: &[FieldError]) -> Vec<&str> {
 #[test]
 fn id_is_server_made_uuidv7_and_client_id_is_refused() {
     let id = new_id();
-    let parsed = uuid::Uuid::parse_str(&id).expect("id parses as a uuid");
+    let parsed = uuid::Uuid::parse_str(&id).must("id parses as a uuid");
     assert_eq!(parsed.get_version_num(), 7);
     assert_ne!(new_id(), id);
 
@@ -40,7 +41,7 @@ fn id_is_server_made_uuidv7_and_client_id_is_refused() {
 #[test]
 fn time_fields_are_rfc3339_utc_and_set_by_server() {
     let now = now_rfc3339();
-    OffsetDateTime::parse(&now, &Rfc3339).expect("now is RFC 3339");
+    OffsetDateTime::parse(&now, &Rfc3339).must("now is RFC 3339");
     assert!(now.ends_with('Z'), "UTC: {now}");
 
     let order = Order::create(
