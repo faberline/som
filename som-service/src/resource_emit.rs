@@ -28,6 +28,70 @@ const INTERFACES_REQUEST_ID: &str = include_str!("../reference/order/src/interfa
 const INTERFACES_ROUTES: &str = include_str!("../reference/order/src/interfaces/routes.rs");
 const INTERFACES_SERVER: &str = include_str!("../reference/order/src/interfaces/server.rs");
 const OPENAPI_TEMPLATE: &str = include_str!("../reference/order/openapi.json");
+const TEST_AUTH: &str = include_str!("../reference/order/tests/it/auth.rs");
+const TEST_COMMON: &str = include_str!("../reference/order/tests/it/common.rs");
+const TEST_DOMAIN: &str = include_str!("../reference/order/tests/it/domain.rs");
+const TEST_ERRORS: &str = include_str!("../reference/order/tests/it/errors.rs");
+const TEST_IDEMPOTENCY: &str = include_str!("../reference/order/tests/it/idempotency.rs");
+const TEST_LAYERS: &str = include_str!("../reference/order/tests/it/layers.rs");
+const TEST_LIMITS: &str = include_str!("../reference/order/tests/it/limits.rs");
+const TEST_METRICS: &str = include_str!("../reference/order/tests/it/metrics.rs");
+const TEST_PAGINATION: &str = include_str!("../reference/order/tests/it/pagination.rs");
+const TEST_PRECONDITIONS: &str = include_str!("../reference/order/tests/it/preconditions.rs");
+const TEST_PROBES: &str = include_str!("../reference/order/tests/it/probes.rs");
+const TEST_QUALITY: &str = include_str!("../reference/order/tests/it/quality.rs");
+const TEST_REQUEST_ID: &str = include_str!("../reference/order/tests/it/request_id.rs");
+const TEST_ROUTES: &str = include_str!("../reference/order/tests/it/routes.rs");
+const TEST_STORE: &str = include_str!("../reference/order/tests/it/store.rs");
+
+/// The test files of the reference that every emitted crate gets: the name in
+/// the crate and the reference text. `readme.rs` is not here, and `fixture.rs`
+/// is built from the plan (`fixture_file`).
+const TEST_FILES: [(&str, &str); 15] = [
+    ("auth.rs", TEST_AUTH),
+    ("common.rs", TEST_COMMON),
+    ("domain.rs", TEST_DOMAIN),
+    ("errors.rs", TEST_ERRORS),
+    ("idempotency.rs", TEST_IDEMPOTENCY),
+    ("layers.rs", TEST_LAYERS),
+    ("limits.rs", TEST_LIMITS),
+    ("metrics.rs", TEST_METRICS),
+    ("pagination.rs", TEST_PAGINATION),
+    ("preconditions.rs", TEST_PRECONDITIONS),
+    ("probes.rs", TEST_PROBES),
+    ("quality.rs", TEST_QUALITY),
+    ("request_id.rs", TEST_REQUEST_ID),
+    ("routes.rs", TEST_ROUTES),
+    ("store.rs", TEST_STORE),
+];
+
+/// The `Must` trait of the reference fixture, copied verbatim into every emitted fixture.
+const MUST_BLOCK: &str = r##"/// `expect` with a name that the emitted-test text check does not ban: a failed result or an empty option stops the test with the message.
+pub trait Must<T> {
+    /// The value, or a panic with `what` (and the error for a result).
+    fn must(self, what: &str) -> T;
+}
+
+impl<T, E: std::fmt::Debug> Must<T> for Result<T, E> {
+    #[track_caller]
+    fn must(self, what: &str) -> T {
+        match self {
+            Ok(value) => value,
+            Err(error) => panic!("{what}: {error:?}"),
+        }
+    }
+}
+
+impl<T> Must<T> for Option<T> {
+    #[track_caller]
+    fn must(self, what: &str) -> T {
+        match self {
+            Some(value) => value,
+            None => panic!("{what}"),
+        }
+    }
+}
+"##;
 
 /// The files of the interfaces layer: the name in the crate and its reference text.
 const INTERFACE_FILES: [(&str, &str); 10] = [
@@ -120,6 +184,17 @@ pub(crate) fn render(dsl: &Value) -> Result<BTreeMap<String, String>, Error> {
         };
         files.insert(format!("src/interfaces/{file}"), text);
     }
+    for (file, template) in TEST_FILES {
+        files.insert(
+            format!("tests/it/{file}"),
+            test_text(template, package, name, snake, plural, path),
+        );
+    }
+    files.insert(
+        "tests/it/fixture.rs".to_owned(),
+        fixture_file(package, name, snake, fields),
+    );
+    files.insert("tests/it/main.rs".to_owned(), test_main());
     files.insert(
         "openapi.json".to_owned(),
         openapi_file(name, snake, plural, path, fields),
@@ -780,6 +855,634 @@ fn to_json_part(name: &str, snake: &str, fields: &[Value]) -> String {
 }}
 "
     )
+}
+
+/// The text of one reference test file for the resource. `substitute` changes
+/// every `order`, so the package, `Ordering` and `reordered_` are first put
+/// behind markers that hold no `order` text, and restored after it.
+fn test_text(
+    template: &str,
+    package: &str,
+    name: &str,
+    snake: &str,
+    plural: &str,
+    path: &str,
+) -> String {
+    let marked = template
+        .replace("som_reference_order", "@@PKG@@")
+        .replace("Ordering", "@@STD@@")
+        .replace("reordered_", "@@REORD@@");
+    let text = substitute(&marked, name, snake, plural)
+        .replace("@@STD@@", "Ordering")
+        .replace("@@REORD@@", "reordered_")
+        .replace("@@PKG@@", package);
+    with_path(text, plural, path)
+}
+
+/// The `tests/it/main.rs` of an emitted crate: one `mod` line for each emitted
+/// test file and for the fixture, sorted.
+fn test_main() -> String {
+    let mut stems: Vec<&str> = TEST_FILES
+        .iter()
+        .map(|&(file, _)| file.trim_end_matches(".rs"))
+        .collect();
+    stems.push("fixture");
+    stems.sort_unstable();
+    stems.iter().map(|stem| format!("mod {stem};\n")).collect()
+}
+
+/// The text of `tests/it/fixture.rs`: the reference fixture with the names and
+/// the values of the plan. A plan with no integer field or no string field uses
+/// the fallbacks of this file; its fixture still compiles, and its tests are not
+/// promised.
+fn fixture_file(package: &str, name: &str, snake: &str, fields: &[Value]) -> String {
+    let all: Vec<&str> = fields.iter().map(name_of).collect();
+    let all_refs: Vec<&Value> = fields.iter().collect();
+    let required: Vec<&Value> = fields.iter().filter(|field| is_required(field)).collect();
+    let optional: Vec<&Value> = fields.iter().filter(|field| !is_required(field)).collect();
+    let bad: Vec<&Value> = fields
+        .iter()
+        .filter(|field| bad_value(field).is_some())
+        .collect();
+    let wrong_type: Vec<&str> = fields
+        .iter()
+        .filter(|field| kind_of(field) != "integer")
+        .map(name_of)
+        .collect();
+    let required_names: Vec<&str> = required.iter().copied().map(name_of).collect();
+    let required_enums: Vec<&Value> = required
+        .iter()
+        .copied()
+        .filter(|field| kind_of(field) == "enum")
+        .collect();
+    let integer: Option<&Value> = fields.iter().find(|field| kind_of(field) == "integer");
+    let text_field: Option<&Value> = fields
+        .iter()
+        .find(|field| kind_of(field) == "string" && !is_required(field))
+        .or_else(|| fields.iter().find(|field| kind_of(field) == "string"));
+    let int_name = integer.map_or("", name_of);
+    let text_name = text_field.map_or("", name_of);
+    let text_len = text_field
+        .and_then(|field| field["max"].as_i64())
+        .unwrap_or(500);
+    let first_name = all.first().copied().unwrap_or("id");
+    let mut out = String::new();
+
+    let mut imports = vec![
+        "FieldError".to_owned(),
+        name.to_owned(),
+        format!("{name}Input"),
+        "parse_input".to_owned(),
+    ];
+    imports.extend(
+        required_enums
+            .iter()
+            .copied()
+            .map(|field| pascal(name_of(field))),
+    );
+    imports.sort();
+    out.push_str(&format!(
+        "//! Every literal that names a {name} field, a field value or the typed\n\
+         //! struct of the generated tests. The other test files call these functions.\n\n\
+         use serde_json::{{Value, json}};\n\
+         use {package}::domain::{snake}::{{{}}};\n\n",
+        imports.join(", ")
+    ));
+    out.push_str(MUST_BLOCK);
+    out.push('\n');
+
+    out.push_str(&format!(
+        "/// The fields of the body, in the order of the plan (no id, no time fields).\n\
+         pub const FIELDS: [&str; {}] = [{}];\n\n",
+        all.len(),
+        quoted_list(&all)
+    ));
+    let mut keys = vec!["id"];
+    keys.extend(all.iter().copied());
+    keys.extend(["created_at", "updated_at"]);
+    out.push_str(&format!(
+        "/// The keys of a resource in a response.\n\
+         pub const RESOURCE_KEYS: [&str; {}] = [{}];\n\n",
+        keys.len(),
+        quoted_list(&keys)
+    ));
+    let mut invalid: Vec<&str> = bad.iter().copied().map(name_of).collect();
+    invalid.push("extra");
+    out.push_str(&format!(
+        "/// The fields that `invalid_body` gets wrong, in order.\n\
+         pub const INVALID_FIELDS: [&str; {}] = [{}];\n\n",
+        invalid.len(),
+        quoted_list(&invalid)
+    ));
+    out.push_str(&format!(
+        "/// The fields that `wrong_type_body` gives a value of the wrong JSON type, in order.\n\
+         pub const WRONG_TYPE_FIELDS: [&str; {}] = [{}];\n\n",
+        wrong_type.len(),
+        quoted_list(&wrong_type)
+    ));
+    out.push_str(&format!(
+        "/// The fields that an empty body lacks, in order.\n\
+         pub const REQUIRED_FIELDS: [&str; {}] = [{}];\n\n",
+        required_names.len(),
+        quoted_list(&required_names)
+    ));
+
+    push_fn(
+        &mut out,
+        "",
+        "pub fn valid_body() -> Value",
+        &[format!(
+            "json!({{{}}})",
+            json_pairs(&required, valid_value).join(", ")
+        )],
+    );
+    push_fn(
+        &mut out,
+        "/// A valid body that differs in every field (for `PUT`).",
+        "pub fn replacement_body() -> Value",
+        &[format!(
+            "json!({{{}}})",
+            json_pairs(&all_refs, replacement_value).join(", ")
+        )],
+    );
+    let mut invalid_pairs = json_pairs(&all_refs, invalid_value);
+    invalid_pairs.push("\"extra\": 1".to_owned());
+    push_fn(
+        &mut out,
+        "/// A body with one bad value for every constrained field, and an unknown field.",
+        "pub fn invalid_body() -> Value",
+        &[format!("json!({{{}}})", invalid_pairs.join(", "))],
+    );
+    let wrong_body = if wrong_type.is_empty() {
+        vec!["valid_body()".to_owned()]
+    } else {
+        let mut lines = vec!["let mut body = valid_body();".to_owned()];
+        lines.extend(
+            wrong_type
+                .iter()
+                .map(|field| format!("body[{field:?}] = json!(7);")),
+        );
+        lines.push("body".to_owned());
+        lines
+    };
+    push_fn(
+        &mut out,
+        "/// A valid body with a value of the wrong JSON type for each string field.",
+        "pub fn wrong_type_body() -> Value",
+        &wrong_body,
+    );
+
+    match integer {
+        Some(field) => {
+            push_fn(
+                &mut out,
+                "/// A valid body whose integer field holds a float.",
+                "pub fn float_in_integer_body() -> Value",
+                &[
+                    "let mut body = valid_body();".to_owned(),
+                    format!("body[{:?}] = json!(1.5);", name_of(field)),
+                    "body".to_owned(),
+                ],
+            );
+            push_fn(
+                &mut out,
+                "/// The one field error of `float_in_integer_body`.",
+                "pub fn float_in_integer_errors() -> Vec<FieldError>",
+                &[format!(
+                    "vec![FieldError {{ field: {:?}.to_owned(), message: \"must be an integer\".to_owned() }}]",
+                    name_of(field)
+                )],
+            );
+        }
+        None => {
+            push_fn(
+                &mut out,
+                "/// A valid body; this plan has no integer field to hold a float.",
+                "pub fn float_in_integer_body() -> Value",
+                &["valid_body()".to_owned()],
+            );
+            push_fn(
+                &mut out,
+                "/// The field errors of `float_in_integer_body`: none for this plan.",
+                "pub fn float_in_integer_errors() -> Vec<FieldError>",
+                &["Vec::new()".to_owned()],
+            );
+        }
+    }
+
+    match optional.first() {
+        Some(field) => {
+            let optional_name = name_of(field);
+            push_fn(
+                &mut out,
+                "/// A valid body whose optional field is null.",
+                "pub fn null_optional_body() -> Value",
+                &[
+                    "let mut body = valid_body();".to_owned(),
+                    format!("body[{optional_name:?}] = Value::Null;"),
+                    "body".to_owned(),
+                ],
+            );
+            push_fn(
+                &mut out,
+                "/// True when `body` parses and its optional field is `None`.",
+                "pub fn null_optional_is_none(body: &Value) -> bool",
+                &[format!(
+                    "parse_input(body).must(\"a null optional field is valid\").{optional_name}.is_none()"
+                )],
+            );
+        }
+        None => {
+            push_fn(
+                &mut out,
+                "/// A valid body; this plan has no optional field to set to null.",
+                "pub fn null_optional_body() -> Value",
+                &["valid_body()".to_owned()],
+            );
+            push_fn(
+                &mut out,
+                "/// True when `body` parses: this plan has no optional field.",
+                "pub fn null_optional_is_none(body: &Value) -> bool",
+                &["parse_input(body).is_ok()".to_owned()],
+            );
+        }
+    }
+
+    let filter = format!("{first_name}=x");
+    push_fn(
+        &mut out,
+        "/// A query string with a filter on a field value, which the list refuses.",
+        "pub fn filter_by_field_query() -> &'static str",
+        &[format!("{filter:?}")],
+    );
+    push_fn(
+        &mut out,
+        "/// A valid body whose text field has the largest allowed length.",
+        "pub fn at_the_max_length_body() -> Value",
+        &[format!("body_with_text(\"n\".repeat({text_len}))")],
+    );
+    let one_bad = match bad.first() {
+        Some(field) => vec![
+            "let mut body = valid_body();".to_owned(),
+            format!(
+                "body[{:?}] = json!({});",
+                name_of(field),
+                json_text(&invalid_value(field))
+            ),
+            "body".to_owned(),
+        ],
+        None => vec!["valid_body()".to_owned()],
+    };
+    push_fn(
+        &mut out,
+        "/// A valid body with one bad field: the first field that has a bad value.",
+        "pub fn one_bad_field_body() -> Value",
+        &one_bad,
+    );
+    push_fn(
+        &mut out,
+        "/// A valid body whose text field has `len` characters.",
+        "pub fn body_with_big_text(len: usize) -> Value",
+        &["body_with_text(\"a\".repeat(len))".to_owned()],
+    );
+    push_fn(
+        &mut out,
+        "/// A valid body whose text field is `text`.",
+        "pub fn with_text(text: &str) -> Value",
+        &["body_with_text(text.to_owned())".to_owned()],
+    );
+    match integer {
+        Some(_) => push_fn(
+            &mut out,
+            "/// A valid body whose integer field is `n`.",
+            "pub fn with_number(n: i64) -> Value",
+            &[
+                "let mut body = valid_body();".to_owned(),
+                format!("body[{int_name:?}] = json!(n);"),
+                "body".to_owned(),
+            ],
+        ),
+        None => push_fn(
+            &mut out,
+            "/// A valid body; this plan has no integer field to set.",
+            "pub fn with_number(_n: i64) -> Value",
+            &["valid_body()".to_owned()],
+        ),
+    }
+    push_fn(
+        &mut out,
+        "/// The text field of a body or of a resource.",
+        "pub fn text_of(value: &Value) -> &Value",
+        &[format!("&value[{text_name:?}]")],
+    );
+    let reversed: Vec<String> = required
+        .iter()
+        .rev()
+        .map(|field| format!("\"{}\":{}", name_of(field), json_text(&valid_value(field))))
+        .collect();
+    let joined = format!("{{{}}}", reversed.join(","));
+    push_fn(
+        &mut out,
+        "/// The valid body with its keys in another order.",
+        "pub fn reordered_valid_json() -> &'static str",
+        &[format!("{joined:?}")],
+    );
+
+    let mut item_lines = vec!["assert!(item[\"id\"].is_string());".to_owned()];
+    for field in &required {
+        let check = if kind_of(field) == "integer" {
+            "is_i64"
+        } else {
+            "is_string"
+        };
+        item_lines.push(format!("assert!(item[{:?}].{check}());", name_of(field)));
+    }
+    item_lines.push("assert!(item[\"created_at\"].is_string());".to_owned());
+    item_lines.push("assert!(item[\"updated_at\"].is_string());".to_owned());
+    push_fn(
+        &mut out,
+        "/// The asserts for one item of a list response.",
+        "pub fn check_list_item(item: &Value)",
+        &item_lines,
+    );
+
+    let mut created = vec![
+        "for field in FIELDS {".to_owned(),
+        "    assert!(value.get(field).is_some(), \"{field} is in the resource\");".to_owned(),
+        "}".to_owned(),
+    ];
+    for field in &optional {
+        created.push(format!("assert!(value[{:?}].is_null());", name_of(field)));
+    }
+    if let Some(field) = required.first() {
+        created.push(format!(
+            "assert_eq!(value[{:?}], {});",
+            name_of(field),
+            json_text(&valid_value(field))
+        ));
+    }
+    push_fn(
+        &mut out,
+        "/// The asserts for a resource that a create returned.",
+        "pub fn check_created(value: &Value)",
+        &created,
+    );
+
+    let replaced: Vec<String> = all_refs
+        .iter()
+        .map(|field| {
+            format!(
+                "assert_eq!(value[{:?}], {});",
+                name_of(field),
+                json_text(&replacement_value(field))
+            )
+        })
+        .collect();
+    push_fn(
+        &mut out,
+        "/// The asserts for a resource that a replace returned.",
+        "pub fn check_replaced(value: &Value)",
+        &replaced,
+    );
+
+    let mut defaults: Vec<String> = required_enums
+        .iter()
+        .map(|field| {
+            format!(
+                "assert_eq!(json[{:?}], {});",
+                name_of(field),
+                json_text(&valid_value(field))
+            )
+        })
+        .collect();
+    defaults.extend(
+        optional
+            .iter()
+            .map(|field| format!("assert!(json[{:?}].is_null());", name_of(field))),
+    );
+    let defaults_param = if defaults.is_empty() { "_json" } else { "json" };
+    push_fn(
+        &mut out,
+        "/// The defaults of a valid body: the first value of each enum, and null for each optional field.",
+        &format!("pub fn check_valid_defaults({defaults_param}: &Value)"),
+        &defaults,
+    );
+
+    let input_lines: Vec<String> = required_enums
+        .iter()
+        .map(|field| {
+            format!(
+                "assert_eq!(input.{}, {}::{});",
+                name_of(field),
+                pascal(name_of(field)),
+                pascal(first_value(field))
+            )
+        })
+        .collect();
+    let input_param = if input_lines.is_empty() {
+        "_input"
+    } else {
+        "input"
+    };
+    push_fn(
+        &mut out,
+        "/// The enum values of a parsed valid body.",
+        &format!("pub fn check_valid_input({input_param}: &{name}Input)"),
+        &input_lines,
+    );
+
+    match integer {
+        Some(field) => {
+            let (assign, read) = if is_required(field) {
+                ("250".to_owned(), format!("{snake}.{}", name_of(field)))
+            } else {
+                (
+                    "Some(250)".to_owned(),
+                    format!("{snake}.{}.unwrap_or_default()", name_of(field)),
+                )
+            };
+            push_fn(
+                &mut out,
+                &format!("/// The change that a store test makes to a stored {name}."),
+                &format!("pub fn change({snake}: &mut {name})"),
+                &[format!("{snake}.{} = {assign};", name_of(field))],
+            );
+            push_fn(
+                &mut out,
+                &format!("/// The total of a stored {name} that `change` was applied to."),
+                &format!("pub fn changed_total({snake}: &{name}) -> i64"),
+                &[read],
+            );
+        }
+        None => {
+            push_fn(
+                &mut out,
+                &format!(
+                    "/// The change that a store test makes to a stored {name}: none without an integer field."
+                ),
+                &format!("pub fn change(_{snake}: &mut {name})"),
+                &Vec::new(),
+            );
+            push_fn(
+                &mut out,
+                &format!("/// The total of a stored {name}: 250 without an integer field."),
+                &format!("pub fn changed_total(_{snake}: &{name}) -> i64"),
+                &["250".to_owned()],
+            );
+        }
+    }
+
+    let errors: Vec<String> = required_names
+        .iter()
+        .take(2)
+        .map(|field| {
+            format!(
+                "FieldError {{ field: {field:?}.to_owned(), message: \"is required\".to_owned() }}"
+            )
+        })
+        .collect();
+    let errors_body = if errors.is_empty() {
+        "Vec::new()".to_owned()
+    } else {
+        format!("vec![{}]", errors.join(", "))
+    };
+    push_fn(
+        &mut out,
+        "/// The field errors that the error body test uses.",
+        "pub fn validation_field_errors() -> Vec<FieldError>",
+        &[errors_body],
+    );
+
+    let (text_param, text_lines) = if text_field.is_some() {
+        (
+            "text",
+            vec![
+                "let mut body = valid_body();".to_owned(),
+                format!("body[{text_name:?}] = json!(text);"),
+                "body".to_owned(),
+            ],
+        )
+    } else {
+        ("_text", vec!["valid_body()".to_owned()])
+    };
+    push_fn(
+        &mut out,
+        "",
+        &format!("fn body_with_text({text_param}: String) -> Value"),
+        &text_lines,
+    );
+    out
+}
+
+/// Writes one function of the fixture: its doc line (empty for none), its
+/// signature and its body lines, which are indented here.
+fn push_fn(out: &mut String, doc: &str, signature: &str, body: &[String]) {
+    if !doc.is_empty() {
+        out.push_str(doc);
+        out.push('\n');
+    }
+    out.push_str(signature);
+    out.push_str(" {\n");
+    for line in body {
+        out.push_str("    ");
+        out.push_str(line);
+        out.push('\n');
+    }
+    out.push_str("}\n\n");
+}
+
+/// The Rust text of a list of names: `"a", "b"`.
+fn quoted_list(names: &[&str]) -> String {
+    names
+        .iter()
+        .map(|name| format!("{name:?}"))
+        .collect::<Vec<String>>()
+        .join(", ")
+}
+
+/// The JSON text of a value. For the names and values of a plan (ASCII) it is
+/// also a Rust literal.
+fn json_text(value: &Value) -> String {
+    serde_json::to_string(value).unwrap_or_default()
+}
+
+/// The `"name": value` pairs of the fields, in the order given.
+fn json_pairs(fields: &[&Value], value_of: fn(&Value) -> Value) -> Vec<String> {
+    fields
+        .iter()
+        .map(|field| format!("{:?}: {}", name_of(field), json_text(&value_of(field))))
+        .collect()
+}
+
+/// `count` copies of `letter`; a count below one gives an empty text.
+fn repeat_text(letter: char, count: i64) -> String {
+    letter
+        .to_string()
+        .repeat(usize::try_from(count).unwrap_or(0))
+}
+
+/// The shortest text that the field allows: its `min`, and at least one character.
+fn min_length(field: &Value) -> i64 {
+    field["min"].as_i64().unwrap_or(0).max(1)
+}
+
+fn first_value(field: &Value) -> &str {
+    values_of(field).first().copied().unwrap_or("")
+}
+
+/// A value that the parser accepts for the field.
+fn valid_value(field: &Value) -> Value {
+    match kind_of(field) {
+        "string" => match field["upper_letters"].as_i64() {
+            Some(count) => json!(repeat_text('A', count)),
+            None => json!(repeat_text('x', min_length(field))),
+        },
+        "integer" => json!(field["min"].as_i64().unwrap_or(1)),
+        _ => json!(first_value(field)),
+    }
+}
+
+/// Another value that the parser accepts for the field: it differs from `valid_value`.
+fn replacement_value(field: &Value) -> Value {
+    match kind_of(field) {
+        "string" => match field["upper_letters"].as_i64() {
+            Some(count) => json!(repeat_text('B', count)),
+            None => json!(repeat_text('y', min_length(field))),
+        },
+        "integer" => {
+            let raised = field["min"].as_i64().unwrap_or(0) + 1;
+            json!(field["max"].as_i64().map_or(raised, |max| raised.min(max)))
+        }
+        _ => {
+            let values = values_of(field);
+            json!(values.get(1).or(values.first()).copied().unwrap_or(""))
+        }
+    }
+}
+
+/// A value that the parser refuses for the field with one error, or none when the plan gives no bound.
+fn bad_value(field: &Value) -> Option<Value> {
+    let min = field["min"].as_i64();
+    let max = field["max"].as_i64();
+    match kind_of(field) {
+        "string" => match (field["upper_letters"].as_i64(), min, max) {
+            (Some(count), _, _) => Some(json!(repeat_text('a', count))),
+            (None, Some(low), _) if low >= 1 => Some(json!("")),
+            (None, _, Some(high)) => Some(json!(repeat_text('x', high + 1))),
+            _ => None,
+        },
+        "integer" => match (min, max) {
+            (Some(low), _) => Some(json!(low - 1)),
+            (None, Some(high)) => Some(json!(high + 1)),
+            (None, None) => None,
+        },
+        _ => Some(json!("lost")),
+    }
+}
+
+/// The value of a field in `invalid_body`: its bad value, or its valid value when it has none.
+fn invalid_value(field: &Value) -> Value {
+    bad_value(field).unwrap_or_else(|| valid_value(field))
 }
 
 #[cfg(test)]

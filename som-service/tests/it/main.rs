@@ -24,6 +24,7 @@ mod reference_banned_text;
 mod reference_fixture;
 mod resource_cnl;
 mod resource_emit;
+mod resource_tests_emit;
 mod resource_v3;
 mod server_http;
 mod server_render;
