@@ -10,8 +10,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::time::SystemTime;
 
-const ORDER: &str = include_str!("../../contract/order.resource.prompt.json");
-const CUSTOMER: &str = include_str!("../../contract/customer.resource.prompt.json");
+pub(crate) const ORDER: &str = include_str!("../../contract/order.resource.prompt.json");
+pub(crate) const CUSTOMER: &str = include_str!("../../contract/customer.resource.prompt.json");
 const DEFER_FOUR: &str = include_str!("fixtures/defer-four.prompt.json");
 const ORDER_CURSOR: &str = include_str!("fixtures/order.cursor.rs");
 const LOCK_TEMPLATE: &str = include_str!("../../templates/resource/Cargo.lock.txt");
@@ -19,7 +19,7 @@ const REFERENCE_FIXTURE_TEST: &str = include_str!("../../reference/order/tests/i
 const REFERENCE_DOMAIN_TEST: &str = include_str!("../../reference/order/tests/it/domain.rs");
 const REFERENCE_STORE_TEST: &str = include_str!("../../reference/order/tests/it/store.rs");
 
-fn value(text: &str) -> Value {
+pub(crate) fn value(text: &str) -> Value {
     serde_json::from_str(text).expect("JSON fixture")
 }
 
@@ -50,7 +50,7 @@ fn bundle_of(prompt: &Value) -> Value {
 }
 
 /// The files that the emitter gives for a prompt v3.
-fn emit(prompt: &Value) -> BTreeMap<String, String> {
+pub(crate) fn emit(prompt: &Value) -> BTreeMap<String, String> {
     ok(assemble_resource(&bundle_of(prompt)))
 }
 
@@ -61,7 +61,7 @@ fn order_with(edit: impl FnOnce(&mut Value)) -> Value {
     prompt
 }
 
-fn resource_prompt(package: &str, name: &str, fields: Value) -> Value {
+pub(crate) fn resource_prompt(package: &str, name: &str, fields: Value) -> Value {
     json!({
         "version": "som.prompt.service.v3",
         "package": package,
@@ -70,7 +70,7 @@ fn resource_prompt(package: &str, name: &str, fields: Value) -> Value {
     })
 }
 
-fn title_fields() -> Value {
+pub(crate) fn title_fields() -> Value {
     json!([{"name": "title", "type": "string", "required": true, "min": 1}])
 }
 
@@ -104,7 +104,7 @@ fn without_package(lock: &str, package: &str) -> String {
 }
 
 #[test]
-fn resource_emit_order_has_twenty_three_files() {
+fn resource_emit_order_has_forty_files() {
     let files = emit(&value(ORDER));
     let keys: Vec<&str> = files.keys().map(String::as_str).collect();
     assert_eq!(
@@ -133,6 +133,23 @@ fn resource_emit_order_has_twenty_three_files() {
             "src/interfaces/routes.rs",
             "src/interfaces/server.rs",
             "src/lib.rs",
+            "tests/it/auth.rs",
+            "tests/it/common.rs",
+            "tests/it/domain.rs",
+            "tests/it/errors.rs",
+            "tests/it/fixture.rs",
+            "tests/it/idempotency.rs",
+            "tests/it/layers.rs",
+            "tests/it/limits.rs",
+            "tests/it/main.rs",
+            "tests/it/metrics.rs",
+            "tests/it/pagination.rs",
+            "tests/it/preconditions.rs",
+            "tests/it/probes.rs",
+            "tests/it/quality.rs",
+            "tests/it/request_id.rs",
+            "tests/it/routes.rs",
+            "tests/it/store.rs",
         ]
     );
 }
@@ -524,7 +541,7 @@ fn resource_emit_refuses_names_that_break_the_crate() {
 }
 
 /// A scratch directory of one test run: `SOM_CLIENT_TEST_ROOT` or the temp dir.
-fn scratch_root() -> PathBuf {
+pub(crate) fn scratch_root() -> PathBuf {
     let nonce = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .expect("the clock is after 1970")
@@ -535,13 +552,13 @@ fn scratch_root() -> PathBuf {
     scratch.join(format!("som-resource-emit-{}-{nonce}", std::process::id()))
 }
 
-fn target_dir(root: &Path) -> PathBuf {
+pub(crate) fn target_dir(root: &Path) -> PathBuf {
     std::env::var_os("SOM_CLIENT_TEST_TARGET")
         .map(PathBuf::from)
         .unwrap_or_else(|| root.join("target"))
 }
 
-fn write_files(root: &Path, files: &BTreeMap<String, String>) {
+pub(crate) fn write_files(root: &Path, files: &BTreeMap<String, String>) {
     for (path, text) in files {
         let target = root.join(path);
         fs::create_dir_all(target.parent().expect("a file has a parent"))
@@ -551,7 +568,7 @@ fn write_files(root: &Path, files: &BTreeMap<String, String>) {
 }
 
 /// Runs cargo in `root` and fails with stdout and stderr when it does not succeed.
-fn cargo(root: &Path, target: &Path, args: &[&str]) -> Output {
+pub(crate) fn cargo(root: &Path, target: &Path, args: &[&str]) -> Output {
     let output = Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()))
         .current_dir(root)
         .env("CARGO_TARGET_DIR", target)
