@@ -39,7 +39,7 @@ Rust output with axum and sqlx is planned in [milestone 9](https://github.com/fa
 Read the Rust output roadmap, `som-rs/RUST_OUTPUT_ROADMAP.md`, in the archive [faberline/som-archive](https://github.com/faberline/som-archive). The archive plan is [docs/archive-plan.md](docs/archive-plan.md).
 
 The fresh complete gates passed 127 public products and 544 historical jobs.
-Read the guide, the status, the acceptance report and the roadmap in the archive [faberline/som-archive](https://github.com/faberline/som-archive): `som-rs/RUST_GUIDE.md`, `som-rs/RUST_STATUS.md`, `som-rs/RUST_REPORT.md` and `som-rs/RUST_ROADMAP.md`. The repository rules are in [CLAUDE.md](CLAUDE.md).
+Read the guide, the status, the acceptance report and the roadmap in the archive [faberline/som-archive](https://github.com/faberline/som-archive): `som-rs/RUST_GUIDE.md`, `som-rs/RUST_STATUS.md`, `som-rs/RUST_REPORT.md` and `som-rs/RUST_ROADMAP.md`. The repository rules are in [AGENTS.md](AGENTS.md).
 
 ## CNL ownership
 
