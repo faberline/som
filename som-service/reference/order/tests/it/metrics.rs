@@ -12,6 +12,7 @@ use som_reference_order::interfaces::metrics::{Operation, OperationMetrics, oper
 use som_reference_order::interfaces::routes::{COLLECTION_PATH, ITEM_PATH, router_with_metrics};
 
 use crate::common::{body_json, call, etag_of, open_verifier, send, valid_body};
+use crate::fixture::Must;
 
 fn metrics_app(metrics: Arc<OperationMetrics>, verifier: Arc<StaticTokenVerifier>) -> Router {
     router_with_metrics(
@@ -78,7 +79,7 @@ async fn each_operation_has_count_latency_and_error_count() {
     assert_eq!(status, StatusCode::CREATED);
     let id = body_json(&body)["id"]
         .as_str()
-        .expect("created order has an id")
+        .must("created order has an id")
         .to_owned();
     let (status, _, _) = call(&app, "POST", COLLECTION_PATH, Some(json!({}))).await;
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);

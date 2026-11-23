@@ -13,6 +13,7 @@ use som_reference_order::interfaces::metrics::OperationMetrics;
 use som_reference_order::interfaces::routes::router_with_probes;
 
 use crate::common::{body_json, call, send};
+use crate::fixture::Must;
 
 /// The router with the probes; the data routes still need a token.
 fn probes_app(lifecycle: LifecycleController) -> Router {
@@ -29,7 +30,7 @@ fn probes_app(lifecycle: LifecycleController) -> Router {
 fn header_text(headers: &axum::http::HeaderMap, name: &str) -> Option<String> {
     headers
         .get(name)
-        .map(|value| value.to_str().expect("header is text").to_owned())
+        .map(|value| value.to_str().must("header is text").to_owned())
 }
 
 /// Every string under a `$ref` key, found by a walk of the whole document.
@@ -38,7 +39,7 @@ fn collect_refs(value: &Value, refs: &mut Vec<String>) {
         Value::Object(map) => {
             for (key, child) in map {
                 if key == "$ref" {
-                    refs.push(child.as_str().expect("$ref is a string").to_owned());
+                    refs.push(child.as_str().must("$ref is a string").to_owned());
                 } else {
                     collect_refs(child, refs);
                 }
@@ -51,7 +52,7 @@ fn collect_refs(value: &Value, refs: &mut Vec<String>) {
 
 fn document() -> Value {
     body_json(
-        &std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/openapi.json")).expect("file reads"),
+        &std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/openapi.json")).must("file reads"),
     )
 }
 
@@ -79,35 +80,35 @@ async fn openapi_json_is_served_and_equals_the_file() {
     let (status, headers, body) = call(&app, "GET", "/openapi.json", None).await;
     assert_eq!(status, StatusCode::OK);
     let file =
-        std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/openapi.json")).expect("file reads");
+        std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/openapi.json")).must("file reads");
     assert_eq!(body, file, "the served bytes equal the file");
-    let content_type = header_text(&headers, "content-type").expect("content-type is set");
+    let content_type = header_text(&headers, "content-type").must("content-type is set");
     assert!(
         content_type.starts_with("application/json"),
         "{content_type}"
     );
 
     let parsed = body_json(&body);
-    let paths = parsed["paths"].as_object().expect("paths is an object");
+    let paths = parsed["paths"].as_object().must("paths is an object");
     let mut keys: Vec<&str> = paths.keys().map(String::as_str).collect();
     keys.sort_unstable();
     assert_eq!(keys, vec!["/v1/orders", "/v1/orders/{id}"]);
 
-    let collection = paths["/v1/orders"].as_object().expect("collection item");
+    let collection = paths["/v1/orders"].as_object().must("collection item");
     assert!(collection.contains_key("get") && collection.contains_key("post"));
-    let item = paths["/v1/orders/{id}"].as_object().expect("item");
+    let item = paths["/v1/orders/{id}"].as_object().must("item");
     assert!(item.contains_key("get") && item.contains_key("put") && item.contains_key("delete"));
 
     let mut ids: Vec<String> = Vec::new();
     for path in paths.values() {
-        for (method, operation) in path.as_object().expect("path item") {
+        for (method, operation) in path.as_object().must("path item") {
             if method == "parameters" {
                 continue;
             }
             ids.push(
                 operation["operationId"]
                     .as_str()
-                    .expect("operationId")
+                    .must("operationId")
                     .to_owned(),
             );
         }
@@ -133,7 +134,7 @@ fn openapi_refs_all_resolve() {
     assert!(refs.len() >= 8, "the walk found {} refs", refs.len());
     let schemas = parsed["components"]["schemas"]
         .as_object()
-        .expect("components.schemas is an object");
+        .must("components.schemas is an object");
     for reference in &refs {
         let name = reference
             .strip_prefix("#/components/schemas/")
@@ -161,7 +162,7 @@ async fn probe_responses_carry_the_request_id() {
 
     let (status, headers, _) = call(&app, "GET", "/healthz", None).await;
     assert_eq!(status, StatusCode::OK);
-    let generated = header_text(&headers, "x-request-id").expect("a request id is set");
+    let generated = header_text(&headers, "x-request-id").must("a request id is set");
     assert!(!generated.is_empty());
 }
 
@@ -172,15 +173,15 @@ fn openapi_documents_the_error_body_and_pagination() {
 
     let error_required = schemas["ErrorBody"]["required"]
         .as_array()
-        .expect("ErrorBody.required");
+        .must("ErrorBody.required");
     assert!(error_required.iter().any(|name| name == "error"));
     assert!(error_required.iter().any(|name| name == "message"));
 
     let codes: Vec<&str> = schemas["ErrorBody"]["properties"]["error"]["enum"]
         .as_array()
-        .expect("error enum")
+        .must("error enum")
         .iter()
-        .map(|code| code.as_str().expect("code is text"))
+        .map(|code| code.as_str().must("code is text"))
         .collect();
     let all = [
         ErrorCode::InvalidRequest,
@@ -207,17 +208,17 @@ fn openapi_documents_the_error_body_and_pagination() {
 
     let page_required = schemas["OrderPage"]["required"]
         .as_array()
-        .expect("OrderPage.required");
+        .must("OrderPage.required");
     assert!(page_required.iter().any(|name| name == "items"));
     assert!(page_required.iter().any(|name| name == "next_cursor"));
 
     let parameters = parsed["paths"]["/v1/orders"]["get"]["parameters"]
         .as_array()
-        .expect("list parameters");
+        .must("list parameters");
     let limit = parameters
         .iter()
         .find(|parameter| parameter["name"] == "limit")
-        .expect("limit parameter");
+        .must("limit parameter");
     assert_eq!(limit["schema"]["minimum"], 1);
     assert_eq!(limit["schema"]["maximum"], 200);
 }

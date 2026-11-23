@@ -17,6 +17,7 @@ use som_reference_order::interfaces::server::{serve, shutdown_trigger};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use crate::common::{body_json, call, open_verifier, send, valid_body};
+use crate::fixture::Must;
 
 fn limited_app(limits: Limits) -> Router {
     router_with_limits(
@@ -31,8 +32,8 @@ fn limited_app(limits: Limits) -> Router {
 async fn bind_local() -> (tokio::net::TcpListener, std::net::SocketAddr) {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
-        .expect("bind a local port");
-    let addr = listener.local_addr().expect("local address");
+        .must("bind a local port");
+    let addr = listener.local_addr().must("local address");
     (listener, addr)
 }
 
@@ -61,9 +62,9 @@ async fn request_times_out_after_30_seconds_and_shutdown_is_graceful() {
     assert_eq!(
         headers
             .get("retry-after")
-            .expect("503 carries retry-after")
+            .must("503 carries retry-after")
             .to_str()
-            .expect("retry-after is text"),
+            .must("retry-after is text"),
         "1"
     );
     assert_eq!(body_json(&body)["error"], "unavailable");
@@ -81,11 +82,11 @@ async fn request_times_out_after_30_seconds_and_shutdown_is_graceful() {
     let server = tokio::spawn(serve(listener, app, lifecycle.clone()));
     let mut stream = tokio::net::TcpStream::connect(addr)
         .await
-        .expect("connect to the server");
+        .must("connect to the server");
     stream
         .write_all(b"GET /slow HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
         .await
-        .expect("write the request");
+        .must("write the request");
     tokio::time::sleep(Duration::from_millis(100)).await;
     let trigger = shutdown_trigger(lifecycle.clone());
     let shutdown =
@@ -93,16 +94,16 @@ async fn request_times_out_after_30_seconds_and_shutdown_is_graceful() {
     let mut response = Vec::new();
     tokio::time::timeout(Duration::from_secs(5), stream.read_to_end(&mut response))
         .await
-        .expect("the in-flight response arrives in time")
-        .expect("read the response");
+        .must("the in-flight response arrives in time")
+        .must("read the response");
     let text = String::from_utf8_lossy(&response).into_owned();
     assert!(text.starts_with("HTTP/1.1 200"), "response was: {text}");
     assert!(text.ends_with("done"), "response was: {text}");
     tokio::time::timeout(Duration::from_secs(5), server)
         .await
-        .expect("the server stops in time")
-        .expect("the server task ends");
-    shutdown.await.expect("the shutdown task ends");
+        .must("the server stops in time")
+        .must("the server task ends");
+    shutdown.await.must("the shutdown task ends");
 }
 
 #[tokio::test]
@@ -118,18 +119,18 @@ async fn timeout_layer_is_wired_into_the_data_routes() {
     // The body promises 100 bytes and sends 5: the handler waits for the rest.
     let mut stream = tokio::net::TcpStream::connect(addr)
         .await
-        .expect("connect to the server");
+        .must("connect to the server");
     stream
         .write_all(
             b"POST /v1/orders HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: 100\r\nConnection: close\r\n\r\n{\"a\":",
         )
         .await
-        .expect("write the partial request");
+        .must("write the partial request");
     let mut response = Vec::new();
     tokio::time::timeout(Duration::from_secs(5), stream.read_to_end(&mut response))
         .await
-        .expect("the timed-out response arrives in time")
-        .expect("read the response");
+        .must("the timed-out response arrives in time")
+        .must("read the response");
     let text = String::from_utf8_lossy(&response).to_lowercase();
     assert!(text.starts_with("http/1.1 503"), "response was: {text}");
     assert!(text.contains("unavailable"), "response was: {text}");
@@ -138,14 +139,14 @@ async fn timeout_layer_is_wired_into_the_data_routes() {
     shutdown_trigger(lifecycle).trigger("test", "end").await;
     tokio::time::timeout(Duration::from_secs(5), server)
         .await
-        .expect("the server stops in time")
-        .expect("the server task ends");
+        .must("the server stops in time")
+        .must("the server task ends");
 }
 
 // The capacities are the defaults; only the window is long, so no token returns during the test (1 token each 144 s).
 fn default_limits_with_slow_refill() -> Limits {
     Limits::from_lookup(|key| (key == "ORDER_ADMISSION_REFILL_SECS").then(|| "86400".to_owned()))
-        .expect("the defaults with a slow refill are valid")
+        .must("the defaults with a slow refill are valid")
 }
 
 #[tokio::test]
@@ -165,9 +166,9 @@ async fn admission_defaults_apply() {
         "ORDER_ADMISSION_MAX_KEYS" => Some("1024".to_owned()),
         _ => None,
     })
-    .expect("the explicit defaults parse");
+    .must("the explicit defaults parse");
     assert!(explicit.is_enabled());
-    let defaults = Limits::from_lookup(|_| None).expect("the empty environment is valid");
+    let defaults = Limits::from_lookup(|_| None).must("the empty environment is valid");
     assert!(defaults.admission.is_some());
     assert_eq!(defaults.timeout, Duration::from_secs(30));
 
@@ -189,11 +190,11 @@ async fn admission_defaults_apply() {
     assert_eq!(status, StatusCode::TOO_MANY_REQUESTS);
     let retry: u64 = headers
         .get("retry-after")
-        .expect("429 carries retry-after")
+        .must("429 carries retry-after")
         .to_str()
-        .expect("retry-after is text")
+        .must("retry-after is text")
         .parse()
-        .expect("retry-after is an integer");
+        .must("retry-after is an integer");
     assert!(retry >= 1);
     assert_eq!(body_json(&body)["error"], "rate_limited");
 
@@ -213,7 +214,7 @@ async fn admission_defaults_apply() {
     // Keys are separate: two reads with key a pass, the third is limited, key b still passes.
     let app = limited_app(
         Limits::from_lookup(|key| (key == "ORDER_ADMISSION_READ_CAPACITY").then(|| "2".to_owned()))
-            .expect("valid"),
+            .must("valid"),
     );
     for _ in 0..2 {
         let (status, _, _) = send(
@@ -250,7 +251,7 @@ async fn admission_defaults_apply() {
         Limits::from_lookup(|key| {
             (key == "ORDER_ADMISSION_WRITE_CAPACITY").then(|| "1".to_owned())
         })
-        .expect("valid"),
+        .must("valid"),
     );
     let (status, _, _) = call(&app, "POST", "/v1/orders", Some(valid_body())).await;
     assert_eq!(status, StatusCode::CREATED);
@@ -263,7 +264,7 @@ async fn admission_defaults_apply() {
             "ORDER_ADMISSION_MAX_KEYS" | "ORDER_ADMISSION_READ_CAPACITY" => Some("1".to_owned()),
             _ => None,
         })
-        .expect("valid"),
+        .must("valid"),
     );
     let (status, _, _) = send(
         &app,

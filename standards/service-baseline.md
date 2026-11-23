@@ -18,7 +18,7 @@ No CNL word. CNL does not name it; every generated API gets it.
 | 32 | OpenAPI: the output has `openapi.json`, and the service serves it. The client comes from core `openapi-codegen`. | `openapi_json_is_served_and_equals_the_file` |
 | 33 | Layout: the four layers of the aw standard `rust-layout.md`. | `four_layers_are_present` |
 | 34 | Dependencies: core is pinned to a tag. `Cargo.lock` is present. | `core_is_pinned_to_a_tag_and_cargo_lock_is_present` |
-| 35 | Quality: `fmt`, `clippy` with no warning, no `unwrap`, no `unsafe`. | `fmt_clippy_clean_no_unwrap_no_unsafe` |
+| 35 | Quality: `fmt`, `clippy` with no warning, no `unwrap`, no `unsafe`. | `fmt_clippy_clean_no_unwrap_no_forbidden_code` |
 | 36 | Tests: for each operation one success test and one test for each error. Pagination has a property test: a walk of all pages gives all items, with no repeat and no gap. | `each_operation_has_success_and_error_tests_and_pagination_property_test` |
 | 37 | Docs: a README that says how to run it, with one `curl` example for each operation. | `readme_has_run_steps_and_one_curl_per_operation` |
 

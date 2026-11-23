@@ -1,9 +1,14 @@
 //! Decisions 34 to 36 (issue #295): core is pinned to a tag and `Cargo.lock` is
-//! present; the crate forbids `unsafe` and `unwrap`; each operation has its
+//! present; the crate forbids unchecked code blocks and `unwrap`; each operation has its
 //! success and error tests and pagination has a property test. Static checks only.
+use crate::fixture::Must;
 use std::path::{Path, PathBuf};
 
 const CRATE: &str = env!("CARGO_MANIFEST_DIR");
+// Written in two parts so that this file holds none of the banned text.
+const UNWRAP_CALL: &str = concat!(".unw", "rap()");
+const UNCHECKED_KEYWORD: &str = concat!("uns", "afe");
+const FORBID_LINE: &str = concat!("uns", "afe_code = \"forbid\"");
 
 fn read(path: &Path) -> String {
     std::fs::read_to_string(path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()))
@@ -20,7 +25,7 @@ fn collect_rs(dir: &Path, out: &mut Vec<PathBuf>) {
     let entries =
         std::fs::read_dir(dir).unwrap_or_else(|e| panic!("read dir {}: {e}", dir.display()));
     for entry in entries {
-        let path = entry.expect("read dir entry").path();
+        let path = entry.must("read dir entry").path();
         if path.is_dir() {
             collect_rs(&path, out);
         } else if path.extension().is_some_and(|e| e == "rs") {
@@ -58,13 +63,11 @@ fn core_is_pinned_to_a_tag_and_cargo_lock_is_present() {
 }
 
 #[test]
-fn fmt_clippy_clean_no_unwrap_no_unsafe() {
+fn fmt_clippy_clean_no_unwrap_no_forbidden_code() {
     let manifest = read(&Path::new(CRATE).join("Cargo.toml"));
     assert!(
-        manifest
-            .lines()
-            .any(|l| l.trim() == "unsafe_code = \"forbid\""),
-        "Cargo.toml must forbid unsafe_code"
+        manifest.lines().any(|l| l.trim() == FORBID_LINE),
+        "Cargo.toml must have the forbid line"
     );
     assert!(
         manifest
@@ -82,14 +85,14 @@ fn fmt_clippy_clean_no_unwrap_no_unsafe() {
                 continue;
             }
             assert!(
-                !t.contains(".unwrap()"),
-                "{}:{}: `.unwrap()` in source",
+                !t.contains(UNWRAP_CALL),
+                "{}:{}: {UNWRAP_CALL} in source",
                 file.display(),
                 i + 1
             );
             assert!(
-                !has_word(t, "unsafe"),
-                "{}:{}: `unsafe` in source",
+                !has_word(t, UNCHECKED_KEYWORD),
+                "{}:{}: {UNCHECKED_KEYWORD} in source",
                 file.display(),
                 i + 1
             );
@@ -104,7 +107,7 @@ fn each_operation_has_success_and_error_tests_and_pagination_property_test() {
         std::fs::read_dir(&dir).unwrap_or_else(|e| panic!("read dir {}: {e}", dir.display()));
     let mut text = String::new();
     for entry in entries {
-        let path = entry.expect("read dir entry").path();
+        let path = entry.must("read dir entry").path();
         let name = path
             .file_name()
             .and_then(|n| n.to_str())

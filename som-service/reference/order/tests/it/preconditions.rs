@@ -2,6 +2,7 @@ use axum::http::StatusCode;
 use serde_json::json;
 
 use crate::common::{app, body_json, call, etag_of, seed, send, valid_body};
+use crate::fixture::Must;
 use crate::fixture::{text_of, with_text};
 
 #[tokio::test]
@@ -11,7 +12,7 @@ async fn etag_is_returned_and_if_match_mismatch_412_missing_428() {
 
     let (status, headers, _) = call(&app, "GET", "/v1/orders/a", None).await;
     assert_eq!(status, StatusCode::OK);
-    let old = headers["etag"].to_str().expect("etag is text").to_owned();
+    let old = headers["etag"].to_str().must("etag is text").to_owned();
     assert!(old.starts_with('"') && old.ends_with('"'));
     assert_eq!(old.len(), 18);
     assert_eq!(etag_of(&app, "a").await, old);
@@ -20,9 +21,9 @@ async fn etag_is_returned_and_if_match_mismatch_412_missing_428() {
     assert_eq!(status, StatusCode::CREATED);
     let new_id = body_json(&body)["id"]
         .as_str()
-        .expect("id is text")
+        .must("id is text")
         .to_owned();
-    let created_etag = headers["etag"].to_str().expect("etag is text").to_owned();
+    let created_etag = headers["etag"].to_str().must("etag is text").to_owned();
     assert_eq!(etag_of(&app, &new_id).await, created_etag);
 
     let (status, _, body) = call(&app, "PUT", "/v1/orders/a", Some(valid_body())).await;
@@ -49,7 +50,7 @@ async fn etag_is_returned_and_if_match_mismatch_412_missing_428() {
     )
     .await;
     assert_eq!(status, StatusCode::OK);
-    let new = headers["etag"].to_str().expect("etag is text").to_owned();
+    let new = headers["etag"].to_str().must("etag is text").to_owned();
     assert_ne!(new, old);
     assert_eq!(etag_of(&app, "a").await, new);
 

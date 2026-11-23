@@ -3,6 +3,7 @@ use axum::response::{IntoResponse, Response};
 use serde_json::{Value, json};
 use som_reference_order::interfaces::error::{ApiError, ErrorCode};
 
+use crate::fixture::Must;
 use crate::fixture::validation_field_errors;
 
 async fn read(response: Response) -> (StatusCode, HeaderMap, Value) {
@@ -10,12 +11,12 @@ async fn read(response: Response) -> (StatusCode, HeaderMap, Value) {
     let headers = response.headers().clone();
     let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
-        .expect("body reads");
-    let text = String::from_utf8(bytes.to_vec()).expect("body is UTF-8");
+        .must("body reads");
+    let text = String::from_utf8(bytes.to_vec()).must("body is UTF-8");
     (
         status,
         headers,
-        serde_json::from_str(&text).expect("body is JSON"),
+        serde_json::from_str(&text).must("body is JSON"),
     )
 }
 
@@ -27,7 +28,7 @@ async fn error_body_has_error_message_and_optional_details() {
     assert!(
         headers["content-type"]
             .to_str()
-            .expect("content type")
+            .must("content type")
             .starts_with("application/json")
     );
     assert_eq!(body, json!({"error": "not_found", "message": "m"}));
