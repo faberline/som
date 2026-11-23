@@ -117,13 +117,20 @@ fn emitted_tests_for_order_have_every_reference_test_name() {
     let files = emit(&value(ORDER));
     for (file, reference) in REFERENCE_TESTS {
         let emitted = emitted_file(&files, &format!("tests/it/{file}"));
+        let mut expected = fn_names(reference);
+        if file == "quality.rs" {
+            expected.remove("core_is_pinned_to_a_tag_and_cargo_lock_is_present");
+        }
         assert_eq!(
             fn_names(emitted),
-            fn_names(reference),
+            expected,
             "the functions of tests/it/{file} differ from the reference"
         );
     }
     assert!(fn_names(emitted_file(&files, "tests/it/fixture.rs")).contains("must"));
+    let quality = emitted_file(&files, "tests/it/quality.rs");
+    assert!(!quality.contains("core_is_pinned_to_a_tag_and_cargo_lock_is_present"));
+    assert!(quality.contains("fmt_clippy_clean_no_unwrap_no_forbidden_code"));
 }
 
 #[test]

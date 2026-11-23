@@ -185,10 +185,13 @@ pub(crate) fn render(dsl: &Value) -> Result<BTreeMap<String, String>, Error> {
         files.insert(format!("src/interfaces/{file}"), text);
     }
     for (file, template) in TEST_FILES {
-        files.insert(
-            format!("tests/it/{file}"),
-            test_text(template, package, name, snake, plural, path),
-        );
+        let text = test_text(template, package, name, snake, plural, path);
+        let text = if file == "quality.rs" {
+            drop_core_pin_test(&text)
+        } else {
+            text
+        };
+        files.insert(format!("tests/it/{file}"), text);
     }
     files.insert(
         "tests/it/fixture.rs".to_owned(),
@@ -877,6 +880,24 @@ fn test_text(
         .replace("@@REORD@@", "reordered_")
         .replace("@@PKG@@", package);
     with_path(text, plural, path)
+}
+
+/// Removes `core_is_pinned_to_a_tag_and_cargo_lock_is_present` from the emitted
+/// `quality.rs`: it reads `som-service/Cargo.lock`, which an emitted crate lacks.
+/// Returns the text unchanged when the marker is not found.
+fn drop_core_pin_test(text: &str) -> String {
+    const MARKER: &str = "#[test]\nfn core_is_pinned_to_a_tag_and_cargo_lock_is_present() {";
+    let Some(start) = text.find(MARKER) else {
+        return text.to_owned();
+    };
+    let Some(close_rel) = text[start..].find("\n}\n") else {
+        return text.to_owned();
+    };
+    let mut end = start + close_rel + "\n}\n".len();
+    if text[end..].starts_with('\n') {
+        end += 1;
+    }
+    format!("{}{}", &text[..start], &text[end..])
 }
 
 /// The `tests/it/main.rs` of an emitted crate: one `mod` line for each emitted
