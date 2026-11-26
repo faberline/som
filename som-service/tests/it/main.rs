@@ -20,6 +20,7 @@ mod quickstart_doc;
 mod readme_cnl_split;
 mod readme_links;
 mod readme_mainline;
+mod readme_resource;
 mod readme_supported_path;
 mod reference_banned_text;
 mod reference_fixture;
