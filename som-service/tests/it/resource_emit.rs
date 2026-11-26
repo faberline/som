@@ -104,7 +104,7 @@ fn without_package(lock: &str, package: &str) -> String {
 }
 
 #[test]
-fn resource_emit_order_has_forty_files() {
+fn resource_emit_order_has_forty_two_files() {
     let files = emit(&value(ORDER));
     let keys: Vec<&str> = files.keys().map(String::as_str).collect();
     assert_eq!(
@@ -112,6 +112,7 @@ fn resource_emit_order_has_forty_files() {
         [
             "Cargo.lock",
             "Cargo.toml",
+            "README.md",
             "openapi.json",
             "src/application/idempotency.rs",
             "src/application/mod.rs",
@@ -147,6 +148,7 @@ fn resource_emit_order_has_forty_files() {
             "tests/it/preconditions.rs",
             "tests/it/probes.rs",
             "tests/it/quality.rs",
+            "tests/it/readme.rs",
             "tests/it/request_id.rs",
             "tests/it/routes.rs",
             "tests/it/store.rs",

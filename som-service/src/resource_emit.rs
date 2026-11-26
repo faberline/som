@@ -43,10 +43,12 @@ const TEST_QUALITY: &str = include_str!("../reference/order/tests/it/quality.rs"
 const TEST_REQUEST_ID: &str = include_str!("../reference/order/tests/it/request_id.rs");
 const TEST_ROUTES: &str = include_str!("../reference/order/tests/it/routes.rs");
 const TEST_STORE: &str = include_str!("../reference/order/tests/it/store.rs");
+const TEST_README: &str = include_str!("../reference/order/tests/it/readme.rs");
+const README: &str = include_str!("../reference/order/README.md");
 
 /// The test files of the reference that every emitted crate gets: the name in
-/// the crate and the reference text. `readme.rs` is not here, and `fixture.rs`
-/// is built from the plan (`fixture_file`).
+/// the crate and the reference text. `readme.rs` is not here: `readme_test_file`
+/// builds it. `fixture.rs` is built from the plan (`fixture_file`).
 const TEST_FILES: [(&str, &str); 15] = [
     ("auth.rs", TEST_AUTH),
     ("common.rs", TEST_COMMON),
@@ -197,6 +199,12 @@ pub(crate) fn render(dsl: &Value) -> Result<BTreeMap<String, String>, Error> {
         "tests/it/fixture.rs".to_owned(),
         fixture_file(package, name, snake, fields),
     );
+    let readme = readme_file(package, name, snake, plural, path, fields);
+    files.insert(
+        "tests/it/readme.rs".to_owned(),
+        readme_test_file(package, name, snake, plural, path, &readme),
+    );
+    files.insert("README.md".to_owned(), readme);
     files.insert("tests/it/main.rs".to_owned(), test_main());
     files.insert(
         "openapi.json".to_owned(),
@@ -886,8 +894,17 @@ fn test_text(
 /// `quality.rs`: it reads `som-service/Cargo.lock`, which an emitted crate lacks.
 /// Returns the text unchanged when the marker is not found.
 fn drop_core_pin_test(text: &str) -> String {
-    const MARKER: &str = "#[test]\nfn core_is_pinned_to_a_tag_and_cargo_lock_is_present() {";
-    let Some(start) = text.find(MARKER) else {
+    cut_block(
+        text,
+        "#[test]\nfn core_is_pinned_to_a_tag_and_cargo_lock_is_present() {",
+    )
+}
+
+/// Removes the item that starts at `marker` (the item ends at the first line `}`
+/// at column 0) and one blank line after it. Returns the text unchanged when the marker
+/// or the end is not found.
+fn cut_block(text: &str, marker: &str) -> String {
+    let Some(start) = text.find(marker) else {
         return text.to_owned();
     };
     let Some(close_rel) = text[start..].find("\n}\n") else {
@@ -908,9 +925,222 @@ fn test_main() -> String {
         .map(|&(file, _)| file.trim_end_matches(".rs"))
         .collect();
     stems.push("fixture");
+    stems.push("readme");
     stems.sort_unstable();
     stems.iter().map(|stem| format!("mod {stem};\n")).collect()
 }
+
+/// The text of `README.md`: the reference README with the names, the package and
+/// the path of the plan. Its five `curl` lines are rebuilt from the plan, and its
+/// `## Decisions` row 34 names the emitted `tests/it/readme.rs`.
+fn readme_file(
+    package: &str,
+    name: &str,
+    snake: &str,
+    plural: &str,
+    path: &str,
+    fields: &[Value],
+) -> String {
+    let marked = README
+        .replace("som-reference-order", "@@PKG@@")
+        .replace("som_reference_order", "@@LIB@@")
+        .replace("Order: `created_at` newest first", "@@SORT@@")
+        .replace("The order is fixed.", "@@FIXED@@")
+        .replace(
+            "sets the existing `canceled` status and `updated_at`",
+            "@@SETS@@",
+        )
+        .replace("Run these from `som-service/`:", "@@FROM@@");
+    let text = with_path(substitute(&marked, name, snake, plural), plural, path);
+    let sets = match fields.iter().find(|field| kind_of(field) == "enum") {
+        Some(field) => {
+            let last = values_of(field).last().copied().unwrap_or("");
+            format!("sets `{}` to `{last}` and `updated_at`", name_of(field))
+        }
+        None => "sets `updated_at`".to_owned(),
+    };
+    let text = text
+        .replace("@@PKG@@", package)
+        .replace("@@LIB@@", &package.replace('-', "_"))
+        .replace("@@SORT@@", "Sorting: `created_at` newest first")
+        .replace("@@FIXED@@", "The order is fixed.")
+        .replace("@@FROM@@", "Run these from the crate directory:")
+        .replace("@@SETS@@", &sets)
+        .replace(
+            "| tests/it/quality.rs | `core_is_pinned_to_a_tag_and_cargo_lock_is_present` |",
+            "| tests/it/readme.rs | `core_is_pinned_to_a_tag_and_cargo_lock_is_present` |",
+        );
+
+    let required: Vec<&Value> = fields.iter().filter(|field| is_required(field)).collect();
+    let all: Vec<&Value> = fields.iter().collect();
+    let curls = [
+        format!(
+            "curl -X POST http://localhost:8080{path} -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -H 'Idempotency-Key: <key>' -d '{}'",
+            curl_body(&required, valid_value)
+        ),
+        format!("curl http://localhost:8080{path}/<id> -H 'Authorization: Bearer <token>'"),
+        format!("curl 'http://localhost:8080{path}?limit=2' -H 'Authorization: Bearer <token>'"),
+        format!(
+            "curl -X PUT http://localhost:8080{path}/<id> -H 'Authorization: Bearer <token>' -H 'If-Match: <etag>' -H 'Content-Type: application/json' -d '{}'",
+            curl_body(&all, replacement_value)
+        ),
+        format!(
+            "curl -X DELETE http://localhost:8080{path}/<id> -H 'Authorization: Bearer <token>' -H 'If-Match: <etag>'"
+        ),
+    ];
+    let mut next_curl = curls.iter();
+    let mut out = String::new();
+    for line in text.lines() {
+        let curl = if line.starts_with("curl ") {
+            next_curl.next()
+        } else {
+            None
+        };
+        out.push_str(curl.map_or(line, String::as_str));
+        out.push('\n');
+    }
+    out
+}
+
+/// The JSON object text of the fields, in the order given, for a `curl` body.
+fn curl_body(fields: &[&Value], value_of: fn(&Value) -> Value) -> String {
+    let pairs: Vec<String> = fields
+        .iter()
+        .map(|field| format!("{:?}:{}", name_of(field), json_text(&value_of(field))))
+        .collect();
+    format!("{{{}}}", pairs.join(","))
+}
+
+/// The text of `tests/it/readme.rs`: the reference test file with the names of the
+/// resource. Its `decision_rows` and its catalog test read `standards/`, which an
+/// emitted crate lacks; they are replaced by a constant table (`CATALOG`) that holds
+/// the decisions of the emitted README, and a copy of the pin test for the crate.
+fn readme_test_file(
+    package: &str,
+    name: &str,
+    snake: &str,
+    plural: &str,
+    path: &str,
+    readme: &str,
+) -> String {
+    let marked = TEST_README
+        .replace("in order", "@@INORD@@")
+        .replace("/// order; each has one", "@@ORDSEMI@@");
+    let text = test_text(&marked, package, name, snake, plural, path)
+        .replace("@@INORD@@", "in order")
+        .replace("@@ORDSEMI@@", "/// order; each has one");
+    let text = cut_block(
+        &text,
+        "/// For each table row whose first cell is a decision number: (number, third cell).\nfn decision_rows(",
+    );
+    let text = cut_block(&text, "#[test]\nfn readme_rows_equal_the_catalog() {");
+    format!(
+        "{text}\n{}\n{CATALOG_TEST}\n{CORE_PIN_TEST}",
+        catalog_const(readme)
+    )
+}
+
+/// The `CATALOG` constant of the emitted `readme.rs`: one tuple (number, text, test)
+/// for each row under `## Decisions` of the emitted README.
+fn catalog_const(readme: &str) -> String {
+    let mut inside = false;
+    let mut rows: Vec<(String, String, String)> = Vec::new();
+    for line in readme.lines() {
+        if let Some(heading) = line.strip_prefix("## ") {
+            inside = heading.trim() == "Decisions";
+            continue;
+        }
+        if !inside || !line.starts_with("| ") {
+            continue;
+        }
+        let cells: Vec<&str> = line
+            .trim()
+            .trim_matches('|')
+            .split('|')
+            .map(str::trim)
+            .collect();
+        let is_number = cells
+            .first()
+            .is_some_and(|cell| cell.parse::<u32>().is_ok());
+        if let (true, Some(number), Some(text), Some(test)) =
+            (is_number, cells.first(), cells.get(1), cells.get(3))
+        {
+            rows.push((
+                (*number).to_owned(),
+                (*text).to_owned(),
+                test.trim_matches('`').to_owned(),
+            ));
+        }
+    }
+    let mut out = format!(
+        "/// The decisions of the standard catalog, as the README states them: the number, the text and the proof test.\nconst CATALOG: [(u32, &str, &str); {}] = [\n",
+        rows.len()
+    );
+    for (number, text, test) in rows {
+        out.push_str(&format!(
+            "    ({number}, {}, {}),\n",
+            rust_str(&text),
+            rust_str(&test)
+        ));
+    }
+    out.push_str("];\n");
+    out
+}
+
+/// A Rust string literal of `text`. The word of the banned unchecked-code keyword is
+/// written with an escape, so the emitted file holds none of it.
+fn rust_str(text: &str) -> String {
+    format!("{text:?}").replace("unsafe", "uns\\u{61}fe")
+}
+
+/// The test that compares the emitted README with `CATALOG` (the reference test reads `standards/`).
+const CATALOG_TEST: &str = r##"#[test]
+fn readme_rows_equal_the_catalog() {
+    let readme = read_readme();
+    let rows = readme_decision_rows(&readme);
+    assert_eq!(
+        rows.len(),
+        CATALOG.len(),
+        "the README has {} decision rows, the catalog has {}",
+        rows.len(),
+        CATALOG.len()
+    );
+    for ((n, test_cell), (number, text, test)) in rows.iter().zip(CATALOG.iter()) {
+        assert_eq!(n, number, "the decision numbers differ");
+        assert_eq!(
+            test_cell,
+            &format!("`{test}`"),
+            "decision {number}: the test differs from the catalog"
+        );
+        assert!(
+            readme.contains(&format!("| {number} | {text} |")),
+            "decision {number}: the text differs from the catalog"
+        );
+    }
+}
+"##;
+
+/// The pin test of the emitted crate: the reference test reads `som-service/Cargo.lock`,
+/// which an emitted crate lacks, so this copy reads the crate's own files.
+const CORE_PIN_TEST: &str = r##"/// Decision 34: core is pinned to a tag and `Cargo.lock` is present. The crate reads its own files.
+#[test]
+fn core_is_pinned_to_a_tag_and_cargo_lock_is_present() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    assert!(dir.join("Cargo.lock").exists(), "Cargo.lock is missing");
+    let manifest = std::fs::read_to_string(dir.join("Cargo.toml")).must("read Cargo.toml");
+    let core: Vec<&str> = manifest
+        .lines()
+        .filter(|l| l.contains("github.com/faberline/core"))
+        .collect();
+    assert!(!core.is_empty(), "Cargo.toml has no core dependency");
+    for line in core {
+        assert!(
+            line.contains("tag = \"v") && !line.contains("rev =") && !line.contains("branch ="),
+            "core is not pinned to a tag: {line}"
+        );
+    }
+}
+"##;
 
 /// The text of `tests/it/fixture.rs`: the reference fixture with the names and
 /// the values of the plan. A plan with no integer field or no string field uses
