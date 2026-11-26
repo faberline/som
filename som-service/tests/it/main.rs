@@ -9,6 +9,7 @@ mod cnl_ownership;
 mod cnl_v2;
 mod codegen;
 mod compiler;
+mod determinism;
 mod entrypoints;
 mod no_machine_paths;
 mod openapi_subset;
