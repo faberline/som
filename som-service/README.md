@@ -54,6 +54,56 @@ The new HTTP service exposes `/health`, `/compile` and `/assemble`. It also serv
 Use `som.cnl.service.v1` or `som.prompt-json.service.v1` at `/compile`.
 The existing `som` service and its old versions stay unchanged.
 
+## Resource request (catalog som.std.v1)
+
+A resource request is a fixed English CNL document. Its catalog is `som.std.v1`
+and its target is `rust-resource-service.v1`. The service compiles it into a
+Rust crate that holds the 37 decisions of the catalog.
+
+The `Order` example is [contract/order.resource.cnl](contract/order.resource.cnl):
+
+```text
+Service resource version 1.
+Package orders_service.
+Target rust-resource-service.v1.
+Resource Order.
+Field customer_id of Order is string required min 1.
+Field total_cents of Order is integer required min 0.
+Field currency of Order is string required upper_letters 3.
+Field status of Order is enum required values pending paid shipped canceled.
+Field note of Order is string optional max 500.
+Apply CRUD to Order.
+Apply standard pagination to Order.
+```
+
+Compile it, then assemble it with `emit` set to `resource` on `/assemble`
+(with the server from `serve` running):
+
+```sh
+cargo run --locked --manifest-path som-service/Cargo.toml -- compile som-service/contract/order.resource.cnl > "$WORK/order.bundle.json"
+curl -fsS -X POST http://127.0.0.1:8767/assemble -d "{\"bundle\":$(cat "$WORK/order.bundle.json"),\"emit\":\"resource\"}" > "$WORK/order.files.json"
+python3 som-service/scripts/write_files.py "$WORK/orders" < "$WORK/order.files.json"
+```
+
+The request body to `/assemble` has the key `"emit":"resource"`.
+
+The `assemble` CLI command makes only the Defer client files. A resource
+bundle needs `emit` set to `resource` on `/assemble`.
+
+The generated crate has this layout:
+
+- `Cargo.toml`, `Cargo.lock`, `README.md`, `openapi.json`
+- `src/domain/order.rs`, `src/domain/mod.rs`
+- `src/application/store.rs`, `src/application/orders.rs`, `src/application/idempotency.rs`, `src/application/pagination.rs`
+- `src/infrastructure/memory_store.rs`
+- `src/interfaces/routes.rs`, `src/interfaces/server.rs`, `src/interfaces/auth.rs` and the other interface modules
+- `tests/it/`
+
+The Defer path is unchanged. The Defer request forms, the seven operations
+and the commands above in this README work as before.
+
+Agent-work measure: see the pull request of #307 (five changes, all done in one pass).
+
 ## CI
 
 Workflow `som-service`, job `som-service checks` (check name `som-service / som-service checks`),
